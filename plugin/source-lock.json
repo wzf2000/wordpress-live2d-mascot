@@ -1,0 +1,10 @@
+{
+  "framework_commit": "d4da0aa07e47d2c1e4f5fa7ea6047861ea5e5d0b",
+  "samples_commit": "b1de66b0b1f1cb881d95fb6158622aeb6a2827bd",
+  "core_package": "https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-5-r.5.zip",
+  "core_name": "cubism-core-8741f739779b.js",
+  "core_sha256": "8741f739779b5d5210872bd3d7d99f0f1e56e6c87409e7d26d6bb4b80aa1ef47",
+  "model_changes": [
+    "Sound references removed; sound files excluded; added catalog; art/moc/motions/expressions unmodified"
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "haru": {
+    "name": "Haru",
+    "root": "haru/",
+    "file": "Haru.model3.json",
+    "idle": "haru_g_idle",
+    "greetings": [
+      "haru_g_m12",
+      "haru_g_m17",
+      "haru_g_m10"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "haru_g_m12"
+  },
+  "mao": {
+    "name": "虹色まお · Mao",
+    "root": "mao/",
+    "file": "Mao.model3.json",
+    "idle": "mtn_01",
+    "greetings": [
+      "mtn_02",
+      "mtn_03"
+    ],
+    "size": 200,
+    "offset": 4,
+    "welcome": "mtn_02"
+  },
+  "hiyori": {
+    "name": "桃瀬ひより · Hiyori",
+    "root": "hiyori/",
+    "file": "Hiyori.model3.json",
+    "idle": "Hiyori_m01",
+    "greetings": [
+      "Hiyori_m04"
+    ],
+    "size": 180,
+    "offset": 5,
+    "welcome": "Hiyori_m04"
+  },
+  "mark": {
+    "name": "マークくん · Mark",
+    "root": "mark/",
+    "file": "Mark.model3.json",
+    "idle": "mark_m01",
+    "greetings": [
+      "mark_m02"
+    ],
+    "size": 180,
+    "offset": 24,
+    "welcome": "mark_m02"
+  },
+  "rice": {
+    "name": "ライス・グラスフィールド · Rice",
+    "root": "rice/",
+    "file": "Rice.model3.json",
+    "idle": "idle",
+    "greetings": [
+      "mtn_01"
+    ],
+    "size": 180,
+    "offset": 7,
+    "welcome": "mtn_01"
+  },
+  "wanko": {
+    "name": "わんころもち · Wanko",
+    "root": "wanko/",
+    "file": "Wanko.model3.json",
+    "idle": "idle_01",
+    "greetings": [
+      "touch_02"
+    ],
+    "size": 180,
+    "offset": 16,
+    "welcome": "touch_02"
+  },
+  "ren": {
+    "name": "レン・フォスター · Ren",
+    "root": "ren/",
+    "file": "Ren.model3.json",
+    "idle": "mtn_01",
+    "greetings": [
+      "mtn_02"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": null,
+    "webgl2": true
+  },
+  "epsilon": {
+    "name": "Epsilon",
+    "root": "epsilon/",
+    "file": "Epsilon.model3.json",
+    "idle": "Epsilon_idle_01",
+    "greetings": [
+      "Epsilon_m_03"
+    ],
+    "welcome": "Epsilon_m_03",
+    "size": 180,
+    "offset": 8.5
+  },
+  "chitose": {
+    "name": "Chitose",
+    "root": "chitose/",
+    "file": "chitose.model3.json",
+    "idle": "chitose_idle",
+    "greetings": [
+      "chitose_handwave"
+    ],
+    "welcome": "chitose_handwave",
+    "size": 180,
+    "offset": 4
+  },
+  "hibiki": {
+    "name": "Hibiki",
+    "root": "hibiki/",
+    "file": "hibiki.model3.json",
+    "idle": "hibiki_01",
+    "greetings": [
+      "hibiki_02"
+    ],
+    "welcome": "hibiki_02",
+    "size": 180,
+    "offset": 6.5
+  },
+  "izumi": {
+    "name": "Izumi",
+    "root": "izumi/",
+    "file": "izumi_illust.model3.json",
+    "idle": "izumi_03",
+    "greetings": [
+      "izumi_01"
+    ],
+    "welcome": "izumi_01",
+    "size": 180,
+    "offset": 0
+  },
+  "haruto": {
+    "name": "春翔 · Haruto",
+    "root": "haruto/",
+    "file": "haruto.model3.json",
+    "idle": "idle",
+    "greetings": [
+      "01"
+    ],
+    "size": 180,
+    "offset": 5,
+    "welcome": "01"
+  },
+  "koharu": {
+    "name": "小春 · Koharu",
+    "root": "koharu/",
+    "file": "koharu.model3.json",
+    "idle": "idle",
+    "greetings": [
+      "01"
+    ],
+    "size": 180,
+    "offset": 5,
+    "welcome": "01"
+  },
+  "ni-j": {
+    "name": "Ni-j",
+    "root": "ni-j/",
+    "file": "ni-j.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "01_happy"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "01_happy"
+  },
+  "nico": {
+    "name": "Nico",
+    "root": "nico/",
+    "file": "nico.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "01_happy"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "01_happy"
+  },
+  "nietzsche": {
+    "name": "Nietzsche",
+    "root": "nietzsche/",
+    "file": "nietzsche.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "01_happy"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "01_happy"
+  },
+  "nipsilon": {
+    "name": "Nipsilon",
+    "root": "nipsilon/",
+    "file": "nipsilon.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "01_happy"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "01_happy"
+  },
+  "nito": {
+    "name": "Nito",
+    "root": "nito/",
+    "file": "nito.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "01_happy"
+    ],
+    "size": 180,
+    "offset": 8,
+    "welcome": "01_happy"
+  },
+  "shizuku": {
+    "name": "雫 · Shizuku",
+    "root": "shizuku/",
+    "file": "shizuku.model3.json",
+    "idle": "04",
+    "greetings": [
+      "01"
+    ],
+    "size": 180,
+    "offset": 0,
+    "welcome": "01"
+  },
+  "tororo": {
+    "name": "白猫 · Tororo",
+    "root": "tororo/",
+    "file": "tororo.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "04"
+    ],
+    "size": 180,
+    "offset": 17,
+    "welcome": null,
+    "renderScale": 0.85
+  },
+  "hijiki": {
+    "name": "黑猫 · Hijiki",
+    "root": "hijiki/",
+    "file": "hijiki.model3.json",
+    "idle": "00_idle",
+    "greetings": [
+      "04"
+    ],
+    "size": 180,
+    "offset": 17,
+    "welcome": null,
+    "renderScale": 0.85
+  },
+  "gantzert_felixander": {
+    "name": "Gantzert & Felixander",
+    "root": "gantzert_felixander/",
+    "file": "Gantzert_Felixander.model3.json",
+    "idle": "A_00_idle",
+    "greetings": [
+      "A_02"
+    ],
+    "welcome": "A_02",
+    "size": 220,
+    "offset": 27,
+    "renderScale": 0.35,
+    "renderX": -0.1
+  }
+}

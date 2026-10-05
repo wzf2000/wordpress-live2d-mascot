@@ -1,0 +1,32 @@
+# 自有代码许可与第三方边界
+
+Copyright (C) 2026 wzf2000
+
+本项目作者拥有权利的插件控制器及维护工具代码，按 GNU General Public License
+version 2 或（由接收者选择）任何后续版本发布（SPDX: GPL-2.0-or-later）。
+GPL v2 原文见 COPYING。本程序不提供任何担保，包括适销性或特定用途适用性担保。
+
+适用的自有代码范围：src/engine.ts、src/loader.js、src/style.css、src/resources.ts、
+plugin/live2d-show.php、仓库根目录的自有 Python 工具、tools/ 和 tests/ 中的自有代码。
+第三方贡献及明确带有其他许可声明的部分，保留各自声明。
+
+此授权不覆盖 src/ 中的 Cubism Framework、plugin/vendor/ 下的 Cubism Core、
+plugin/shaders/、模型数据、美术、动作、表情、原始来源记录和第三方许可文本。
+这些组件分别适用其权利人的条款。源码包中见 plugin/licenses/ 和 docs/DISTRIBUTION.md；
+安装包中见 licenses/ 和 DISTRIBUTION.md。
+编译生成的 engine 同时含自有代码和 Framework，不能把整份文件重新标成 GPL。
+
+## 针对指定 Cubism SDK 的附加许可
+
+用户作为自有代码版权人于 2026-10-06 明确同意下列附加许可。
+它仅解除自有代码对指定组合的限制，不授予任何第三方权利或 SDK 发行资格。
+
+As an additional permission for code in this project that is owned by wzf2000,
+you may combine that code with the Cubism Framework and Cubism Core included
+in Live2D Cubism SDK for Web 5 R5, under their respective Live2D licenses, and
+distribute the resulting combination. The GNU GPL version 2 or, at your option,
+any later version continues to apply to the project-owned code, including its
+corresponding-source obligations. This permission does not relicense any
+Live2D component, model, WordPress code, or other third-party work, and grants
+no rights beyond those held by the grantor. You must separately comply with
+the licenses and publication requirements applicable to those works.

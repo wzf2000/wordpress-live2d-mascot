@@ -1,0 +1,12 @@
+build/
+node_modules/
+__pycache__/
+*.pyc
+# Runtime is supplied by the matching installation ZIP, not Git.
+/plugin/*
+!/plugin/live2d-show.php
+!/plugin/characters.json
+!/plugin/haru-assets.json
+!/plugin/source-lock.json
+!/plugin/licenses/
+!/plugin/usage-collection-*.html
