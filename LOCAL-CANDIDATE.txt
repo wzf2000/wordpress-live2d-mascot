@@ -1,6 +1,1 @@
-LOCAL INSTALLATION CANDIDATE — NOT APPROVED FOR PUBLIC DISTRIBUTION
-Runtime dependency completeness and hashes are checked; license permission is not.
-Core, Framework, sample models and controller code
-require separate redistribution review. Included terms and notices do not grant
-new redistribution rights. Do not upload this candidate to a public repository
-or GitHub Release before completing that review.
+LOCAL ASSET-FREE CANDIDATE: publication review pending; no Core or models included.

@@ -2,11 +2,20 @@ build/
 node_modules/
 __pycache__/
 *.pyc
-# Runtime is supplied by the matching installation ZIP, not Git.
+# Never track user-supplied Core, models, old runtime snapshots or build outputs.
 /plugin/*
 !/plugin/live2d-show.php
+!/plugin/includes/
 !/plugin/characters.json
 !/plugin/haru-assets.json
-!/plugin/source-lock.json
+!/plugin/usage-imported-resources.html
 !/plugin/licenses/
-!/plugin/usage-collection-*.html
+/plugin/licenses/*
+!/plugin/licenses/Framework-LICENSE.md
+!/plugin/shaders/
+/plugin/shaders/*
+!/plugin/shaders/*.vert
+!/plugin/shaders/*.frag
+!/plugin/haru-engine-4d6382933c4f.js
+!/plugin/haru-loader-28187a2a2dc7.js
+!/plugin/haru-css-a1cfaee253c9.css

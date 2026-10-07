@@ -7,7 +7,7 @@ version 2 或（由接收者选择）任何后续版本发布（SPDX: GPL-2.0-or
 GPL v2 原文见 COPYING。本程序不提供任何担保，包括适销性或特定用途适用性担保。
 
 适用的自有代码范围：src/engine.ts、src/loader.js、src/style.css、src/resources.ts、
-plugin/live2d-show.php、仓库根目录的自有 Python 工具、tools/ 和 tests/ 中的自有代码。
+plugin/live2d-show.php、plugin/includes/ 中的自有代码、仓库根目录的自有 Python 工具、tools/ 和 tests/ 中的自有代码。
 第三方贡献及明确带有其他许可声明的部分，保留各自声明。
 
 此授权不覆盖 src/ 中的 Cubism Framework、plugin/vendor/ 下的 Cubism Core、

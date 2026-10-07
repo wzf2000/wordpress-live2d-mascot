@@ -1,9 +1,7 @@
 {
-  "core": "vendor/cubism-core-8741f739779b.js",
   "engine": "haru-engine-4d6382933c4f.js",
-  "loader": "haru-loader-9c40194165ee.js",
+  "loader": "haru-loader-28187a2a2dc7.js",
   "css": "haru-css-a1cfaee253c9.css",
-  "model": "haru/",
   "shaders": "shaders/",
-  "terms": "usage-collection-1cf5965dd00a.html"
+  "terms": "usage-imported-resources.html"
 }
