@@ -1,8 +1,10 @@
-# WordPress Mascot / 看板娘
+# WordPress Live2D Mascot / 看板娘
 
-3.5.0 是不附带 Core 或模型的完整功能插件候选。支持角色加载、预览与切换、搜索和本地收藏、动作停止、表情重置、键盘操作与阅读界面暂停协调。首次安装没有角色，前台不输出看板娘资源；管理员配置后才可启用。小屏和减少动画设置继续保持隐藏。
+GitHub：[wzf2000/wordpress-live2d-mascot](https://github.com/wzf2000/wordpress-live2d-mascot)。
 
-自有代码采用 GPL-2.0-or-later，附带 LICENSE 指定的 Web 5 R5 组合附加许可。Cubism Framework 与着色器保留各自条款。完整发行边界与待确认事项见 [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)；所有本地输出仍为 `public_release_ready=false`，不能将基础检查当作权利人的分发许可。
+3.5.0 是不附带 Core 或模型的完整功能插件正式发行版。支持角色加载、预览与切换、搜索和本地收藏、动作停止、表情重置、键盘操作与阅读界面暂停协调。首次安装没有角色，前台不输出看板娘资源；管理员配置后才可启用。小屏和减少动画设置继续保持隐藏。
+
+自有代码采用 GPL-2.0-or-later，附带 LICENSE 指定的 Web 5 R5 组合附加许可。Cubism Framework 与着色器保留各自条款。完整发行边界见 [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)；维护者根据已收到的官方回复，采用排除 Core 与模型、由管理员自行官网下载导入的方式发行。`public_release_ready=true` 记录维护者的发行决定，不表示官方认证或替接收者授予第三方权利。
 
 ## 安装与自行导入
 
@@ -28,13 +30,13 @@ node tests/release-smoke.cjs plugin
 python3 build.py --esbuild /path/to/esbuild
 ```
 
-esbuild 必须是 0.25.12，构建工具写入 `build/`。审阅后把生成的三个哈希文件及 `haru-assets.json` 放到 `plugin/`，再生成完整候选：
+esbuild 必须是 0.25.12，构建工具写入 `build/`。审阅后把生成的三个哈希文件及 `haru-assets.json` 放到 `plugin/`，再生成完整发行包：
 
 ```sh
-python3 tools/package_release.py --out build/asset-free-candidate-unique
+python3 tools/package_release.py --out build/public-release-unique
 ```
 
-输出安装 ZIP（根为 `live2d-show/`）、源码 ZIP（根为 `live2d-show-source/`）、SHA256SUMS 与机器清单。工具只读取明确白名单、当前前端资源和固定 13 个着色器，不读取忽略目录中的旧 Core、模型、历史元数据或备份。拒绝软链、缺失、非空角色清单、带 Core/model 的资源清单及哈希不一致。
+输出安装 ZIP（根为 `live2d-show/`）、源码 ZIP（根为 `wordpress-live2d-mascot/`）、SHA256SUMS 与机器清单。工具只读取明确白名单、当前前端资源和固定 13 个着色器，不读取忽略目录中的旧 Core、模型、历史元数据或备份。拒绝软链、缺失、非空角色清单、带 Core/model 的资源清单及哈希不一致。
 
 Python 回归使用合成模型 ZIP 与 WordPress PHP stubs；零资源 smoke 验证没有前端输出。真实 WordPress 安装、权限、导入和 GPU 画面仍需独立验收。工具核对 loader/CSS 源码字节，引擎源码与产物的对应性必须用固定 esbuild 重建、比较 SHA256，不能由文件名或依赖检查代替。
 

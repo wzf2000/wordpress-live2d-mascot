@@ -8,23 +8,32 @@ obtain them from the official website instead. This direction replaces the earli
 bundled 22-character candidate. The old draft's installation ZIP and accompanying
 outdated attachments have been withdrawn. Local test archives are not release assets.
 
-The 3.5.0 candidate contains plugin code, the compiled controller, Framework/shaders,
+The 3.5.0 release contains plugin code, the compiled controller, Framework/shaders,
 and relevant notices. It contains **no Cubism Core and no models, textures, motions,
 expressions, sample model JSON, or character catalog data**. There are no bundled
 characters or automatic downloads. An unconfigured installation emits no mascot
 frontend resources. Administrators supply resources separately after obtaining the
 necessary rights and accepting the applicable terms.
 
-The repository and candidate release remain private/draft. The official reply does
-not expressly resolve Framework redistribution or whether the revised importer
-makes this an Expandable Application. Removing Core/models does not itself establish
-publication approval or exemption.
+The maintainer confirmed that the original inquiry described the Expandable
+Application and all included components. The licensing team's reply requested
+removal of Core and official model assets, with users directed to obtain those
+resources themselves. On 2026-10-08 the maintainer explicitly authorized public
+release under that boundary. No additional consultation draft is pending.
+
+This is the maintainer's distribution decision based on the supplied correspondence,
+not a claim of official certification, endorsement, or a new license grant.
+Framework/shaders retain their existing license and notices; publishers and website
+administrators must separately satisfy all applicable third-party conditions.
+The public repository is `wzf2000/wordpress-live2d-mascot`. Release metadata sets
+`public_release_ready=true` to record this maintainer decision, not to certify
+licenses or approve unrelated bundled assets.
 
 ## Administrator setup
 
 1. Install the plugin ZIP in WordPress and open its administrator settings page.
 2. Obtain Cubism SDK for Web from the [official SDK page](https://www.live2d.com/en/sdk/download/web/).
-   The candidate supports the fixed Web 5 R5 Core bytes identified by its SHA-256;
+   The release supports the fixed Web 5 R5 Core bytes identified by its SHA-256;
    a different download is rejected rather than silently treated as compatible.
    Do not use an unversioned CDN or a third-party mirror as a substitute.
 3. Import the supported Core JavaScript file through the settings page. The plugin
@@ -65,37 +74,13 @@ and supported hash are documentation, not a bundled Core implementation.
 - [Sample model conditions](https://www.live2d.com/eula/live2d-sample-model-terms_en.html)
 - [SDK publication licensing](https://www.live2d.com/en/sdk/license/)
 
-The 3.5.0 candidate passed 18 synthetic regression tests and 37 checks in a
+The 3.5.0 runtime passed 18 synthetic regression tests and 37 checks in a
 separate WordPress 7.1 / PHP 8.2 installation on 2026-10-08. These covered empty
 installation, administrator authorization and nonce, real multipart Core/model
 imports, rejected archives with unchanged resources/configuration, rendering with
 custom character IDs, selection persistence, mobile suppression, deactivation and
 reactivation, and forced reinstallation of the same version. This is not evidence
 of cross-version database migration, all models, or all devices. Test resources are
-private fixtures and are never bundled. The final candidate's runtime bytes match
+private fixtures and are never bundled. The final release's runtime bytes match
 the tested installation; subsequent documentation and test additions do not change
 that runtime.
-
-## Follow-up to the licensing team (not sent by the assistant)
-
-The maintainer has stated that this is an individual, free project with no related
-commercial revenue. The remaining questions can be sent through the existing email
-thread or the [official contact form](https://www.live2d.jp/eng/contact/?redirect=1):
-
-> Thank you for clarifying. We will exclude Cubism Core and all official character
-> model assets from the plugin, source archives, and release attachments. Website
-> administrators will be directed to your official download pages and will download
-> and import the required resources themselves after accepting the applicable terms.
->
-> May we distribute Cubism Framework and our compiled controller containing Framework
-> code, while excluding Core and all official model assets? Our original code is
-> GPL-2.0-or-later with an explicit Web 5 R5 combination permission; third-party
-> components retain their own licenses.
->
-> Would this revised plugin, with administrator import of separately obtained Core
-> and model resources, require approval or a Publication License Agreement as an
-> Expandable Application? What obligations apply separately to the plugin publisher
-> and website owners?
-
-No further licensing response has been recorded. A build, private upload, or successful
-test does not change this boundary or authorize public release.

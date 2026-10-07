@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an asset-free local plugin candidate. Never reads Core or model directories."""
+"""Create the maintainer-approved asset-free plugin release. Never reads Core or model directories."""
 import argparse
 import datetime
 import hashlib
@@ -16,7 +16,16 @@ SHADERS = ('fragshadersrcalphablend.frag', 'fragshadersrccolorblend.frag',
            'fragshadersrcpremultipliedalphablend.frag', 'fragshadersrcsetupmask.frag',
            'vertshadersrc.vert', 'vertshadersrcblend.vert', 'vertshadersrccopy.vert',
            'vertshadersrcmasked.vert', 'vertshadersrcsetupmask.vert')
-NOTICE = b'LOCAL ASSET-FREE CANDIDATE: publication review pending; no Core or models included.\n'
+NOTICE = (
+    'WordPress Live2D Mascot 3.5.0 — asset-free distribution\n'
+    'Repository: https://github.com/wzf2000/wordpress-live2d-mascot\n'
+    'No Cubism Core, models, textures, motions, expressions or sample catalogs are bundled.\n'
+    'Administrators obtain supported resources from the official sources themselves.\n'
+    'The maintainer authorized this release based on the supplied licensing reply.\n'
+    'public_release_ready records that decision; it is not official certification or\n'
+    'a grant of third-party rights. See LICENSE, COPYING and DISTRIBUTION.md.\n'
+    'Runtime: 18 synthetic tests and 37 isolated WordPress import/installation checks passed.\n'
+).encode('utf-8')
 
 
 def digest(data):
@@ -58,7 +67,7 @@ def collect(repo):
     if json.loads(files['characters.json']) != {}:
         raise ValueError('Shipped registry must be empty')
     if not re.search(rb'^Version:\s*3\.5\.0\s*$', files['live2d-show.php'], re.M):
-        raise ValueError('Expected candidate version 3.5.0')
+        raise ValueError('Expected release version 3.5.0')
     for key, extension in [('engine', 'js'), ('loader', 'js'), ('css', 'css')]:
         name = assets[key]
         match = re.fullmatch(r'haru-' + key + r'-([0-9a-f]{12})\.' + extension, name)
@@ -91,11 +100,14 @@ def collect(repo):
         raise ValueError('Framework source missing')
     # Source ZIP is self-contained for rebuilding/repackaging, with the same asset-free plugin.
     source.update({'plugin/' + name: data for name, data in files.items()})
-    files['LOCAL-CANDIDATE.txt'] = NOTICE
-    source['LOCAL-CANDIDATE.txt'] = NOTICE
+    files['DISTRIBUTION-NOTICE.txt'] = NOTICE
+    source['DISTRIBUTION-NOTICE.txt'] = NOTICE
     manifest = {'schema_version':2, 'version':'3.5.0', 'edition':'administrator-import',
                 'asset_free':True, 'character_count':0, 'includes_core':False,
-                'public_release_ready':False, 'review_pending':['Framework/shader publication conditions','SDK integration/publication classification'],
+                'public_release_ready':True,
+                'release_decision':{'authority':'maintainer','date':'2026-10-08',
+                                    'basis':'Supplied licensing reply and exclusion of Core/model assets',
+                                    'official_certification':False},
                 'engine_source_correspondence':'Requires separate fixed-esbuild 0.25.12 rebuild/hash check',
                 'files':[{'path':name,'sha256':digest(data),'bytes':len(data)}
                          for name,data in sorted(files.items())]}
@@ -125,11 +137,12 @@ def package(repo, output):
     if out == plugin or plugin in out.parents:
         raise ValueError('Output must be outside plugin')
     out.mkdir(parents=True,exist_ok=False)
-    files['release-candidate.json'] = encoded(manifest)
-    manifest['archive'] = write_zip(out / 'live2d-show-3.5.0-asset-free-candidate.zip', 'live2d-show/', files)
-    manifest['source_archive'] = write_zip(out / 'live2d-show-3.5.0-asset-free-source.zip', 'live2d-show-source/', source)
+    files['release.json'] = encoded(manifest)
+    manifest['archive'] = write_zip(out / 'wordpress-live2d-mascot-3.5.0.zip', 'live2d-show/', files)
+    manifest['source_archive'] = write_zip(out / 'wordpress-live2d-mascot-3.5.0-source.zip', 'wordpress-live2d-mascot/', source)
     manifest['source_files'] = [{'path':name,'sha256':digest(data)} for name,data in sorted(source.items())]
     (out/'release-manifest.json').write_bytes(encoded(manifest))
+    (out/'DISTRIBUTION-NOTICE.txt').write_bytes(NOTICE)
     (out/'SHA256SUMS').write_text(''.join(f'{manifest[key]["sha256"]}  {manifest[key]["filename"]}\n'
                                         for key in ('archive','source_archive')))
     return manifest

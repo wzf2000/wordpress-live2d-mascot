@@ -39,12 +39,16 @@ class ReleasePackageTests(unittest.TestCase):
             target=self.repo/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(b'NOT FOR RELEASE')
         report=package(self.repo,self.out)
         self.assertTrue(report['asset_free']);self.assertEqual(report['character_count'],0)
-        self.assertFalse(report['public_release_ready'])
+        self.assertTrue(report['public_release_ready'])
+        self.assertFalse(report['release_decision']['official_certification'])
+        self.assertNotIn('review_pending',report)
         for key in ['archive','source_archive']:
             path=self.out/report[key]['filename']
             self.assertEqual(digest(path.read_bytes()),report[key]['sha256'])
             with zipfile.ZipFile(path) as archive:
                 for name in archive.namelist():
+                    self.assertNotIn('LOCAL-CANDIDATE',name)
+                    self.assertNotIn('release-candidate',name)
                     self.assertFalse(any(word in name for word in ['/vendor/','/haru/','model_provenance','source-lock','backup.sql','.png','.moc3','.model3.json','.motion3.json','.exp3.json']))
                 self.assertTrue(any(name.endswith('includes/admin-import.php') for name in archive.namelist()))
 
@@ -52,7 +56,7 @@ class ReleasePackageTests(unittest.TestCase):
         first=package(self.repo,self.out)
         extracted=Path(self.temp.name)/'source'
         with zipfile.ZipFile(self.out/first['source_archive']['filename']) as archive:archive.extractall(extracted)
-        repo=extracted/'live2d-show-source'
+        repo=extracted/'wordpress-live2d-mascot'
         output=extracted/'repacked'
         result=subprocess.run([sys.executable,str(repo/'tools/package_release.py'),'--out',str(output)],cwd=repo,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
