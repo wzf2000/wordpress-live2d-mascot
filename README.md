@@ -129,6 +129,8 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
 
+以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。已发布的 3.5.0 源码包保持原样，其中尚无本次新增的 npm／CI 入口。
+
 ```sh
 npm ci --ignore-scripts
 npm run check
