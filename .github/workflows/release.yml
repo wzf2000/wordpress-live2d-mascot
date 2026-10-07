@@ -1,0 +1,213 @@
+name: Manual Live2D Mascot Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Exact PHP plugin version, without v (X.Y.Z or X.Y.Z-rc.N/beta.N/alpha.N)'
+        required: true
+        type: string
+      publish:
+        description: 'Publish a new release; false builds downloadable artifacts only'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wordpress-live2d-mascot-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - name: Require main
+        env:
+          SOURCE_REF: ${{ github.ref }}
+        run: test "$SOURCE_REF" = refs/heads/main
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate requested version and pin dispatched commit
+        id: source
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess
+          from tools.package_release import plugin_version
+          sha = os.environ['SOURCE_SHA']
+          assert re.fullmatch(r'[0-9a-f]{40}', sha)
+          assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == sha
+          plugin_version('.', os.environ['RELEASE_VERSION'])
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('sha=' + sha + '\n')
+          PY
+      - name: Refuse an existing tag or release when publishing
+        if: inputs.publish
+        uses: actions/github-script@v7
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        with:
+          script: |
+            const tag = `v${process.env.RELEASE_VERSION}`;
+            for (const [method, params] of [
+              [github.rest.git.getRef, {ref: `tags/${tag}`}],
+              [github.rest.repos.getReleaseByTag, {tag}],
+            ]) {
+              try { await method({...context.repo, ...params}); }
+              catch (error) { if (error.status === 404) continue; throw error; }
+              throw new Error(`Refusing existing tag/release ${tag}`);
+            }
+
+  verify:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+    with:
+      source_sha: ${{ needs.resolve.outputs.sha }}
+      release_version: ${{ inputs.version }}
+
+  publish:
+    if: inputs.publish
+    needs: [resolve, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # No checkout, and no execution of repository/artifact code with a write token.
+      - uses: actions/download-artifact@v4
+        with:
+          name: wordpress-live2d-mascot-release-${{ needs.resolve.outputs.sha }}
+          path: release
+      - name: Validate this run's attachment identity, hashes and closed file sets
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, zipfile
+          root = pathlib.Path('release')
+          version, sha = os.environ['RELEASE_VERSION'], os.environ['SOURCE_SHA']
+          assert re.fullmatch(r'(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:alpha|beta|rc)\.[1-9]\d*)?', version)
+          assert re.fullmatch(r'[0-9a-f]{40}', sha)
+          payload = {f'wordpress-live2d-mascot-{version}.zip', f'wordpress-live2d-mascot-{version}-source.zip', 'SHA256SUMS', 'release-manifest.json', 'DISTRIBUTION-NOTICE.txt'}
+          proof = json.loads((root / 'release-validation.json').read_bytes())
+          assert proof['schema'] == 1 and proof['version'] == version and proof['source_commit'] == sha
+          assert set(proof['files']) == payload
+          assert {p.name for p in root.iterdir()} == payload | {'release-validation.json'}
+          for name in payload:
+              path = root / name
+              assert path.is_file() and not path.is_symlink()
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == proof['files'][name]
+          manifest = json.loads((root / 'release-manifest.json').read_bytes())
+          assert manifest['version'] == version and manifest['source_commit'] == sha
+          assert manifest['asset_free'] is True and manifest['character_count'] == 0 and manifest['includes_core'] is False
+          fixed = {'live2d-show.php','includes/admin-import.php','characters.json','haru-assets.json','usage-imported-resources.html','licenses/Framework-LICENSE.md','LICENSE','COPYING','README.md','DISTRIBUTION.md','DISTRIBUTION-NOTICE.txt'}
+          shaders = {'fragshadersrcalphablend.frag','fragshadersrccolorblend.frag','fragshadersrccopy.frag','fragshadersrcmaskinvertedpremultipliedalpha.frag','fragshadersrcmaskpremultipliedalpha.frag','fragshadersrcpremultipliedalpha.frag','fragshadersrcpremultipliedalphablend.frag','fragshadersrcsetupmask.frag','vertshadersrc.vert','vertshadersrcblend.vert','vertshadersrccopy.vert','vertshadersrcmasked.vert','vertshadersrcsetupmask.vert'}
+          source_fixed = {'build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md','tools/package_release.py','tools/ci.py','tools/verify_release.py','tests/test_release_package.py','tests/test_importer.py','tests/test_release_pipeline.py','tests/release-smoke.cjs','DISTRIBUTION-NOTICE.txt'}
+          source_top = {'src/engine.ts','src/resources.ts','src/loader.js','src/style.css'}
+          archives = {}
+          for key, suffix, prefix in [('archive','','live2d-show/'),('source_archive','-source','wordpress-live2d-mascot/')]:
+              name = f'wordpress-live2d-mascot-{version}{suffix}.zip'
+              item = manifest[key]
+              assert item['filename'] == name and item['sha256'] == proof['files'][name]
+              assert (root / name).stat().st_size == item['bytes'] <= 32 * 1024 * 1024
+              with zipfile.ZipFile(root / name) as archive:
+                  infos = archive.infolist()
+                  assert len(infos) <= 1000 and sum(i.file_size for i in infos) <= 64 * 1024 * 1024
+                  names = [i.filename for i in infos]
+                  assert len({n.lower() for n in names}) == len(names)
+                  files = {}
+                  for info in infos:
+                      assert info.filename.startswith(prefix) and not info.is_dir()
+                      name = info.filename[len(prefix):]
+                      p = pathlib.PurePosixPath(name)
+                      assert re.fullmatch(r'[A-Za-z0-9_./-]+', name) and not p.is_absolute() and '..' not in p.parts and str(p) == name
+                      assert (info.external_attr >> 16) & 0o170000 in (0, 0o100000)
+                      files[name] = archive.read(info)
+                  archives[key] = files
+          runtime, source = archives['archive'], archives['source_archive']
+          assets = json.loads(runtime['haru-assets.json'])
+          assert set(assets) == {'engine','loader','css','shaders','terms'} and assets['shaders'] == 'shaders/' and assets['terms'] == 'usage-imported-resources.html'
+          expected = fixed | {'shaders/' + n for n in shaders}
+          for key, ext in [('engine','js'),('loader','js'),('css','css')]:
+              name = assets[key]; m = re.fullmatch(r'haru-' + key + r'-([0-9a-f]{12})\.' + ext, name)
+              assert m and hashlib.sha256(runtime[name]).hexdigest()[:12] == m.group(1)
+              expected.add(name)
+          assert set(runtime) == expected | {'release.json'} and json.loads(runtime['characters.json']) == {}
+          assert re.search(rb'^Version:\s*' + re.escape(version.encode()) + rb'\s*$', runtime['live2d-show.php'], re.M)
+          records = {r['path']: r for r in manifest['files']}
+          assert len(records) == len(manifest['files']) and set(records) == expected
+          for name in expected:
+              assert hashlib.sha256(runtime[name]).hexdigest() == records[name]['sha256'] and len(runtime[name]) == records[name]['bytes']
+          assert json.loads(runtime['release.json']) == {k:v for k,v in manifest.items() if k not in ('archive','source_archive','source_files')}
+          assert runtime['DISTRIBUTION-NOTICE.txt'] == (root / 'DISTRIBUTION-NOTICE.txt').read_bytes()
+          records = {r['path']:r['sha256'] for r in manifest['source_files']}
+          assert len(records) == len(manifest['source_files']) and set(records) == set(source)
+          for name, data in source.items():
+              assert name in source_fixed or name in source_top or name.startswith('src/framework/') and name.endswith('.ts') or name.startswith('plugin/') and name[7:] in expected - {'DISTRIBUTION-NOTICE.txt'}
+              assert hashlib.sha256(data).hexdigest() == records[name]
+              if name.startswith('plugin/'): assert data == runtime[name[7:]]
+          assert source_fixed <= set(source) and source_top <= set(source) and any(n.startswith('src/framework/') for n in source)
+          assert (root / 'SHA256SUMS').read_text() == ''.join(f"{manifest[k]['sha256']}  {manifest[k]['filename']}\n" for k in ('archive','source_archive'))
+          PY
+      - name: Create draft, upload verified files, then publish
+        uses: actions/github-script@v7
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const tag = `v${process.env.RELEASE_VERSION}`;
+            for (const [method, params] of [
+              [github.rest.git.getRef, {ref: `tags/${tag}`}],
+              [github.rest.repos.getReleaseByTag, {tag}],
+            ]) {
+              try { await method({...context.repo, ...params}); }
+              catch (error) { if (error.status === 404) continue; throw error; }
+              throw new Error(`Refusing existing tag/release ${tag}`);
+            }
+            // Atomic tag creation closes the check/create race. Existing tags are never overwritten.
+            await github.rest.git.createRef({...context.repo, ref: `refs/tags/${tag}`, sha: process.env.SOURCE_SHA});
+            const result = await github.rest.repos.createRelease({
+              ...context.repo, tag_name: tag, target_commitish: process.env.SOURCE_SHA,
+              name: `WordPress Live2D Mascot ${process.env.RELEASE_VERSION}`,
+              draft: true, prerelease: process.env.RELEASE_VERSION.includes('-'),
+              body: fs.readFileSync('release/DISTRIBUTION-NOTICE.txt', 'utf8'),
+            });
+            for (const name of fs.readdirSync('release').sort()) {
+              const data = fs.readFileSync(`release/${name}`);
+              await github.rest.repos.uploadReleaseAsset({
+                ...context.repo, release_id: result.data.id, name, data,
+                headers: {'content-type': name.endsWith('.zip') ? 'application/zip' : 'application/octet-stream', 'content-length': data.length},
+              });
+            }
+            const assets = await github.paginate(github.rest.repos.listReleaseAssets, {...context.repo, release_id: result.data.id});
+            const expected = fs.readdirSync('release').sort();
+            if (assets.length !== expected.length || assets.map(a => a.name).sort().join('\n') !== expected.join('\n')) throw new Error('Draft attachment set differs');
+            const crypto = require('node:crypto');
+            for (const asset of assets) {
+              const local = fs.readFileSync(`release/${asset.name}`);
+              const digest = crypto.createHash('sha256').update(local).digest('hex');
+              if (asset.size !== local.length) throw new Error(`Remote size differs: ${asset.name}`);
+              if (asset.digest) {
+                if (asset.digest !== `sha256:${digest}`) throw new Error(`Remote digest differs: ${asset.name}`);
+              } else {
+                const response = await github.request('GET /repos/{owner}/{repo}/releases/assets/{asset_id}', {
+                  ...context.repo, asset_id: asset.id, headers: {accept: 'application/octet-stream'},
+                });
+                const data = response.data;
+                if (!(data instanceof ArrayBuffer) && !ArrayBuffer.isView(data)) throw new Error(`Missing binary remote digest proof: ${asset.name}`);
+                if (crypto.createHash('sha256').update(Buffer.from(data)).digest('hex') !== digest) throw new Error(`Downloaded remote digest differs: ${asset.name}`);
+              }
+            }
+            const ref = await github.rest.git.getRef({...context.repo, ref: `tags/${tag}`});
+            if (ref.data.object.type !== 'commit' || ref.data.object.sha !== process.env.SOURCE_SHA) throw new Error('Tag no longer matches verified source');
+            await github.rest.repos.updateRelease({...context.repo, release_id: result.data.id, draft: false});

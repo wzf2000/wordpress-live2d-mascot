@@ -1,0 +1,11 @@
+{
+  "name": "wordpress-live2d-mascot",
+  "private": true,
+  "scripts": {
+    "check": "python3 tools/ci.py",
+    "test": "python3 -m unittest discover -s tests -p 'test_*.py'"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

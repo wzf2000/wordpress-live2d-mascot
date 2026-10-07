@@ -16,16 +16,31 @@ SHADERS = ('fragshadersrcalphablend.frag', 'fragshadersrccolorblend.frag',
            'fragshadersrcpremultipliedalphablend.frag', 'fragshadersrcsetupmask.frag',
            'vertshadersrc.vert', 'vertshadersrcblend.vert', 'vertshadersrccopy.vert',
            'vertshadersrcmasked.vert', 'vertshadersrcsetupmask.vert')
+VERSION_PATTERN = r'(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:alpha|beta|rc)\.[1-9]\d*)?'
 NOTICE = (
-    'WordPress Live2D Mascot 3.5.0 — asset-free distribution\n'
+    'WordPress Live2D Mascot {version} — asset-free distribution\n'
     'Repository: https://github.com/wzf2000/wordpress-live2d-mascot\n'
     'No Cubism Core, models, textures, motions, expressions or sample catalogs are bundled.\n'
     'Administrators obtain supported resources from the official sources themselves.\n'
-    'The maintainer authorized this release based on the supplied licensing reply.\n'
-    'public_release_ready records that decision; it is not official certification or\n'
-    'a grant of third-party rights. See LICENSE, COPYING and DISTRIBUTION.md.\n'
-    'Runtime: 18 synthetic tests and 37 isolated WordPress import/installation checks passed.\n'
-).encode('utf-8')
+    'public_release_ready records the maintainer distribution boundary, not official\n'
+    'certification or a grant of third-party rights. See LICENSE and DISTRIBUTION.md.\n'
+    'CI verifies synthetic fixtures and resource-free packaging only; it does not\n'
+    'perform real Core/model rendering, visual or licensing acceptance.\n'
+)
+
+
+def plugin_version(repo, expected=None):
+    raw = read(Path(repo) / 'plugin', 'live2d-show.php')
+    matches = re.findall(rb'^Version:\s*(\S+)\s*$', raw, re.M)
+    if len(matches) != 1:
+        raise ValueError('Expected exactly one plugin Version header')
+    version = matches[0].decode('ascii')
+    if not re.fullmatch(VERSION_PATTERN, version):
+        raise ValueError('Invalid plugin version')
+    if expected is not None and (not re.fullmatch(VERSION_PATTERN, expected) or expected != version):
+        raise ValueError('Requested version differs from PHP plugin version')
+    return version
+
 
 
 def digest(data):
@@ -53,9 +68,13 @@ def read(root, name):
     return path.read_bytes()
 
 
-def collect(repo):
+def collect(repo, expected_version=None, source_sha=None):
     repo = checked(repo)
     plugin = repo / 'plugin'
+    version = plugin_version(repo, expected_version)
+    if source_sha is not None and not re.fullmatch(r'[0-9a-f]{40}', source_sha):
+        raise ValueError('Invalid source commit')
+    notice = NOTICE.format(version=version).encode('utf-8')
     assets = json.loads(read(plugin, 'haru-assets.json'))
     if set(assets) != {'engine', 'loader', 'css', 'shaders', 'terms'}:
         raise ValueError('Asset-free manifest must not contain Core/model or unknown fields')
@@ -66,8 +85,6 @@ def collect(repo):
         'usage-imported-resources.html', 'licenses/Framework-LICENSE.md')}
     if json.loads(files['characters.json']) != {}:
         raise ValueError('Shipped registry must be empty')
-    if not re.search(rb'^Version:\s*3\.5\.0\s*$', files['live2d-show.php'], re.M):
-        raise ValueError('Expected release version 3.5.0')
     for key, extension in [('engine', 'js'), ('loader', 'js'), ('css', 'css')]:
         name = assets[key]
         match = re.fullmatch(r'haru-' + key + r'-([0-9a-f]{12})\.' + extension, name)
@@ -85,14 +102,17 @@ def collect(repo):
                          ('README.md','README.md'), ('docs/DISTRIBUTION.md','DISTRIBUTION.md')]:
         files[dest] = read(repo, source)
     source = {name: read(repo, name) for name in (
-        'build.py', 'build-package-lock.json', 'LICENSE', 'COPYING', 'README.md',
+        'build.py', 'package.json', 'package-lock.json', 'LICENSE', 'COPYING', 'README.md',
         'docs/DISTRIBUTION.md', 'tools/package_release.py', 'tests/test_release_package.py',
-        'tests/test_importer.py', 'tests/release-smoke.cjs')}
+        'tests/test_importer.py', 'tests/release-smoke.cjs', 'tests/test_release_pipeline.py',
+        'tools/ci.py', 'tools/verify_release.py')}
     for path in sorted(checked(repo / 'src').rglob('*')):
         checked(path)
         if path.is_dir():
             continue
-        if not path.is_file() or path.suffix not in ('.ts','.js','.css'):
+        relative = path.relative_to(repo).as_posix()
+        allowed = relative in {'src/engine.ts','src/resources.ts','src/loader.js','src/style.css'} or relative.startswith('src/framework/') and path.suffix == '.ts'
+        if not path.is_file() or not allowed:
             raise ValueError('Unexpected source entry')
         name = path.relative_to(repo).as_posix()
         source[name] = read(repo, name)
@@ -100,17 +120,19 @@ def collect(repo):
         raise ValueError('Framework source missing')
     # Source ZIP is self-contained for rebuilding/repackaging, with the same asset-free plugin.
     source.update({'plugin/' + name: data for name, data in files.items()})
-    files['DISTRIBUTION-NOTICE.txt'] = NOTICE
-    source['DISTRIBUTION-NOTICE.txt'] = NOTICE
-    manifest = {'schema_version':2, 'version':'3.5.0', 'edition':'administrator-import',
+    files['DISTRIBUTION-NOTICE.txt'] = notice
+    source['DISTRIBUTION-NOTICE.txt'] = notice
+    manifest = {'schema_version':2, 'version':version, 'edition':'administrator-import',
                 'asset_free':True, 'character_count':0, 'includes_core':False,
                 'public_release_ready':True,
-                'release_decision':{'authority':'maintainer','date':'2026-10-08',
+                'release_decision':{'authority':'maintainer','distribution_basis_date':'2026-10-08',
                                     'basis':'Supplied licensing reply and exclusion of Core/model assets',
                                     'official_certification':False},
                 'engine_source_correspondence':'Requires separate fixed-esbuild 0.25.12 rebuild/hash check',
                 'files':[{'path':name,'sha256':digest(data),'bytes':len(data)}
                          for name,data in sorted(files.items())]}
+    if source_sha is not None:
+        manifest['source_commit'] = source_sha
     return files, source, manifest
 
 
@@ -130,19 +152,20 @@ def write_zip(path, prefix, files):
     return {'filename':path.name, 'sha256':digest(path.read_bytes()), 'bytes':path.stat().st_size}
 
 
-def package(repo, output):
-    files, source, manifest = collect(repo)
+def package(repo, output, expected_version=None, source_sha=None):
+    files, source, manifest = collect(repo, expected_version, source_sha)
+    version = manifest['version']
     out = checked(output)
     plugin = checked(Path(repo) / 'plugin')
     if out == plugin or plugin in out.parents:
         raise ValueError('Output must be outside plugin')
     out.mkdir(parents=True,exist_ok=False)
     files['release.json'] = encoded(manifest)
-    manifest['archive'] = write_zip(out / 'wordpress-live2d-mascot-3.5.0.zip', 'live2d-show/', files)
-    manifest['source_archive'] = write_zip(out / 'wordpress-live2d-mascot-3.5.0-source.zip', 'wordpress-live2d-mascot/', source)
+    manifest['archive'] = write_zip(out / f'wordpress-live2d-mascot-{version}.zip', 'live2d-show/', files)
+    manifest['source_archive'] = write_zip(out / f'wordpress-live2d-mascot-{version}-source.zip', 'wordpress-live2d-mascot/', source)
     manifest['source_files'] = [{'path':name,'sha256':digest(data)} for name,data in sorted(source.items())]
     (out/'release-manifest.json').write_bytes(encoded(manifest))
-    (out/'DISTRIBUTION-NOTICE.txt').write_bytes(NOTICE)
+    (out/'DISTRIBUTION-NOTICE.txt').write_bytes(NOTICE.format(version=version).encode('utf-8'))
     (out/'SHA256SUMS').write_text(''.join(f'{manifest[key]["sha256"]}  {manifest[key]["filename"]}\n'
                                         for key in ('archive','source_archive')))
     return manifest
@@ -150,12 +173,14 @@ def package(repo, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--version', help='Require exact match with plugin PHP header')
+    parser.add_argument('--source-sha', help='Bind archive manifest to this full Git commit')
     parser.add_argument('--repo-root',type=Path,default=ROOT)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     parser.add_argument('--out',type=Path,default=ROOT/'build'/('package-'+stamp))
     args = parser.parse_args()
     try:
-        result=package(args.repo_root,args.out)
+        result=package(args.repo_root,args.out,args.version,args.source_sha)
     except (ValueError,OSError,TypeError,KeyError) as e:
         print('Package refused: '+str(e),file=sys.stderr)
         return 1

@@ -1,5 +1,6 @@
 """Asset-free package security and corresponding-source regressions."""
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -18,9 +19,10 @@ class ReleasePackageTests(unittest.TestCase):
         self.repo=Path(self.temp.name)/'repo'
         self.repo.mkdir()
         self.out=Path(self.temp.name)/'package'
-        names=['build.py','build-package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md',
-               'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/release-smoke.cjs',
-               'src/loader.js','src/style.css','src/engine.ts','src/framework/live2dcubismframework.ts',
+        names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md',
+               'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
+               'tools/ci.py','tools/verify_release.py',
+               'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',
                'plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/characters.json','plugin/haru-assets.json',
                'plugin/usage-imported-resources.html','plugin/licenses/Framework-LICENSE.md']
         assets=json.loads((ROOT/'plugin/haru-assets.json').read_bytes())
@@ -29,6 +31,9 @@ class ReleasePackageTests(unittest.TestCase):
         for name in names:
             target=self.repo/name;target.parent.mkdir(parents=True,exist_ok=True)
             target.write_bytes((ROOT/name).read_bytes())
+        # Fixture version is stable even when the real plugin advances.
+        entry=self.repo/'plugin/live2d-show.php'
+        entry.write_bytes(re.sub(rb'^(Version:\s*)\S+', rb'\g<1>3.5.0', entry.read_bytes(), flags=re.M))
 
     def tearDown(self): self.temp.cleanup()
 

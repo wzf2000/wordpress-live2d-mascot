@@ -130,9 +130,11 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
 
 ```sh
+npm ci --ignore-scripts
+npm run check
+# 也可独立运行合成回归或生成审阅构建：
 python3 -m unittest discover -s tests -p 'test_*.py'
-node tests/release-smoke.cjs plugin
-python3 build.py --esbuild /path/to/esbuild
+python3 build.py --esbuild node_modules/.bin/esbuild
 ```
 
 构建写入 `build/`。审阅后将生成的三个哈希前端文件及 `haru-assets.json` 放到 `plugin/`，再运行：
@@ -144,6 +146,20 @@ python3 tools/package_release.py --out build/public-release-unique
 输出安装 ZIP、源码 ZIP、SHA256SUMS 与机器清单。工具只读取明确白名单、当前前端资源和固定 13 个着色器；不读取忽略目录中的旧 Core、模型、历史元数据或备份。拒绝软链、缺失、非空角色清单、带 Core/model 的清单与哈希不一致。
 
 Python 回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 smoke 检查没有前端输出。3.5.0 另通过独立 WordPress 7.1 / PHP 8.2 环境的 37 项安装、导入和浏览器检查；这不代表所有 WordPress 版本、模型或真机均已验证。工具直接核对 loader/CSS 源码字节；引擎必须用固定 esbuild 重建并比较 SHA256，不能用文件名检查替代源码对应性验证。
+
+### GitHub Actions
+
+[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2 与 esbuild 0.25.12；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
+
+检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。普通 CI 只读，不需要私有 secret，不下载 Core 或模型；**不代替真实 SDK、模型画面、WordPress 安装或许可验收**。
+
+新版本发布从 [Manual Live2D Mascot Release](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/release.yml) 手动发起：
+
+1. 将新版本的 PHP 版本入口、源码和核验过的构建产物提交到 main。
+2. 选择 main，填写与 PHP 入口完全一致的版本号（不带 `v`），保留 `publish=false`，先下载该次运行的 artifact 审阅。
+3. 准备正式发布时再次发起，明确选择 `publish=true`。已存在的 tag 或 release 会拒绝，不覆盖既有 v3.5.0 附件。
+
+每次运行固定触发时的 `github.sha`，附件携带该 SHA、版本和文件摘要。发布任务仅验证本次运行的 artifact，具有写权限的任务不 checkout 或执行仓库代码；原子创建对应 tag，先建立草稿、上传并核对所有附件摘要，确认 tag 仍指向核验的提交后才公开。失败会保留已创建的草稿/tag 供检查，不自动覆盖或删除。
 
 ### 阅读协调
 

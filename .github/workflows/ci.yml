@@ -1,0 +1,56 @@
+name: Live2D Mascot CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      source_sha:
+        type: string
+        required: true
+      release_version:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: zip, gd
+          coverage: none
+      - name: Install pinned build tools from npm lockfile
+        run: npm ci --ignore-scripts
+      - name: Verify fixtures, syntax, rebuild and asset-free source/install packages
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha || github.sha }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          args=(--source-sha "$SOURCE_SHA" --require-clean --out build/ci-release)
+          if [ -n "$RELEASE_VERSION" ]; then args+=(--version "$RELEASE_VERSION"); fi
+          python3 tools/ci.py "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wordpress-live2d-mascot-release-${{ inputs.source_sha || github.sha }}
+          path: build/ci-release/*
+          if-no-files-found: error
+          retention-days: 14
