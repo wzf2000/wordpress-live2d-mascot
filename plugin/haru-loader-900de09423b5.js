@@ -331,7 +331,9 @@
     consent.setAttribute('aria-labelledby', title.id);
     const text = make(
       'p',
-      '角色与运行库由本站管理员自行导入。制作署名和适用条款见来源说明；本插件不授予素材再分发或其他使用权。',
+      typeof config.consentText === 'string' && config.consentText
+        ? config.consentText
+        : '角色与运行库由本站管理员自行导入。制作署名和适用条款见来源说明；本插件不授予素材再分发或其他使用权。',
     );
     const link = make('a', '查看角色来源、使用条款及声明');
     link.href = config.terms;

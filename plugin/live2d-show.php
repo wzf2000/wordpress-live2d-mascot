@@ -3,7 +3,7 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.5.0
+Version: 3.5.1
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
@@ -31,6 +31,27 @@ add_filter('plugin_row_meta', 'wzf_mascot_row_meta', 10, 2);
 function wzf_haru_visible($user) {
     return !metadata_exists('user',$user->ID,'show_live2d_front') || get_user_meta($user->ID,'show_live2d_front',true)==='true';
 }
+// Optional server-managed presentation for installations retaining their own terms.
+// No backend upload/editor endpoint accepts HTML or changes these fields.
+function wzf_mascot_presentation($resources, $uploads) {
+    if (!array_key_exists('presentation', $resources)) return [];
+    $value = $resources['presentation'];
+    if (!is_array($value) || count($value) !== 3 || array_diff(array_keys($value), ['terms','termsVersion','consentText'])) {
+        throw new RuntimeException('站点条款配置无效。');
+    }
+    $terms = wzf_mascot_path($value['terms'] ?? null);
+    $path = wzf_mascot_no_links($uploads['path'] . '/' . $terms);
+    if (!str_ends_with($terms, '.html') || !is_file($path) || filesize($path) > 2 * 1024 * 1024) {
+        throw new RuntimeException('站点条款文件无效。');
+    }
+    foreach (['termsVersion'=>200,'consentText'=>2000] as $key=>$limit) {
+        $text = $value[$key] ?? null;
+        if (!is_string($text) || trim($text) === '' || strlen($text) > $limit || strip_tags($text) !== $text || preg_match('/[\x00-\x1f\x7f]/', $text)) {
+            throw new RuntimeException('站点条款说明必须是有效纯文本。');
+        }
+    }
+    return ['terms'=>$uploads['url'] . $terms, 'termsVersion'=>$value['termsVersion'], 'consentText'=>$value['consentText']];
+}
 function wzf_haru_output() {
     if (is_admin() || in_array($GLOBALS['pagenow']??'', ['wp-login.php','wp-register.php','wp-signup.php','wp-activate.php'],true)) return;
     if (is_user_logged_in() && !wzf_haru_visible(wp_get_current_user())) return;
@@ -50,10 +71,12 @@ function wzf_haru_output() {
             $characters[$id] = $c;
         }
         $assets=json_decode(file_get_contents(__DIR__.'/haru-assets.json'),true,32,JSON_THROW_ON_ERROR);
+        $presentation = wzf_mascot_presentation($resources, $uploads);
     } catch (Throwable $e) { return; }
     $base=plugins_url('',__FILE__).'/';
     $first=reset($characters);
     $config=['characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
+    $config = array_merge($config, $presentation);
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
     echo '<script defer src="'.esc_url($base.$assets['loader']).'"></script>';

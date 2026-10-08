@@ -204,6 +204,63 @@ class ImporterTests(unittest.TestCase):
         self.assertIn('wordpress-live2d-mascot#readme',report['own'][1])
         self.assertIn('wordpress-live2d-mascot/issues',report['own'][2])
 
+    def presentation(self, value, setup=''):
+        raw=json.dumps({'presentation':value},ensure_ascii=False)
+        return self.php("""require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        $u=wzf_mascot_uploads(true); if (!is_dir($u['path'].'/terms')) mkdir($u['path'].'/terms');
+        file_put_contents($u['path'].'/terms/site.html','<html>Example terms</html>');
+        """+setup+"""
+        $resources=json_decode("""+json.dumps(raw)+""",true);
+        echo json_encode(['ok'=>true,'default'=>wzf_mascot_presentation([], $u),'presentation'=>wzf_mascot_presentation($resources,$u)]);""")
+
+    def test_valid_site_presentation_retains_plaintext_and_default(self):
+        value={'terms':'terms/site.html','termsVersion':'legacy-v1','consentText':'Example owner: terms & conditions.'}
+        report=self.presentation(value)
+        self.assertTrue(report['ok'])
+        self.assertEqual(report['default'],[])
+        self.assertEqual(report['presentation']['terms'],'https://example.invalid/uploads/wzf-mascot/terms/site.html')
+        self.assertEqual(report['presentation']['termsVersion'],'legacy-v1')
+        self.assertEqual(report['presentation']['consentText'],value['consentText'])
+
+    def test_invalid_presentation_paths_plaintext_and_symlink_refused(self):
+        good={'terms':'terms/site.html','termsVersion':'legacy-v1','consentText':'Example terms.'}
+        for key,value in [('terms','../outside.html'),('terms','https://example.invalid/terms.html'),
+                          ('terms','terms/missing.html'),('terms','terms/site.php'),
+                          ('termsVersion','<b>legacy</b>'),('consentText','<script>alert(1)</script>'),
+                          ('termsVersion',''),('consentText','line\nnew'),('consentText','x'*2001)]:
+            with self.subTest(key=key,value=value[:40]):
+                changed=dict(good);changed[key]=value
+                self.assertFalse(self.presentation(changed)['ok'])
+        missing=dict(good);del missing['consentText']
+        self.assertFalse(self.presentation(missing)['ok'])
+        self.assertFalse(self.presentation(good,"unlink($u['path'].'/terms/site.html'); symlink($u['path'].'/index.html',$u['path'].'/terms/site.html');")['ok'])
+
+    def test_frontend_presentation_and_character_fields_preserved(self):
+        path=json.dumps(str(self.fixture()))
+        report=self.php("""wzf_mascot_save_resource('model',"""+path+""",['id'=>'custom-character','name'=>'Example','credit'=>'Example owner']);
+        $u=wzf_mascot_uploads(true);mkdir($u['path'].'/terms');file_put_contents($u['path'].'/terms/site.html','<html>Example terms</html>');
+        mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
+        $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+        $options[WZF_MASCOT_OPTION]['presentation']=['terms'=>'terms/site.html','termsVersion'=>'legacy-v1','consentText'=>'Example owner & terms.'];
+        $options[WZF_MASCOT_OPTION]['characters']['custom-character']['welcome']='motion-1';
+        $options[WZF_MASCOT_OPTION]['characters']['custom-character']['greetings']=['motion-1'];
+        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function plugins_url(...$args){return '/nested/wp-content/plugins/live2d-show';}
+        function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
+        function wp_json_encode($s,$f){return json_encode($s,$f);}
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        ob_start();wzf_haru_output();$html=ob_get_clean();
+        preg_match('~<script id="wzf-live2d-config"[^>]*>(.*?)</script>~s',$html,$match);
+        echo json_encode(['ok'=>true,'config'=>json_decode($match[1],true)]);""")
+        config=report['config']
+        self.assertEqual(config['terms'],'https://example.invalid/uploads/wzf-mascot/terms/site.html')
+        self.assertEqual(config['termsVersion'],'legacy-v1')
+        self.assertEqual(config['consentText'],'Example owner & terms.')
+        character=config['characters']['custom-character']
+        self.assertEqual(character['welcome'],'motion-1')
+        self.assertEqual(character['greetings'],['motion-1'])
+        self.assertEqual(character['credit'],'Example owner')
+
     def test_zero_resources_frontend_empty(self):
         env=dict(os.environ,TEST_ENTRY=str(ROOT/'plugin/live2d-show.php'))
         code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'
