@@ -190,7 +190,7 @@ function wzf_mascot_import_post() {
 function wzf_mascot_admin_page() {
     if (!current_user_can('manage_options')) return;
     $config = get_option(WZF_MASCOT_OPTION, ['characters'=>[]]);
-    echo '<div class="wrap"><h1>看板娘资源设置</h1><p>插件不附带 Core 或模型。请自行访问官方页面，接受适用条款并下载；插件不会从远程下载。只上传您有权使用的资源，导入成功不代表取得再分发许可。</p>';
+    echo '<div class="wrap"><h1>WordPress Live2D Mascot</h1><p>插件不附带 Core 或模型。请自行访问官方页面，接受适用条款并下载；插件不会从远程下载。只上传您有权使用的资源，导入成功不代表取得再分发许可。</p>';
     echo '<p><a href="https://www.live2d.com/en/sdk/download/web/" target="_blank" rel="noopener">Cubism SDK for Web 官方下载</a> · <a href="https://www.live2d.com/en/learn/sample/" target="_blank" rel="noopener">官方样例</a></p>';
     echo '<p>Core：' . (!empty($config['core']) ? '已配置（Web 5 R5 固定版本）' : '未配置') . '；角色：' . count($config['characters'] ?? []) . '</p>';
     if (isset($_GET['mascot_notice']) && is_string($_GET['mascot_notice'])) echo '<div class="notice"><p>' . esc_html(wp_unslash($_GET['mascot_notice'])) . '</p></div>';
@@ -207,5 +207,5 @@ function wzf_mascot_admin_page() {
     }
     echo '</div>';
 }
-add_action('admin_menu', function() { add_options_page('看板娘资源','看板娘资源','manage_options','wzf-mascot','wzf_mascot_admin_page'); });
+add_action('admin_menu', function() { add_options_page('WordPress Live2D Mascot','Live2D Mascot','manage_options','wzf-mascot','wzf_mascot_admin_page'); });
 add_action('admin_post_wzf_mascot_import','wzf_mascot_import_post');

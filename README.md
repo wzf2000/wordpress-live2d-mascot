@@ -29,13 +29,13 @@
 
 [**下载 WordPress 安装包：wordpress-live2d-mascot-3.5.0.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.0/wordpress-live2d-mascot-3.5.0.zip)
 
-在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。安装包的顶层目录为 `live2d-show/`。
+在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在插件列表中可通过 **设置** 直达资源配置，也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
 
 发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.0/SHA256SUMS) 核对下载。
 
 ### 2. 导入自己取得的 Core
 
-打开后台 **设置 → 看板娘资源**。自行访问 [Cubism SDK for Web 官方下载页](https://www.live2d.com/en/sdk/download/web/)，阅读和接受适用条件，取得 **Web 5 R5**，上传其中的 `live2dcubismcore.min.js`，并勾选使用权确认。
+打开后台 **设置 → Live2D Mascot**。自行访问 [Cubism SDK for Web 官方下载页](https://www.live2d.com/en/sdk/download/web/)，阅读和接受适用条件，取得 **Web 5 R5**，上传其中的 `live2dcubismcore.min.js`，并勾选使用权确认。
 
 当前只接受这一固定版本的已核验文件；不同版本会被拒绝。插件不会自动下载 SDK，也不会在服务器上执行上传内容来识别版本。
 
@@ -102,7 +102,7 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 ## 常见问题
 
-**启用后为什么没有看板娘？** 先在“看板娘资源”确认 Core 和至少一个角色已配置，再用桌面浏览器点击“显示看板娘”并同意条款。登录用户还应检查个人资料中的“允许前台显示看板娘”。减少动画、后台标签页或正在打开的支持对话框／评论面板会抑制显示；加载失败时按前台提示重试。
+**启用后为什么没有看板娘？** 先在“设置 → Live2D Mascot”确认 Core 和至少一个角色已配置，再用桌面浏览器点击“显示看板娘”并同意条款。登录用户还应检查个人资料中的“允许前台显示看板娘”。减少动画、后台标签页或正在打开的支持对话框／评论面板会抑制显示；加载失败时按前台提示重试。
 
 **手机能显示吗？** 当前小屏宽度 **≤ 782px** 时隐藏看板娘，不启用模型渲染。系统或浏览器开启“减少动画”时也不启用；当前没有手机专用显示模式。
 

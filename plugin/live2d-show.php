@@ -1,14 +1,33 @@
 <?php
 /*
-Plugin Name: 看板娘 · 角色互动
-Description: 看板娘互动控制器；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
+Plugin Name: WordPress Live2D Mascot
+Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
+Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
 Version: 3.5.0
 Author: wzf2000
+Author URI: https://github.com/wzf2000
+License: GPL-2.0-or-later
+License URI: https://github.com/wzf2000/wordpress-live2d-mascot/blob/main/LICENSE
+Update URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Text Domain: live2d-show
 Requires PHP: 8.2
 */
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/includes/admin-import.php';
+function wzf_mascot_action_links($links) {
+    if (current_user_can('manage_options')) {
+        array_unshift($links, '<a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">设置</a>');
+    }
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'wzf_mascot_action_links');
+function wzf_mascot_row_meta($links, $plugin_file) {
+    if ($plugin_file !== plugin_basename(__FILE__)) return $links;
+    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot#readme') . '">文档</a>';
+    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot/issues') . '">反馈</a>';
+    return $links;
+}
+add_filter('plugin_row_meta', 'wzf_mascot_row_meta', 10, 2);
 function wzf_haru_visible($user) {
     return !metadata_exists('user',$user->ID,'show_live2d_front') || get_user_meta($user->ID,'show_live2d_front',true)==='true';
 }
@@ -42,7 +61,7 @@ function wzf_haru_output() {
 add_action('wp_print_scripts','wzf_haru_output');
 function wzf_haru_profile($user) {
     echo '<h3>看板娘</h3>';wp_nonce_field('wzf_haru_profile','wzf_haru_nonce');
-    echo '<table class="form-table"><tr><th>显示设置</th><td><label><input name="live2d_front" type="checkbox" value="1" '.checked(wzf_haru_visible($user),true,false).'> 允许前台显示看板娘（访客仍可自行收起）</label><p>前台角色选择保存在当前浏览器；手机默认隐藏。管理员需先在设置中的“看板娘资源”导入资源。</p></td></tr></table>';
+    echo '<table class="form-table"><tr><th>显示设置</th><td><label><input name="live2d_front" type="checkbox" value="1" '.checked(wzf_haru_visible($user),true,false).'> 允许前台显示看板娘（访客仍可自行收起）</label><p>前台角色选择保存在当前浏览器；手机默认隐藏。管理员需先在“设置 → Live2D Mascot”导入资源。</p></td></tr></table>';
 }
 add_action('show_user_profile','wzf_haru_profile');add_action('edit_user_profile','wzf_haru_profile');
 function wzf_haru_profile_save($uid) {

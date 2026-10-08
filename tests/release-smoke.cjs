@@ -6,6 +6,8 @@ const root = path.resolve(process.argv[2] || 'plugin');
 const child = spawn('php', ['-r', `
   define('ABSPATH', '/stub/');
   function add_action(...$args) {}
+  function add_filter(...$args) {}
+  function plugin_basename($file) { return "live2d-show/live2d-show.php"; }
   function is_admin() { return false; }
   function is_user_logged_in() { return false; }
   function get_option($key, $default) { return $default; }
