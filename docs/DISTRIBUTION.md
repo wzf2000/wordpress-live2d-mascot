@@ -8,7 +8,7 @@ obtain them from the official website instead. This direction replaces the earli
 bundled 22-character candidate. The old draft's installation ZIP and accompanying
 outdated attachments have been withdrawn. Local test archives are not release assets.
 
-The 3.5.1 release contains plugin code, the compiled controller, Framework/shaders,
+The 3.5.2 release contains plugin code, the compiled controller, Framework/shaders,
 and relevant notices. It contains **no Cubism Core and no models, textures, motions,
 expressions, sample model JSON, or character catalog data**. There are no bundled
 characters or automatic downloads. An unconfigured installation emits no mascot
@@ -82,7 +82,13 @@ custom character IDs, selection persistence, mobile suppression, deactivation an
 reactivation, and forced reinstallation of the same version. This is not evidence
 of cross-version database migration, all models, or all devices. Test resources are
 private fixtures and are never bundled. That evidence applies to the tested 3.5.0 runtime; it is not a fresh 37-check
-acceptance result for 3.5.1. Version 3.5.1 adds optional server-managed local terms
+acceptance result for 3.5.1 or 3.5.2. Version 3.5.1 adds optional server-managed local terms
 presentation and plaintext consent compatibility; default installations continue
 to use the generic imported-resource terms. No HTML-upload UI or model assets are
 added. Version-specific CI and site acceptance must be recorded separately.
+
+Version 3.5.2 retains the 3.5.1 resource and presentation behavior. It adds a named
+settings link for site/network plugin action rows and a permission-gated settings
+link in this plugin's metadata row. These are navigation changes, not new resource
+imports or a change of terms. Their release checks must not be described as a new
+37-check installation/model validation.

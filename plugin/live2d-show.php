@@ -3,7 +3,7 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.5.1
+Version: 3.5.2
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
@@ -16,13 +16,15 @@ if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/includes/admin-import.php';
 function wzf_mascot_action_links($links) {
     if (current_user_can('manage_options')) {
-        array_unshift($links, '<a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">设置</a>');
+        $links = ['settings'=>'<a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">设置</a>'] + $links;
     }
     return $links;
 }
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'wzf_mascot_action_links');
+add_filter('network_admin_plugin_action_links_' . plugin_basename(__FILE__), 'wzf_mascot_action_links');
 function wzf_mascot_row_meta($links, $plugin_file) {
     if ($plugin_file !== plugin_basename(__FILE__)) return $links;
+    $links = wzf_mascot_action_links($links);
     $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot#readme') . '">文档</a>';
     $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot/issues') . '">反馈</a>';
     return $links;

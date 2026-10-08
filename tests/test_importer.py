@@ -44,7 +44,7 @@ class ImporterTests(unittest.TestCase):
     def php(self, body):
         preamble = '''define('ABSPATH', '/stub/');
         $options=[]; $allowed=true; $write_fail=false;
-        function add_action(...$x) {} function add_filter(...$x) {} function plugin_basename($p) { return "live2d-show/live2d-show.php"; }
+        function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; }
         function current_user_can($x) { global $allowed; return $allowed; }
         function wp_upload_dir(...$x) { return ['basedir'=>getenv('TEST_UPLOADS'),'baseurl'=>'https://example.invalid/uploads','error'=>false]; }
         function wp_mkdir_p($p) { return is_dir($p) || mkdir($p,0755,true); }
@@ -189,14 +189,23 @@ class ImporterTests(unittest.TestCase):
         require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
         $base=['Existing'];
         $admin=wzf_mascot_action_links($base);
+        $again=wzf_mascot_action_links($admin);
+        $admin_meta=wzf_mascot_row_meta($base,'live2d-show/live2d-show.php');
+        $admin_unrelated=wzf_mascot_row_meta($base,'another-plugin/plugin.php');
         $allowed=false;
         $other=wzf_mascot_action_links($base);
         $own=wzf_mascot_row_meta($base,'live2d-show/live2d-show.php');
         $unrelated=wzf_mascot_row_meta($base,'another-plugin/plugin.php');
-        echo json_encode(['admin'=>$admin,'other'=>$other,'own'=>$own,'unrelated'=>$unrelated]);""")
+        echo json_encode(['admin'=>$admin,'again'=>$again,'admin_meta'=>$admin_meta,'admin_unrelated'=>$admin_unrelated,'hooks'=>array_column($filters,0),'other'=>$other,'own'=>$own,'unrelated'=>$unrelated]);""")
         self.assertEqual(len(report['admin']),2)
-        self.assertIn('https://example.invalid/wp-admin/options-general.php?page=wzf-mascot',report['admin'][0])
-        self.assertIn('设置',report['admin'][0])
+        self.assertIn('https://example.invalid/wp-admin/options-general.php?page=wzf-mascot',report['admin']['settings'])
+        self.assertIn('设置',report['admin']['settings'])
+        self.assertEqual(report['again'],report['admin'])
+        self.assertEqual(report['admin_meta']['settings'],report['admin']['settings'])
+        self.assertEqual(len(report['admin_meta']),4)
+        self.assertEqual(report['admin_unrelated'],['Existing'])
+        self.assertIn('plugin_action_links_live2d-show/live2d-show.php',report['hooks'])
+        self.assertIn('network_admin_plugin_action_links_live2d-show/live2d-show.php',report['hooks'])
         self.assertEqual(report['other'],['Existing'])
         self.assertEqual(report['unrelated'],['Existing'])
         self.assertEqual(report['own'][0],'Existing')
@@ -263,7 +272,7 @@ class ImporterTests(unittest.TestCase):
 
     def test_zero_resources_frontend_empty(self):
         env=dict(os.environ,TEST_ENTRY=str(ROOT/'plugin/live2d-show.php'))
-        code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'
+        code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'
         result=subprocess.run(['php','-r',code],env=env,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual(result.stdout,'');self.assertEqual(result.stderr,'')

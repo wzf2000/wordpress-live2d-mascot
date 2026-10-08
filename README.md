@@ -2,9 +2,9 @@
 
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
-<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.5.1">下载 3.5.1</a> · <a href="#许可与资源来源">许可</a></p>
+<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.5.2">下载 3.5.2</a> · <a href="#许可与资源来源">许可</a></p>
 
-**当前发行版：3.5.1。** 插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
+**当前发行版：3.5.2。** 插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
 | 你需要准备 | 当前要求与验收范围                                                                              |
 | ---------- | ----------------------------------------------------------------------------------------------- |
@@ -27,11 +27,11 @@
 
 ### 1. 下载并安装插件
 
-[**下载 WordPress 安装包：wordpress-live2d-mascot-3.5.1.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.1/wordpress-live2d-mascot-3.5.1.zip)
+[**下载 WordPress 安装包：wordpress-live2d-mascot-3.5.2.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.2/wordpress-live2d-mascot-3.5.2.zip)
 
-在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在插件列表中可通过 **设置** 直达资源配置，也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
+在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在站点或网络后台插件列表的操作区，以及本插件说明区，可通过 **设置** 直达资源配置（仅对具备设置权限的管理员显示），也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
 
-发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.1/SHA256SUMS) 核对下载。
+发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.5.2/SHA256SUMS) 核对下载。
 
 ### 2. 导入自己取得的 Core
 
@@ -129,7 +129,7 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
 
-以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.5.1 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
+以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.5.2 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
 
 ```sh
 npm ci --ignore-scripts
