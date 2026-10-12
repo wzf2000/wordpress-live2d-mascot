@@ -8,7 +8,7 @@ import re
 import zipfile
 
 VERSION = r'(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:alpha|beta|rc)\.[1-9]\d*)?'
-RUNTIME_FIXED = {'live2d-show.php','includes/admin-import.php','characters.json','haru-assets.json',
+RUNTIME_FIXED = {'live2d-show.php','includes/admin-import.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','admin.css','characters.json','haru-assets.json',
                  'usage-imported-resources.html','licenses/Framework-LICENSE.md','LICENSE','COPYING',
                  'README.md','DISTRIBUTION.md','DISTRIBUTION-NOTICE.txt'}
 SOURCE_FIXED = {'build.py','package.json','package-lock.json','LICENSE','COPYING','README.md',

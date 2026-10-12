@@ -5,6 +5,7 @@ __pycache__/
 # Never track user-supplied Core, models, old runtime snapshots or build outputs.
 /plugin/*
 !/plugin/live2d-show.php
+!/plugin/admin.css
 !/plugin/includes/
 !/plugin/characters.json
 !/plugin/haru-assets.json
@@ -16,6 +17,6 @@ __pycache__/
 /plugin/shaders/*
 !/plugin/shaders/*.vert
 !/plugin/shaders/*.frag
-!/plugin/haru-engine-4d6382933c4f.js
-!/plugin/haru-loader-900de09423b5.js
-!/plugin/haru-css-a1cfaee253c9.css
+!/plugin/haru-engine-296b56e2d33a.js
+!/plugin/haru-loader-e2f3146ba3b5.js
+!/plugin/haru-css-c2cae850d0c7.css

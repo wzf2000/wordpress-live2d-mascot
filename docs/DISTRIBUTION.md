@@ -55,7 +55,7 @@ are retained on deactivation; resource removal is a separate administrator actio
 
 The browser still requires WebGL and appropriate CSP settings for resource requests
 and Blob scripts. The plugin must not automatically relax site security headers.
-Small screens (at most 782px) and reduced-motion settings suppress rendering.
+Small screens (at most 782px) suppress rendering by default. Mobile rendering requires the administrator to enable it and the reader to opt in separately in that browser. Reduced-motion settings always suppress rendering.
 
 ## License layers
 

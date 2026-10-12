@@ -31,7 +31,7 @@ def main():
     # Verify source and committed resource hashes before anything can rebuild them.
     collect(ROOT,version,commit)
     run(sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py')
-    for name in ['plugin/live2d-show.php','plugin/includes/admin-import.php']:run('php','-l',name)
+    for name in ['plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php']:run('php','-l',name)
     for name in ['src/loader.js','tests/release-smoke.cjs']:run('node','--check',name)
     run('node','tests/release-smoke.cjs','plugin')
     with tempfile.TemporaryDirectory(prefix='mascot-ci-') as temporary:

@@ -15336,9 +15336,10 @@
   // src/resources.ts
   var RESOURCE_TIMEOUT_MS = 15e3;
   var ResourceError = class extends Error {
-    constructor(code, message) {
+    constructor(code, message, category = "resource") {
       super(message);
       this.code = code;
+      this.category = category;
       this.name = "ResourceError";
     }
   };
@@ -15451,6 +15452,7 @@
   var Mascot = class extends CubismUserModel {
     constructor(canvas, root, shaderRoot, options = {}) {
       super();
+      __publicField(this, "stage", "webgl");
       __publicField(this, "catalog");
       __publicField(this, "options");
       __publicField(this, "idle");
@@ -15493,12 +15495,17 @@
         premultipliedAlpha: true,
         antialias: true
       });
-      if (!this.gl) throw new ResourceError("webgl", "\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 WebGL\uFF0C\u65E0\u6CD5\u663E\u793A\u770B\u677F\u5A18");
+      if (!this.gl) throw new ResourceError("webgl", "\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 WebGL\uFF0C\u65E0\u6CD5\u663E\u793A\u770B\u677F\u5A18", "webgl");
       if (options.webgl2 && (typeof WebGL2RenderingContext === "undefined" || !(this.gl instanceof WebGL2RenderingContext)))
-        throw new ResourceError("webgl", "\u6B64\u89D2\u8272\u9700\u8981 WebGL 2\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272\u6216\u66F4\u6362\u6D4F\u89C8\u5668");
+        throw new ResourceError("webgl", "\u6B64\u89D2\u8272\u9700\u8981 WebGL 2\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272\u6216\u66F4\u6362\u6D4F\u89C8\u5668", "webgl");
+    }
+    phase(stage) {
+      this.stage = stage;
+      if (typeof this.options.onDiagnosticStage === "function") this.options.onDiagnosticStage(stage);
     }
     async init() {
       const signal = this.abort.signal;
+      this.phase("model");
       const raw = await bytes(this.root + (this.options.file || "Haru.model3.json"), signal);
       const json = jsonResource(raw);
       const refs = json?.FileReferences;
@@ -15506,6 +15513,7 @@
         throw new ResourceError("invalid", "\u89D2\u8272\u6A21\u578B\u914D\u7F6E\u65E0\u6548\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
       }
       this.settings = new CubismModelSettingJson(raw, raw.byteLength);
+      this.phase("catalog");
       const cat = await bytes(this.root + "catalog.json", signal);
       this.catalog = jsonResource(cat);
       if (!this.catalog || !["motions", "expressions"].every(
@@ -15515,6 +15523,7 @@
       )) {
         throw new ResourceError("invalid", "\u89D2\u8272\u52A8\u4F5C\u76EE\u5F55\u65E0\u6548\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
       }
+      this.phase("moc");
       this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
       if (!this.getModel()) throw new Error("\u6A21\u578B\u6821\u9A8C\u5931\u8D25");
       for (const [key, fn] of [
@@ -15522,6 +15531,7 @@
         ["Pose", "loadPose"]
       ]) {
         if (!json.FileReferences[key]) continue;
+        this.phase(key.toLowerCase());
         const b = await bytes(this.root + json.FileReferences[key], signal);
         jsonResource(b);
         this[fn](b, b.byteLength);
@@ -15533,6 +15543,7 @@
       const renderer = this.getRenderer();
       renderer.startUp(this.gl);
       renderer.setIsPremultipliedAlpha(true);
+      this.phase("texture");
       await Promise.all(
         json.FileReferences.Textures.map(async (file, index) => {
           const blob = await resource(this.root + file, signal, "blob");
@@ -15551,6 +15562,7 @@
           renderer.bindTexture(index, t);
         })
       );
+      this.phase("shader");
       const shader = CubismShaderManager_WebGL.getInstance().getShader(this.gl);
       shader.setShaderPath(this.shaderRoot);
       let shaderError;
@@ -15579,9 +15591,11 @@
       checkSignal(signal);
       if (!shader._shaderSets[0]?.shaderProgram)
         throw new ResourceError("invalid", "\u7ED8\u56FE\u7A0B\u5E8F\u65E0\u6548\uFF0C\u65E0\u6CD5\u663E\u793A\u6B64\u89D2\u8272");
+      this.phase("motion");
       await this.asset("motion", this.idle);
       this.getModel().saveParameters();
       this.setInitialized(true);
+      this.phase("ready");
     }
     async asset(type, id) {
       const list = type === "motion" ? this.catalog.motions : this.catalog.expressions, entry = list.find((x) => x.id === id);
@@ -15612,7 +15626,14 @@
             }
             map.set(id, m);
             return m;
-          })().finally(() => this.pending.delete(key))
+          })().catch((error) => {
+            if (error instanceof ResourceError) {
+              error.category = type;
+              throw error;
+            }
+            if (error?.name === "AbortError") throw error;
+            throw new ResourceError("invalid", "\u52A8\u4F5C\u6216\u8868\u60C5\u8D44\u6E90\u65E0\u6548\uFF0C\u8BF7\u91CD\u8BD5", type);
+          }).finally(() => this.pending.delete(key))
         );
       return this.pending.get(key);
     }
@@ -15652,6 +15673,9 @@
       this._expressionManager = new CubismExpressionMotionManager();
       this.lastExpression = "";
       this.getModel().loadParameters();
+    }
+    cancelPending(type) {
+      if (type === "motion" || type === "expression") this.sequences[type]++;
     }
     pause() {
       this.stopped = true;
@@ -15755,7 +15779,9 @@
       const abort = () => instance.destroy();
       signal.addEventListener("abort", abort, { once: true });
       const timer = setTimeout(
-        () => instance.abort.abort(new ResourceError("timeout", "\u89D2\u8272\u521D\u59CB\u5316\u8D85\u65F6\uFF0C\u8BF7\u91CD\u8BD5")),
+        () => instance.abort.abort(
+          new ResourceError("timeout", "\u89D2\u8272\u521D\u59CB\u5316\u8D85\u65F6\uFF0C\u8BF7\u91CD\u8BD5", instance.stage)
+        ),
         6e4
       );
       try {
@@ -15766,8 +15792,16 @@
       } catch (error) {
         instance.destroy();
         if (signal.aborted) throw signal.reason || cancelled();
-        if (error instanceof ResourceError || error?.name === "AbortError") throw error;
-        throw new ResourceError("invalid", "\u89D2\u8272\u8D44\u6E90\u65E0\u6548\uFF0C\u65E0\u6CD5\u663E\u793A\u6B64\u89D2\u8272\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
+        if (error instanceof ResourceError) {
+          if (error.category === "resource") error.category = instance.stage;
+          throw error;
+        }
+        if (error?.name === "AbortError") throw error;
+        throw new ResourceError(
+          "invalid",
+          "\u89D2\u8272\u8D44\u6E90\u65E0\u6548\uFF0C\u65E0\u6CD5\u663E\u793A\u6B64\u89D2\u8272\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272",
+          instance.stage
+        );
       } finally {
         clearTimeout(timer);
         signal.removeEventListener("abort", abort);

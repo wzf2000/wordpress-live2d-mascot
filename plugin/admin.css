@@ -1,0 +1,184 @@
+/* Scoped to the plugin's settings page and profile section. */
+.wzf-mascot-admin {
+  max-width: 1160px;
+}
+.wzf-mascot-admin .wzf-mascot-intro {
+  font-size: 14px;
+  color: #50575e;
+  margin-bottom: 24px;
+}
+.wzf-mascot-admin .wzf-mascot-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.wzf-mascot-admin .wzf-mascot-status > div {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-left: 4px solid #2271b1;
+  padding: 18px 20px;
+  border-radius: 3px;
+}
+.wzf-mascot-admin .wzf-mascot-status span {
+  display: block;
+  color: #646970;
+  margin-bottom: 8px;
+}
+.wzf-mascot-admin .wzf-mascot-status strong {
+  font-size: 17px;
+}
+.wzf-mascot-admin .wzf-mascot-card,
+.wzf-mascot-profile {
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  padding: 22px 24px;
+  margin: 20px 0;
+}
+.wzf-mascot-admin .wzf-mascot-card h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.wzf-mascot-admin .wzf-mascot-card p {
+  line-height: 1.65;
+}
+.wzf-mascot-admin .wzf-mascot-table {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+.wzf-mascot-admin .widefat td,
+.wzf-mascot-admin .widefat th {
+  padding: 12px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+.wzf-mascot-admin .wzf-mascot-fields,
+.wzf-mascot-admin .wzf-mascot-imports {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+}
+.wzf-mascot-admin .wzf-mascot-imports > section {
+  margin-top: 0;
+}
+.wzf-mascot-admin .wzf-mascot-field {
+  margin: 12px 0;
+  min-width: 0;
+}
+.wzf-mascot-admin .wzf-mascot-field > label,
+.wzf-mascot-admin .wzf-mascot-greetings legend {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.wzf-mascot-admin .wzf-mascot-field input:not([type='file']),
+.wzf-mascot-admin .wzf-mascot-field select {
+  width: 100%;
+  max-width: 100%;
+}
+.wzf-mascot-admin .wzf-mascot-field input[type='file'] {
+  width: 100%;
+}
+.wzf-mascot-admin .wzf-mascot-greetings {
+  margin-top: 22px;
+  padding: 0;
+  min-width: 0;
+}
+.wzf-mascot-admin .wzf-mascot-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #dcdcde;
+  padding: 14px;
+}
+.wzf-mascot-admin .wzf-mascot-checks label {
+  padding: 5px 0;
+  overflow-wrap: anywhere;
+}
+.wzf-mascot-admin .wzf-mascot-card .submit {
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.wzf-mascot-profile {
+  max-width: 900px;
+  margin: 12px 0 24px;
+}
+.wzf-mascot-profile h3 {
+  margin-top: 0;
+}
+.wzf-mascot-profile .wzf-mascot-profile-choice {
+  display: block;
+  font-weight: 600;
+  padding: 8px 0;
+}
+.wzf-mascot-profile p {
+  color: #50575e;
+  line-height: 1.65;
+}
+@media (max-width: 782px) {
+  .wzf-mascot-admin .wzf-mascot-status,
+  .wzf-mascot-admin .wzf-mascot-fields,
+  .wzf-mascot-admin .wzf-mascot-imports,
+  .wzf-mascot-admin .wzf-mascot-checks {
+    grid-template-columns: 1fr;
+  }
+  .wzf-mascot-admin .wzf-mascot-card,
+  .wzf-mascot-profile {
+    padding: 18px 16px;
+  }
+  .wzf-mascot-admin .wzf-mascot-field input,
+  .wzf-mascot-admin .wzf-mascot-field select {
+    min-height: 40px;
+  }
+  .wzf-mascot-admin .wzf-mascot-checks label {
+    padding: 9px 0;
+  }
+}
+
+.wzf-mascot-admin .wzf-mascot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.wzf-mascot-admin .wzf-mascot-replace {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #dcdcde;
+}
+.wzf-mascot-admin .wzf-mascot-replace summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+}
+
+.wzf-mascot-admin .wzf-mascot-diagnostic-row {
+  padding: 10px 0;
+  border-top: 1px solid #dcdcde;
+}
+.wzf-mascot-admin .wzf-mascot-diagnostic-row summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.wzf-mascot-admin .wzf-mascot-admin-thumbnail,
+.wzf-mascot-admin .wzf-mascot-admin-initials {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-right: 12px;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  background: #f6f7f7;
+  color: #50575e;
+  font-weight: 600;
+  overflow: hidden;
+}

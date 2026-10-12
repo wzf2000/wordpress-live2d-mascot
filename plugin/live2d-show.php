@@ -3,7 +3,7 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.5.2
+Version: 3.6.0
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
@@ -59,16 +59,21 @@ function wzf_haru_output() {
     if (is_user_logged_in() && !wzf_haru_visible(wp_get_current_user())) return;
     $resources = get_option(WZF_MASCOT_OPTION, []);
     if (!is_array($resources) || empty($resources['core']) || empty($resources['characters']) || !is_array($resources['characters'])) return;
+    $available = array_filter($resources['characters'], function($c) { return is_array($c) && wzf_mascot_character_status($c) === 'active'; });
+    if (!$available) return;
     try {
         $uploads = wzf_mascot_uploads();
         $core = wzf_mascot_path($resources['core']['path'] ?? null);
         if (($resources['core']['sha256'] ?? '') !== WZF_MASCOT_CORE_SHA || !is_file(wzf_mascot_no_links($uploads['path'].'/'.$core))) return;
         $characters = [];
-        foreach ($resources['characters'] as $id=>$c) {
+        foreach ($available as $id=>$c) {
             if (!is_array($c)) return;
             $root = wzf_mascot_path(rtrim($c['root'] ?? '', '/'));
             $file = wzf_mascot_path($c['file'] ?? null);
             if (!is_file(wzf_mascot_no_links($uploads['path'].'/'.$root.'/'.$file))) return;
+            $thumbnail = wzf_mascot_thumbnail_url($c);
+            unset($c['status'], $c['restoreStatus'], $c['thumbnail']);
+            if ($thumbnail !== null) $c['thumbnail'] = $thumbnail;
             $c['root'] = $uploads['url'] . $root . '/';
             $characters[$id] = $c;
         }
@@ -77,7 +82,7 @@ function wzf_haru_output() {
     } catch (Throwable $e) { return; }
     $base=plugins_url('',__FILE__).'/';
     $first=reset($characters);
-    $config=['characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
+    $config=['version'=>'3.6.0','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
     $config = array_merge($config, $presentation);
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
@@ -85,8 +90,11 @@ function wzf_haru_output() {
 }
 add_action('wp_print_scripts','wzf_haru_output');
 function wzf_haru_profile($user) {
-    echo '<h3>看板娘</h3>';wp_nonce_field('wzf_haru_profile','wzf_haru_nonce');
-    echo '<table class="form-table"><tr><th>显示设置</th><td><label><input name="live2d_front" type="checkbox" value="1" '.checked(wzf_haru_visible($user),true,false).'> 允许前台显示看板娘（访客仍可自行收起）</label><p>前台角色选择保存在当前浏览器；手机默认隐藏。管理员需先在“设置 → Live2D Mascot”导入资源。</p></td></tr></table>';
+    echo '<section class="wzf-mascot-profile" aria-labelledby="wzf-mascot-profile-title"><h3 id="wzf-mascot-profile-title">Live2D Mascot</h3><p>控制此账号是否允许前台显示看板娘。</p>';
+    wp_nonce_field('wzf_haru_profile','wzf_haru_nonce');
+    echo '<label class="wzf-mascot-profile-choice"><input name="live2d_front" type="checkbox" value="1" ' . checked(wzf_haru_visible($user),true,false) . '> 允许前台显示看板娘</label><p>角色选择、收藏、大小和收起状态保存在当前浏览器。手机需管理员允许，并由当前浏览器单独开启；减少动画始终抑制显示。开启后仍需在前台自行同意条款并显示。</p>';
+    if (current_user_can('manage_options')) echo '<p><a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">管理 Core 与角色资源</a></p>';
+    echo '</section>';
 }
 add_action('show_user_profile','wzf_haru_profile');add_action('edit_user_profile','wzf_haru_profile');
 function wzf_haru_profile_save($uid) {

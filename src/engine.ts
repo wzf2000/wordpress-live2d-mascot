@@ -26,6 +26,11 @@ function stopQueue(manager: any) {
 }
 
 class Mascot extends CubismUserModel {
+  stage = 'webgl';
+  phase(stage: string) {
+    this.stage = stage;
+    if (typeof this.options.onDiagnosticStage === 'function') this.options.onDiagnosticStage(stage);
+  }
   catalog: any;
   options: any;
   idle: string;
@@ -71,16 +76,17 @@ class Mascot extends CubismUserModel {
         premultipliedAlpha: true,
         antialias: true,
       })) as WebGLRenderingContext;
-    if (!this.gl) throw new ResourceError('webgl', '浏览器不支持 WebGL，无法显示看板娘');
+    if (!this.gl) throw new ResourceError('webgl', '浏览器不支持 WebGL，无法显示看板娘', 'webgl');
     if (
       options.webgl2 &&
       (typeof WebGL2RenderingContext === 'undefined' ||
         !(this.gl instanceof WebGL2RenderingContext))
     )
-      throw new ResourceError('webgl', '此角色需要 WebGL 2，请选择其他角色或更换浏览器');
+      throw new ResourceError('webgl', '此角色需要 WebGL 2，请选择其他角色或更换浏览器', 'webgl');
   }
   async init() {
     const signal = this.abort.signal;
+    this.phase('model');
     const raw = await bytes(this.root + (this.options.file || 'Haru.model3.json'), signal);
     const json = jsonResource(raw);
     const refs = json?.FileReferences;
@@ -94,6 +100,7 @@ class Mascot extends CubismUserModel {
       throw new ResourceError('invalid', '角色模型配置无效，请选择其他角色');
     }
     this.settings = new CubismModelSettingJson(raw, raw.byteLength);
+    this.phase('catalog');
     const cat = await bytes(this.root + 'catalog.json', signal);
     this.catalog = jsonResource(cat);
     if (
@@ -108,6 +115,7 @@ class Mascot extends CubismUserModel {
     ) {
       throw new ResourceError('invalid', '角色动作目录无效，请选择其他角色');
     }
+    this.phase('moc');
     this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
     if (!this.getModel()) throw new Error('模型校验失败');
     for (const [key, fn] of [
@@ -115,6 +123,7 @@ class Mascot extends CubismUserModel {
       ['Pose', 'loadPose'],
     ] as const) {
       if (!json.FileReferences[key]) continue;
+      this.phase(key.toLowerCase());
       const b = await bytes(this.root + json.FileReferences[key], signal);
       jsonResource(b);
       this[fn](b, b.byteLength);
@@ -126,6 +135,7 @@ class Mascot extends CubismUserModel {
     const renderer = this.getRenderer();
     renderer.startUp(this.gl);
     renderer.setIsPremultipliedAlpha(true);
+    this.phase('texture');
     await Promise.all(
       json.FileReferences.Textures.map(async (file: string, index: number) => {
         const blob = (await resource(this.root + file, signal, 'blob')) as Blob;
@@ -145,6 +155,7 @@ class Mascot extends CubismUserModel {
         renderer.bindTexture(index, t);
       }),
     );
+    this.phase('shader');
     const shader = CubismShaderManager_WebGL.getInstance().getShader(this.gl);
     shader.setShaderPath(this.shaderRoot);
     // Fixed SDK Web 5 R5 integration: intercept its private loader so cancellation
@@ -176,9 +187,11 @@ class Mascot extends CubismUserModel {
     checkSignal(signal);
     if (!shader._shaderSets[0]?.shaderProgram)
       throw new ResourceError('invalid', '绘图程序无效，无法显示此角色');
+    this.phase('motion');
     await this.asset('motion', this.idle);
     this.getModel().saveParameters();
     this.setInitialized(true);
+    this.phase('ready');
   }
   async asset(type: string, id: string) {
     const list = type === 'motion' ? this.catalog.motions : this.catalog.expressions,
@@ -212,7 +225,16 @@ class Mascot extends CubismUserModel {
           }
           map.set(id, m);
           return m;
-        })().finally(() => this.pending.delete(key)),
+        })()
+          .catch((error) => {
+            if (error instanceof ResourceError) {
+              error.category = type;
+              throw error;
+            }
+            if (error?.name === 'AbortError') throw error;
+            throw new ResourceError('invalid', '动作或表情资源无效，请重试', type);
+          })
+          .finally(() => this.pending.delete(key)),
       );
     return this.pending.get(key);
   }
@@ -256,6 +278,9 @@ class Mascot extends CubismUserModel {
     // The frame saves its current motion baseline before expression effects. Restore
     // that baseline, not model defaults, without changing the active motion or layout.
     this.getModel().loadParameters();
+  }
+  cancelPending(type: string) {
+    if (type === 'motion' || type === 'expression') this.sequences[type]++;
   }
   pause() {
     this.stopped = true;
@@ -367,7 +392,10 @@ class Mascot extends CubismUserModel {
     const abort = () => instance.destroy();
     signal.addEventListener('abort', abort, { once: true });
     const timer = setTimeout(
-      () => instance.abort.abort(new ResourceError('timeout', '角色初始化超时，请重试')),
+      () =>
+        instance.abort.abort(
+          new ResourceError('timeout', '角色初始化超时，请重试', instance.stage),
+        ),
       60000,
     );
     try {
@@ -378,8 +406,16 @@ class Mascot extends CubismUserModel {
     } catch (error) {
       instance.destroy();
       if (signal.aborted) throw signal.reason || cancelled();
-      if (error instanceof ResourceError || (error as any)?.name === 'AbortError') throw error;
-      throw new ResourceError('invalid', '角色资源无效，无法显示此角色，请重试或选择其他角色');
+      if (error instanceof ResourceError) {
+        if (error.category === 'resource') error.category = instance.stage;
+        throw error;
+      }
+      if ((error as any)?.name === 'AbortError') throw error;
+      throw new ResourceError(
+        'invalid',
+        '角色资源无效，无法显示此角色，请重试或选择其他角色',
+        instance.stage,
+      );
     } finally {
       clearTimeout(timer);
       signal.removeEventListener('abort', abort);

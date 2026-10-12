@@ -11,7 +11,9 @@
   const start = () => {
     const characters = config.characters;
     if (!characters || typeof characters !== 'object' || !Object.keys(characters).length) return;
-    const defaultCharacter = Object.hasOwn(characters, 'haru') ? 'haru' : Object.keys(characters)[0];
+    const defaultCharacter = Object.hasOwn(characters, 'haru')
+      ? 'haru'
+      : Object.keys(characters)[0];
     const favoritesKey = 'wzf-mascot-favorites';
     const readFavorites = () => {
       const raw = localStorage.getItem(favoritesKey);
@@ -23,7 +25,13 @@
       }
       return new Set(
         Array.isArray(ids)
-          ? ids.filter((id) => typeof id === 'string' && Object.hasOwn(characters, id))
+          ? ids.filter(
+              (id) =>
+                typeof id === 'string' &&
+                id.length > 0 &&
+                id.length <= 200 &&
+                !/[\u0000-\u001f\u007f]/.test(id),
+            )
           : [],
       );
     };
@@ -39,6 +47,7 @@
     const desktop = matchMedia('not all and (max-width:782px)'),
       reduce = matchMedia('(prefers-reduced-motion: reduce)');
     let wanted = false,
+      mobileOptIn = false,
       accepted = false,
       loading = false,
       failed = false,
@@ -62,6 +71,7 @@
       loadError = '';
     try {
       wanted = localStorage.getItem('wzfl-mascot') === 'shown';
+      mobileOptIn = localStorage.getItem('wzf-mascot-mobile-v1') === 'enabled';
       accepted = localStorage.getItem('wzf-haru-terms') === config.termsVersion;
       const saved = localStorage.getItem('wzf-mascot-character');
       if (Object.hasOwn(characters, saved)) committed = saved;
@@ -138,11 +148,299 @@
       if (tag === 'button') e.type = 'button';
       return e;
     };
+    // Diagnostics stay in memory. Nothing is sampled or queried from the GPU until opt-in.
+    let diagnosticsEnabled = false,
+      diagnosticReport = null,
+      currentLoad = null,
+      loadStage = 'idle',
+      lastDiagnosticError = null,
+      sampleWindow = null,
+      firstFrameWatch = null;
+    const diagnostics = make('details', '', 'wzf-haru-diagnostics');
+    diagnostics.append(make('summary', '本地诊断'));
+    const diagnosticBody = make('div', '', 'wzf-haru-diagnostic-body');
+    const diagnosticEnable = make('button', '开启本地诊断'),
+      diagnosticSample = make('button', '采样 3 秒'),
+      diagnosticExport = make('button', '下载诊断 JSON'),
+      diagnosticStatus = make('p', '诊断尚未开启。');
+    diagnosticStatus.setAttribute('role', 'status');
+    diagnosticBody.append(
+      make(
+        'p',
+        '主动开启后读取当前 WebGL / GPU 信息并在本地记录加载与短时帧率。报告不包含页面地址、查询参数、Cookie 或用户资料；不会发送到服务器。',
+      ),
+      diagnosticEnable,
+      diagnosticSample,
+      diagnosticExport,
+      diagnosticStatus,
+    );
+    diagnostics.append(diagnosticBody);
+    document.body.append(diagnostics);
+    const diagnosticUpdate = () => {
+      diagnosticEnable.textContent = diagnosticsEnabled ? '停止采集' : '开启本地诊断';
+      diagnosticSample.disabled =
+        !diagnosticsEnabled || !!sampleWindow || !engine || !allowed() || loading;
+      diagnosticExport.disabled = !diagnosticReport;
+      diagnosticStatus.textContent = !diagnosticReport
+        ? '诊断尚未开启。'
+        : sampleWindow
+          ? '正在采样；收起、阅读暂停或切换角色会中断。'
+          : diagnosticReport.sample
+            ? diagnosticReport.sample.interrupted
+              ? '采样已中断。'
+              : '采样完成：' + diagnosticReport.sample.fps.toFixed(1) + ' FPS。'
+            : '已记录本地状态。可采样，或重新显示看板娘记录加载时间；下载报告由你自行分享。';
+    };
+    const diagnosticEnvironment = () => {
+      const result = {
+        viewport: { width: innerWidth, height: innerHeight, pixelRatio: devicePixelRatio },
+        reducedMotion: reduce.matches,
+        webgl: null,
+        gpuRenderer: null,
+        softwareRenderer: null,
+      };
+      const gl = engine?.gl;
+      if (gl) {
+        result.webgl =
+          typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext
+            ? 'webgl2'
+            : 'webgl';
+        try {
+          const extension = gl.getExtension('WEBGL_debug_renderer_info');
+          if (extension) {
+            result.gpuRenderer = String(gl.getParameter(extension.UNMASKED_RENDERER_WEBGL)).slice(
+              0,
+              300,
+            );
+            result.softwareRenderer = /swiftshader|llvmpipe|softpipe|software|lavapipe/i.test(
+              result.gpuRenderer,
+            );
+          }
+        } catch {}
+      }
+      return result;
+    };
+    const diagnosticBegin = (id, fallback = false) => {
+      if (!diagnosticsEnabled) return;
+      if (!fallback) diagnosticReport.requestedCharacterId = id;
+      currentLoad = {
+        characterId: id,
+        fallback,
+        started: performance.now(),
+        stages: [],
+        status: 'loading',
+        readyMs: null,
+        firstFrameMs: null,
+        firstFrameStatus: 'not-observed',
+      };
+      diagnosticReport.load = currentLoad;
+      diagnosticReport.renderedCharacterId = null;
+      diagnosticReport.loadAttempts.push(currentLoad);
+      if (diagnosticReport.loadAttempts.length > 20) diagnosticReport.loadAttempts.shift();
+    };
+    const diagnosticPhase = (phase) => {
+      if (
+        ![
+          'idle',
+          'core',
+          'engine',
+          'webgl',
+          'model',
+          'catalog',
+          'moc',
+          'physics',
+          'pose',
+          'texture',
+          'shader',
+          'motion',
+          'ready',
+        ].includes(phase)
+      )
+        return;
+      loadStage = phase;
+      if (diagnosticsEnabled) diagnosticReport.phase = phase;
+      if (diagnosticsEnabled && currentLoad && currentLoad.stages.length < 30)
+        currentLoad.stages.push({ phase, elapsedMs: performance.now() - currentLoad.started });
+    };
+    const diagnosticError = (error, category = loadStage) => {
+      const codes = [
+        'timeout',
+        'http',
+        'network',
+        'invalid',
+        'webgl',
+        'context-lost',
+        'render',
+        'cancelled',
+      ];
+      const categories = [
+        'core',
+        'engine',
+        'webgl',
+        'model',
+        'catalog',
+        'moc',
+        'physics',
+        'pose',
+        'texture',
+        'shader',
+        'motion',
+        'expression',
+      ];
+      lastDiagnosticError = {
+        code: codes.includes(error?.code) ? error.code : 'invalid',
+        category: categories.includes(error?.category)
+          ? error.category
+          : categories.includes(category)
+            ? category
+            : 'resource',
+        phase: loadStage,
+        characterId: currentLoad?.characterId || active,
+      };
+      if (diagnosticsEnabled) {
+        diagnosticReport.error = { ...lastDiagnosticError };
+        if (currentLoad) {
+          currentLoad.status = 'failed';
+          currentLoad.error = { ...lastDiagnosticError };
+        }
+      }
+    };
+    const finishDiagnosticSample = (interrupted = false, reason = null) => {
+      if (!sampleWindow) return;
+      const sample = sampleWindow;
+      sampleWindow = null;
+      clearTimeout(sample.timer);
+      const end = sample.target.state(),
+        elapsedMs = performance.now() - sample.started,
+        frameDelta = Math.max(0, end.frames - sample.frames);
+      diagnosticReport.sample = {
+        characterId: sample.characterId,
+        environment: sample.environment,
+        durationMs: elapsedMs,
+        frameDelta,
+        fps: elapsedMs > 0 ? (frameDelta * 1000) / elapsedMs : 0,
+        interrupted,
+        reason,
+        cpuDrawMsAvg: frameDelta
+          ? Math.max(0, end.renderMsAvg * end.frames - sample.drawTotal) / frameDelta
+          : 0,
+        engineLifetimeCpuDrawMsMax: end.renderMsMax,
+      };
+      diagnosticReport.engineStats = { ...end };
+      diagnosticReport.engineStatsCharacterId = sample.characterId;
+      diagnosticUpdate();
+    };
+    const interruptDiagnostics = (reason) => {
+      finishDiagnosticSample(true, reason);
+      if (firstFrameWatch) {
+        clearTimeout(firstFrameWatch.timer);
+        firstFrameWatch.load.firstFrameStatus = 'interrupted';
+        firstFrameWatch = null;
+      }
+    };
+    const diagnosticReady = () => {
+      if (!diagnosticsEnabled || !currentLoad || !engine) return;
+      currentLoad.readyMs = performance.now() - currentLoad.started;
+      currentLoad.status = 'ready';
+      currentLoad.renderedCharacterId = active;
+      diagnosticReport.renderedCharacterId = active;
+      diagnosticReport.environment = diagnosticEnvironment();
+      const target = engine,
+        loadRecord = currentLoad,
+        started = loadRecord.started;
+      firstFrameWatch = { target, load: loadRecord, timer: null };
+      const observe = () => {
+        if (!firstFrameWatch || firstFrameWatch.target !== target) return;
+        if (target !== engine || !allowed()) {
+          interruptDiagnostics('state-change');
+          return;
+        }
+        if (target.state().frames > 0) {
+          loadRecord.firstFrameMs = performance.now() - started;
+          loadRecord.firstFrameStatus = 'observed';
+          firstFrameWatch = null;
+        } else if (performance.now() - started > 75000) {
+          loadRecord.firstFrameStatus = 'not-observed';
+          firstFrameWatch = null;
+        } else firstFrameWatch.timer = setTimeout(observe, 30);
+      };
+      firstFrameWatch.timer = setTimeout(observe, 0);
+    };
+    diagnosticEnable.onclick = () => {
+      if (diagnosticsEnabled) {
+        interruptDiagnostics('user-stopped');
+        diagnosticsEnabled = false;
+        currentLoad = null;
+      } else {
+        diagnosticsEnabled = true;
+        diagnosticReport = {
+          schema: 1,
+          pluginVersion: config.version || 'unknown',
+          characterId: active,
+          requestedCharacterId: null,
+          renderedCharacterId: engine ? active : null,
+          loadAttempts: [],
+          environment: diagnosticEnvironment(),
+          phase: loadStage,
+          error: lastDiagnosticError,
+          load: null,
+          sample: null,
+          engineStats: engine ? { ...engine.state() } : null,
+          engineStatsCharacterId: engine ? active : null,
+          measurements:
+            'FPS uses frames drawn during the explicit sample window. CPU draw times are not GPU execution times. Loading readiness is distinct from first observed frame. GPU renderer is queried only after opt-in.',
+        };
+      }
+      diagnosticUpdate();
+    };
+    diagnosticSample.onclick = () => {
+      if (!diagnosticsEnabled || !engine || !allowed() || loading || sampleWindow) return;
+      const snapshot = engine.state();
+      diagnosticReport.characterId = active;
+      diagnosticReport.environment = diagnosticEnvironment();
+      sampleWindow = {
+        target: engine,
+        characterId: active,
+        environment: diagnosticReport.environment,
+        started: performance.now(),
+        frames: snapshot.frames,
+        drawTotal: snapshot.renderMsAvg * snapshot.frames,
+        timer: null,
+      };
+      sampleWindow.timer = setTimeout(
+        () =>
+          finishDiagnosticSample(
+            !allowed() || loading || sampleWindow?.target !== engine,
+            'window-ended',
+          ),
+        3000,
+      );
+      diagnosticUpdate();
+    };
+    diagnosticExport.onclick = () => {
+      if (!diagnosticReport) return;
+      const data = JSON.parse(JSON.stringify(diagnosticReport));
+      if (data.load) delete data.load.started;
+      for (const load of data.loadAttempts || []) delete load.started;
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      );
+      const link = make('a');
+      link.href = url;
+      link.download = 'mascot-diagnostics-' + (config.version || 'unknown') + '.json';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
     let button = document.querySelector('.wzfl-mascot-toggle');
     if (!button) {
       button = make('button', '', 'wzfl-mascot-toggle');
       document.body.append(button);
     }
+    const controlsDock = make('div', '', 'wzf-haru-dock');
+    controlsDock.append(diagnostics, button);
+    document.body.append(controlsDock);
     const panel = make('section', '', 'wzf-haru-controls');
     panel.id = 'wzf-haru-panel';
     panel.setAttribute('aria-label', '看板娘互动');
@@ -169,6 +467,72 @@
     characterSearch.setAttribute('aria-describedby', searchResults.id);
     clearSearch.setAttribute('aria-label', '清空角色搜索');
     characterSelect.setAttribute('aria-label', '选择角色');
+    const candidatePreview = make('figure', '', 'wzf-haru-candidate'),
+      candidateImage = make('img'),
+      candidateInitials = make('span', '', 'wzf-haru-candidate-initials'),
+      candidateCaption = make('figcaption');
+    candidateImage.loading = 'eager';
+    candidateImage.decoding = 'async';
+    candidateImage.hidden = true;
+    candidateInitials.setAttribute('aria-hidden', 'true');
+    candidatePreview.append(candidateImage, candidateInitials, candidateCaption);
+    let candidateKey = null;
+    const thumbnailSource = (character) => {
+      if (typeof character?.thumbnail !== 'string') return null;
+      try {
+        const url = new URL(character.thumbnail);
+        if (
+          !['https:', 'http:'].includes(url.protocol) ||
+          url.origin !== location.origin ||
+          url.username ||
+          url.password ||
+          url.search ||
+          url.hash ||
+          !/\/wzf-mascot\/thumbnail-[0-9a-f]{32}\/image\.png$/.test(url.pathname)
+        )
+          return null;
+        return url.href;
+      } catch {
+        return null;
+      }
+    };
+    const syncThumbnail = () => {
+      const id = characterSelect.value,
+        character = Object.hasOwn(characters, id) ? characters[id] : null;
+      candidateCaption.textContent = character ? '候选：' + character.name : '暂无候选角色';
+      candidateInitials.textContent = character
+        ? Array.from(character.name.trim()).slice(0, 2).join('')
+        : '?';
+      candidateImage.alt = character ? character.name + ' 的缩略图' : '';
+      const src = thumbnailSource(character),
+        key = id + ':' + (src || '');
+      if (!panelOpen || panel.hidden || !src) {
+        candidateImage.onload = candidateImage.onerror = null;
+        candidateImage.removeAttribute('src');
+        candidateImage.hidden = true;
+        candidateInitials.hidden = false;
+        candidateKey = null;
+        return;
+      }
+      if (candidateKey === key) return;
+      candidateKey = key;
+      candidateImage.hidden = true;
+      candidateInitials.hidden = false;
+      candidateImage.onload = () => {
+        if (candidateKey === key) {
+          candidateImage.hidden = false;
+          candidateInitials.hidden = true;
+        }
+      };
+      candidateImage.onerror = () => {
+        if (candidateKey !== key) return;
+        candidateImage.hidden = true;
+        candidateInitials.hidden = false;
+        candidateImage.removeAttribute('src');
+      };
+      // Only the selected candidate's local image is requested when the panel is open.
+      candidateImage.src = src;
+    };
     const syncFavoriteButton = () => {
       const id = characterSelect.value,
         selected = Object.hasOwn(characters, id),
@@ -204,12 +568,13 @@
           : matches[0]?.[0] || '';
       searchResults.textContent = matches.length
         ? '显示 ' + matches.length + ' / ' + Object.keys(characters).length + ' 个角色'
-        : favoritesFilter.checked && !favorites.size
+        : favoritesFilter.checked && !Object.keys(characters).some((id) => favorites.has(id))
           ? '还没有收藏的角色，取消“只看收藏”可查看全部角色'
           : favoritesFilter.checked
             ? '收藏中没有匹配的角色，请更换关键词或清空搜索'
             : '没有匹配的角色，请更换关键词或清空搜索';
       syncFavoriteButton();
+      syncThumbnail();
     };
     syncCharacterOptions(active);
     const previewButton = make('button', '预览角色'),
@@ -235,6 +600,7 @@
       clearSearch,
       searchResults,
       characterSelect,
+      candidatePreview,
       previewButton,
       favoritesLabel,
       favoriteButton,
@@ -255,7 +621,11 @@
     panelToggle.hidden = true;
     panelToggle.setAttribute('aria-controls', panel.id);
     panelToggle.setAttribute('aria-expanded', 'false');
-    document.body.append(panelToggle);
+    controlsDock.insertBefore(panelToggle, button);
+    if (config.mobileEnabled === true) {
+      controlsDock.classList.add('wzf-haru-mobile-enabled');
+      panel.classList.add('wzf-haru-mobile-enabled');
+    }
     const settings = make('details', '', 'wzf-haru-layout'),
       summary = make('summary', '位置与大小');
     settings.append(summary);
@@ -279,6 +649,8 @@
       reset = make('button', '恢复默认');
     settings.append(side, slider, output, reset);
     panel.insertBefore(settings, credit);
+    const mobileSize = make('p', '', 'wzf-haru-mobile-size');
+    panel.insertBefore(mobileSize, credit);
     const readLayout = () => {
       const saved = layouts[active] || {};
       position = ['left', 'right'].includes(saved.position) ? saved.position : 'right';
@@ -289,18 +661,38 @@
       slider.value = String(size);
     };
     const layout = () => {
-      if (host) {
-        host.style.width = size + 'px';
-        host.style.height = size * 1.5 + 'px';
-        host.style.transform = 'translateY(' + characters[active].offset + '%)';
-        host.style.right = position === 'right' ? '6px' : 'auto';
-        host.style.left = position === 'left' ? '6px' : 'auto';
+      const renderedSize = desktop.matches
+        ? size
+        : Math.max(96, Math.min(140, Math.floor(innerWidth * 0.34)));
+      const leftControls = position === 'right';
+      const edge = 'max(16px, env(safe-area-inset-' + (leftControls ? 'left' : 'right') + '))';
+      for (const element of [panel, controlsDock]) {
+        element.style.left = leftControls ? edge : 'auto';
+        element.style.right = leftControls ? 'auto' : edge;
       }
-      panel.style.left = position === 'right' ? '16px' : 'auto';
-      panel.style.right = position === 'left' ? '16px' : 'auto';
-      panelToggle.style.right = position === 'right' ? size + 12 + 'px' : 'auto';
-      panelToggle.style.left = position === 'left' ? size + 12 + 'px' : 'auto';
+      controlsDock.style.alignItems = leftControls ? 'flex-start' : 'flex-end';
+      diagnosticBody.style.left = leftControls ? '0' : 'auto';
+      diagnosticBody.style.right = leftControls ? 'auto' : '0';
+      if (host) {
+        host.classList.toggle('wzf-haru-mobile-enabled', config.mobileEnabled === true);
+        host.style.width = renderedSize + 'px';
+        host.style.height = renderedSize * 1.5 + 'px';
+        host.style.transform = 'translateY(' + characters[active].offset + '%)';
+        host.style.right = position === 'right' ? 'max(6px, env(safe-area-inset-right))' : 'auto';
+        host.style.left = position === 'left' ? 'max(6px, env(safe-area-inset-left))' : 'auto';
+      }
+      settings.hidden = !desktop.matches;
+      mobileSize.hidden = desktop.matches;
+      mobileSize.textContent = '移动端紧凑大小：' + renderedSize + ' 像素（桌面设置保留）';
       output.textContent = size + ' 像素';
+    };
+    const layoutDock = () => {
+      const bottom = 24 + controlsDock.offsetHeight;
+      panel.style.bottom = 'calc(' + bottom + 'px + env(safe-area-inset-bottom))';
+      panel.style.maxHeight =
+        'calc(100dvh - ' +
+        (bottom + 16) +
+        'px - env(safe-area-inset-bottom) - env(safe-area-inset-top))';
     };
     const rememberLayout = () => {
       layouts[active] = { position, size };
@@ -343,10 +735,11 @@
       cancel = make('button', '取消');
     consent.append(title, text, link, make('br'), agree, cancel);
     document.body.append(consent);
+    const displayWanted = () => (desktop.matches ? wanted : mobileOptIn);
     const allowed = () =>
-      wanted &&
+      displayWanted() &&
       accepted &&
-      desktop.matches &&
+      (desktop.matches || config.mobileEnabled === true) &&
       !reduce.matches &&
       !document.hidden &&
       !pageHidden &&
@@ -355,7 +748,15 @@
     const paint = () => {
       layout();
       const run = allowed();
-      if (!run) cancelWelcome();
+      if (!run) {
+        cancelWelcome();
+        cancelExternal();
+      }
+      if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
+        interruptDiagnostics('hidden-suspended-or-loading');
+      controlsDock.hidden = suspensions.size > 0;
+      diagnostics.hidden = panelOpen;
+      diagnosticUpdate();
       button.hidden = suspensions.size > 0;
       button.disabled = reduce.matches || suspensions.size > 0;
       button.textContent = reduce.matches
@@ -364,15 +765,17 @@
           ? '加载看板娘…'
           : failed
             ? loadError + '（点击重试）'
-            : wanted && accepted
+            : displayWanted() && accepted
               ? '收起看板娘'
               : '显示看板娘';
-      button.setAttribute('aria-pressed', String(wanted && accepted));
+      button.setAttribute('aria-pressed', String(displayWanted() && accepted));
       button.setAttribute('aria-busy', String(loading));
       panel.hidden = !(run && panelOpen);
+      syncThumbnail();
       panelToggle.hidden = !(run && engine);
       panelToggle.textContent = panelOpen ? '收起互动' : '互动';
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
+      layoutDock();
       if (host) {
         host.hidden = !(run && engine && !loading);
         const touch = host.querySelector('button');
@@ -391,7 +794,9 @@
       characterSearch.disabled = loading;
       favoritesFilter.disabled = loading;
       syncFavoriteButton();
-      favoritesState.textContent = favoritesNotice || '已收藏 ' + favorites.size + ' 个角色';
+      favoritesState.textContent =
+        favoritesNotice ||
+        '可用收藏 ' + Object.keys(characters).filter((id) => favorites.has(id)).length + ' 个角色';
       clearSearch.disabled = loading || !characterSearch.value;
       characterSelect.disabled = previewButton.disabled =
         loading || !characterSelect.options.length;
@@ -411,7 +816,14 @@
         else engine.pause();
       }
     };
+    diagnostics.addEventListener('toggle', () => {
+      if (diagnostics.open) {
+        panelOpen = false;
+        paint();
+      }
+    });
     panelToggle.onclick = () => {
+      diagnostics.open = false;
       panelOpen = !panelOpen;
       paint();
       if (panelOpen && !panel.hidden) {
@@ -423,7 +835,10 @@
       syncCharacterOptions();
       paint();
     };
-    characterSelect.onchange = syncFavoriteButton;
+    characterSelect.onchange = () => {
+      syncFavoriteButton();
+      syncThumbnail();
+    };
     favoritesFilter.onchange = () => {
       syncCharacterOptions();
       paint();
@@ -443,10 +858,7 @@
       try {
         // Best-effort merge at click time. This is not an atomic cross-tab lock.
         const merged = applyPending(readFavorites());
-        localStorage.setItem(
-          favoritesKey,
-          JSON.stringify(Object.keys(characters).filter((id) => merged.has(id))),
-        );
+        localStorage.setItem(favoritesKey, JSON.stringify([...merged]));
         favorites = merged;
         pendingFavorites.clear();
         favoritesNotice = '';
@@ -482,7 +894,23 @@
       if (signal.aborted) throw cancelled();
     };
     const errorMessage = (error) => {
-      if (error?.name === 'ResourceError') return error.message;
+      if (error?.name === 'ResourceError') {
+        const label = {
+          core: 'Core',
+          engine: '引擎',
+          webgl: 'WebGL',
+          model: '模型',
+          catalog: '目录',
+          moc: 'MOC',
+          physics: '物理',
+          pose: '姿态',
+          texture: '贴图',
+          shader: '着色器',
+          motion: '动作',
+          expression: '表情',
+        }[error.category || loadStage];
+        return (label ? label + '：' : '') + error.message;
+      }
       return '角色资源无效，无法显示，请重试';
     };
     // Download first: an aborted/timed-out request never leaves executable script
@@ -502,6 +930,7 @@
             finish(
               Object.assign(new Error('运行组件启动超时，请刷新页面后重试'), {
                 name: 'ResourceError',
+                code: 'timeout',
               }),
             ),
           15000,
@@ -527,7 +956,10 @@
       const timer = setTimeout(
         () =>
           controller.abort(
-            Object.assign(new Error('运行组件加载超时，请重试'), { name: 'ResourceError' }),
+            Object.assign(new Error('运行组件加载超时，请重试'), {
+              name: 'ResourceError',
+              code: 'timeout',
+            }),
           ),
         15000,
       );
@@ -537,7 +969,10 @@
           const aborted = () => reject(controller.signal.reason);
           controller.signal.addEventListener('abort', aborted, { once: true });
           (async () => {
-            const response = await fetch(src, { signal: controller.signal, credentials: 'omit' });
+            const response = await fetch(src, {
+              signal: controller.signal,
+              credentials: 'omit',
+            });
             if (!response.ok)
               throw Object.assign(
                 new Error(
@@ -545,7 +980,7 @@
                     ? '运行组件不存在，请稍后重试'
                     : '运行组件下载失败，请稍后重试',
                 ),
-                { name: 'ResourceError' },
+                { name: 'ResourceError', code: 'http' },
               );
             return response.text();
           })()
@@ -559,6 +994,7 @@
         if (error?.name === 'ResourceError') throw error;
         throw Object.assign(new Error('运行组件下载失败，请检查网络后重试'), {
           name: 'ResourceError',
+          code: 'network',
         });
       } finally {
         clearTimeout(timer);
@@ -584,12 +1020,16 @@
             finish(
               exists()
                 ? undefined
-                : Object.assign(new Error('运行组件无效，请重试'), { name: 'ResourceError' }),
+                : Object.assign(new Error('运行组件无效，请重试'), {
+                    name: 'ResourceError',
+                    code: 'invalid',
+                  }),
             );
           tag.onerror = () =>
             finish(
               Object.assign(new Error('浏览器阻止了看板娘运行，请刷新页面后重试'), {
                 name: 'ResourceError',
+                code: 'invalid',
               }),
             );
           document.head.append(tag);
@@ -601,6 +1041,8 @@
     const cancelLoad = () => {
       if (!loadController) return;
       welcomeConsumed = true;
+      if (currentLoad && currentLoad.status === 'loading') currentLoad.status = 'cancelled';
+      interruptDiagnostics('load-cancelled');
       loadAttempt++;
       loadController.abort();
       loadController = null;
@@ -615,7 +1057,13 @@
       readLayout();
       state.textContent = '已取消加载';
     };
-    const beginLoad = () => {
+    const beginLoad = (id = committed) => {
+      interruptDiagnostics('load-started');
+      if (diagnosticsEnabled) {
+        diagnosticReport.characterId = id;
+        diagnosticBegin(id);
+        diagnosticReport.error = null;
+      }
       const controller = new AbortController();
       loadController = controller;
       const attempt = ++loadAttempt;
@@ -633,6 +1081,8 @@
     };
     const destroy = () => {
       cancelWelcome();
+      cancelExternal();
+      interruptDiagnostics('engine-replaced');
       generation++;
       operation++;
       manualPending.clear();
@@ -659,6 +1109,9 @@
       checkSignal(signal);
       destroy();
       active = id;
+      if (diagnosticsEnabled && currentLoad?.status === 'failed') diagnosticBegin(id, true);
+      diagnosticPhase('webgl');
+      if (diagnosticsEnabled) diagnosticReport.characterId = id;
       readLayout();
       syncCharacterOptions(id);
       touchCount = 0;
@@ -677,12 +1130,14 @@
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
+          diagnosticError({ code: 'context-lost', category: 'webgl' });
           cancelLoad();
           failed = true;
           loadError = state.textContent = '绘图连接已中断，请重试';
           paint();
         });
         canvas.addEventListener('mascoterror', () => {
+          diagnosticError({ code: 'render', category: 'webgl' });
           cancelLoad();
           failed = true;
           loadError = state.textContent = '绘图失败，请重试';
@@ -698,7 +1153,7 @@
         canvas,
         characters[id].root,
         config.shaders,
-        characters[id],
+        { ...characters[id], onDiagnosticStage: diagnosticPhase },
         signal,
       );
       if (signal.aborted) {
@@ -707,6 +1162,7 @@
       }
       engine = candidate;
       populate();
+      diagnosticReady();
     };
     const apply = async () => {
       if (!allowed()) cancelLoad();
@@ -714,7 +1170,9 @@
       if (!allowed() || engine || loading) return;
       const { signal, attempt } = beginLoad();
       try {
+        diagnosticPhase('core');
         await script(config.core, () => !!window.Live2DCubismCore, signal);
+        diagnosticPhase('engine');
         await script(config.engine, () => !!window.WZFHaruEngine, signal);
         checkSignal(signal);
         await load(committed, signal);
@@ -723,6 +1181,7 @@
         state.textContent = '已就绪';
       } catch (error) {
         if (attempt !== loadAttempt || signal.aborted || error?.name === 'AbortError') return;
+        diagnosticError(error);
         failed = true;
         destroy();
         loadError = state.textContent = errorMessage(error);
@@ -735,7 +1194,7 @@
       if (!allowed() || loading || !engine || !Object.hasOwn(characters, id)) return;
       welcomeConsumed = true;
       cancelWelcome();
-      const { signal, attempt } = beginLoad();
+      const { signal, attempt } = beginLoad(id);
       try {
         await load(id, signal);
         if (attempt !== loadAttempt) return;
@@ -743,6 +1202,7 @@
         state.textContent = preview ? '正在预览，点击“使用这个角色”才会保存' : '已返回原角色';
       } catch (error) {
         if (attempt !== loadAttempt || signal.aborted || error?.name === 'AbortError') return;
+        diagnosticError(error);
         const reason = errorMessage(error);
         try {
           await load(committed, signal);
@@ -752,6 +1212,7 @@
         } catch (fallbackError) {
           if (attempt !== loadAttempt || signal.aborted || fallbackError?.name === 'AbortError')
             return;
+          diagnosticError(fallbackError);
           failed = true;
           destroy();
           preview = false;
@@ -780,7 +1241,8 @@
     };
     const save = () => {
       try {
-        localStorage.setItem('wzfl-mascot', wanted ? 'shown' : 'hidden');
+        if (desktop.matches) localStorage.setItem('wzfl-mascot', wanted ? 'shown' : 'hidden');
+        else localStorage.setItem('wzf-mascot-mobile-v1', mobileOptIn ? 'enabled' : 'disabled');
       } catch {}
     };
     agree.onclick = () => {
@@ -788,15 +1250,18 @@
       try {
         localStorage.setItem('wzf-haru-terms', config.termsVersion);
       } catch {}
-      wanted = true;
+      if (desktop.matches) wanted = true;
+      else mobileOptIn = true;
       save();
       consent.close();
       apply();
     };
     cancel.onclick = () => consent.close();
     button.onclick = () => {
-      if (suspensions.size) return;
-      if (!accepted) {
+      if (suspensions.size || reduce.matches || (!desktop.matches && config.mobileEnabled !== true))
+        return;
+      if (!accepted || (!desktop.matches && !mobileOptIn)) {
+        agree.textContent = desktop.matches ? '同意条款并显示' : '同意条款并在本浏览器开启移动动画';
         consent.showModal();
         return;
       }
@@ -806,13 +1271,16 @@
         host = null;
         canvas = null;
         failed = false;
-        wanted = true;
-      } else wanted = !wanted;
+        if (desktop.matches) wanted = true;
+        else mobileOptIn = true;
+      } else if (desktop.matches) wanted = !wanted;
+      else mobileOptIn = !mobileOptIn;
       save();
       apply();
     };
     const perform = async (type, id) => {
       if (!allowed() || !engine || loading) return;
+      cancelExternal();
       welcomeConsumed = true;
       cancelWelcome();
       const n = ++operation,
@@ -831,6 +1299,8 @@
         if (n === operation && g === generation)
           state.textContent = done ? '正在预览：' + text : '已取消';
       } catch (error) {
+        if (n === operation && g === generation && error?.name !== 'AbortError')
+          diagnosticError(error, type);
         if (n === operation && g === generation)
           state.textContent = error?.name === 'AbortError' ? '已取消' : errorMessage(error);
       } finally {
@@ -840,6 +1310,7 @@
     const restore = (type) => {
       if (!allowed() || !engine || loading || (type === 'expression' && !expression.options.length))
         return;
+      cancelExternal();
       welcomeConsumed = true;
       cancelWelcome(type === 'expression');
       operation++;
@@ -888,7 +1359,9 @@
           touchCount++;
           if (n === operation) state.textContent = characters[active].name + ' 向你打了个招呼';
         } else nextTouch = 0;
-      } catch {
+      } catch (error) {
+        if (g === generation && channel === interactions.motion && error?.name !== 'AbortError')
+          diagnosticError(error, 'motion');
         if (g === generation && channel === interactions.motion) {
           nextTouch = 0;
           if (n === operation) state.textContent = '招呼暂未加载成功，可以再点一次';
@@ -934,6 +1407,149 @@
       F07: '脸红',
       F08: '抿嘴',
     };
+    // Versioned local integration: it never shows, switches or loads arbitrary resources.
+    let externalPending = null,
+      externalSequence = 0,
+      externalNext = 0,
+      captionTimer = null;
+    const cancelExternal = () => {
+      clearTimeout(captionTimer);
+      if (!externalPending) return false;
+      externalPending.target.cancelPending(externalPending.type);
+      externalSequence++;
+      externalPending = null;
+      manualPending.delete('external');
+      return true;
+    };
+    const externalRequest = (request) => {
+      if (
+        !request ||
+        typeof request !== 'object' ||
+        ![Object.prototype, null].includes(Object.getPrototypeOf(request))
+      )
+        return null;
+      const keys = Reflect.ownKeys(request);
+      if (
+        keys.some(
+          (key) =>
+            typeof key !== 'string' ||
+            !['action', 'id', 'channel', 'caption'].includes(key) ||
+            !Object.hasOwn(Object.getOwnPropertyDescriptor(request, key), 'value'),
+        )
+      )
+        return null;
+      const { action, id, channel, caption } = request;
+      if (!['motion', 'expression', 'reset', 'stop'].includes(action)) return null;
+      if (['motion', 'expression'].includes(action)) {
+        if (
+          typeof id !== 'string' ||
+          !id ||
+          id.length > 200 ||
+          /[\u0000-\u001f\u007f]/.test(id) ||
+          channel !== undefined
+        )
+          return null;
+      } else if (
+        id !== undefined ||
+        (action === 'stop' && channel !== undefined) ||
+        (channel !== undefined && !['all', 'motion', 'expression'].includes(channel))
+      )
+        return null;
+      if (
+        caption !== undefined &&
+        (typeof caption !== 'string' ||
+          [...caption].length > 120 ||
+          /[<>\u0000-\u001f\u007f]/.test(caption))
+      )
+        return null;
+      return { action, id, channel, caption };
+    };
+    const externalCommand = async (request) => {
+      let req;
+      try {
+        req = externalRequest(request);
+      } catch {
+        return { ok: false, code: 'invalid-request' };
+      }
+      if (!req) return { ok: false, code: 'invalid-request' };
+      if (!engine || !allowed() || loading || engine.state().paused)
+        return { ok: false, code: 'unavailable' };
+      if (
+        ['motion', 'expression'].includes(req.action) &&
+        !engine.catalog[req.action === 'motion' ? 'motions' : 'expressions'].some(
+          (item) => item.id === req.id,
+        )
+      )
+        return { ok: false, code: 'unknown-id' };
+      if (externalPending || manualPending.size || touchPending) return { ok: false, code: 'busy' };
+      if (performance.now() < externalNext) return { ok: false, code: 'rate-limited' };
+      externalNext = performance.now() + 500;
+      welcomeConsumed = true;
+      cancelWelcome();
+      const target = engine,
+        g = generation,
+        n = ++operation,
+        token = ++externalSequence,
+        characterId = active;
+      clearTimeout(captionTimer);
+      const result = () => ({
+        ok: true,
+        code: req.action === 'stop' ? 'stopped' : req.action === 'reset' ? 'reset' : 'played',
+        characterId,
+      });
+      const caption = () => {
+        if (req.caption !== undefined) {
+          state.textContent = req.caption;
+          captionTimer = setTimeout(() => {
+            if (engine === target && generation === g && operation === n)
+              state.textContent = '已就绪';
+          }, 5000);
+        }
+      };
+      if (req.action === 'reset' || req.action === 'stop') {
+        if (req.action === 'stop' || !req.channel || ['all', 'motion'].includes(req.channel))
+          target.idleNow();
+        if (req.action === 'reset' && (!req.channel || ['all', 'expression'].includes(req.channel)))
+          target.resetExpression();
+        caption();
+        return result();
+      }
+      externalPending = { target, type: req.action };
+      manualPending.add('external');
+      try {
+        const done = await target.play(req.action, req.id);
+        if (
+          !done ||
+          externalSequence !== token ||
+          engine !== target ||
+          generation !== g ||
+          operation !== n ||
+          !allowed()
+        )
+          return { ok: false, code: 'cancelled', characterId };
+        caption();
+        return result();
+      } catch (error) {
+        return {
+          ok: false,
+          code:
+            externalSequence !== token || error?.name === 'AbortError'
+              ? 'cancelled'
+              : 'resource-error',
+          characterId,
+        };
+      } finally {
+        if (externalSequence === token) {
+          externalPending = null;
+          manualPending.delete('external');
+        }
+      }
+    };
+    window.WZFMascot = Object.freeze({
+      version: 1,
+      command: externalCommand,
+      cancel: () => ({ ok: true, code: cancelExternal() ? 'cancelled' : 'idle' }),
+    });
     const setSuspension = (source, suspended) => {
       if (suspensions.has(source) === suspended) return;
       if (suspended) {
@@ -959,7 +1575,7 @@
       // so moving a panel between a dock and dialog cannot briefly resume the mascot.
       const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel';
       const own = (node) =>
-        [button, panel, panelToggle, host, consent].some(
+        [button, panel, panelToggle, host, consent, controlsDock].some(
           (element) => element && (element === node || element.contains(node)),
         );
       const visible = (element) =>
@@ -1004,7 +1620,34 @@
       document.addEventListener('pagenest-reading-layout', sync);
       sync();
     };
-    desktop.addEventListener('change', apply);
+    const syncMobileInput = () => {
+      const node = document.activeElement;
+      const editable =
+        node &&
+        (node.matches('input,textarea,select,[contenteditable="true"],[contenteditable=""]') ||
+          node.isContentEditable);
+      const own = [panel, controlsDock, host, consent].some((element) => element?.contains(node));
+      setSuspension(
+        'mobile-input',
+        !desktop.matches &&
+          mobileOptIn &&
+          config.mobileEnabled === true &&
+          config.mobilePauseOnInput !== false &&
+          !!editable &&
+          !own,
+      );
+    };
+    document.addEventListener('focusin', syncMobileInput);
+    document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
+    window.visualViewport?.addEventListener('resize', syncMobileInput);
+    window.addEventListener('resize', () => {
+      layout();
+      layoutDock();
+    });
+    desktop.addEventListener('change', () => {
+      syncMobileInput();
+      apply();
+    });
     reduce.addEventListener('change', apply);
     document.addEventListener('visibilitychange', apply);
     window.addEventListener('pagehide', () => {
@@ -1021,6 +1664,8 @@
       failed,
       accepted,
       wanted,
+      mobileOptIn,
+      mobileEnabled: config.mobileEnabled === true,
       panelOpen,
       suspended: suspensions.size > 0,
       suspensionSources: [...suspensions].sort(),

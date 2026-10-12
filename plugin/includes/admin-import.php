@@ -184,28 +184,9 @@ function wzf_mascot_import_post() {
         wzf_mascot_save_resource($kind,$upload['tmp_name'],$fields);
         $notice = '资源已导入。';
     } catch (Throwable $e) { $notice = $e->getMessage(); }
-    wp_safe_redirect(add_query_arg('mascot_notice', $notice, admin_url('options-general.php?page=wzf-mascot')));
+    wp_safe_redirect(add_query_arg('mascot_notice', rawurlencode($notice), admin_url('options-general.php?page=wzf-mascot')));
     exit;
 }
-function wzf_mascot_admin_page() {
-    if (!current_user_can('manage_options')) return;
-    $config = get_option(WZF_MASCOT_OPTION, ['characters'=>[]]);
-    echo '<div class="wrap"><h1>WordPress Live2D Mascot</h1><p>插件不附带 Core 或模型。请自行访问官方页面，接受适用条款并下载；插件不会从远程下载。只上传您有权使用的资源，导入成功不代表取得再分发许可。</p>';
-    echo '<p><a href="https://www.live2d.com/en/sdk/download/web/" target="_blank" rel="noopener">Cubism SDK for Web 官方下载</a> · <a href="https://www.live2d.com/en/learn/sample/" target="_blank" rel="noopener">官方样例</a></p>';
-    echo '<p>Core：' . (!empty($config['core']) ? '已配置（Web 5 R5 固定版本）' : '未配置') . '；角色：' . count($config['characters'] ?? []) . '</p>';
-    if (isset($_GET['mascot_notice']) && is_string($_GET['mascot_notice'])) echo '<div class="notice"><p>' . esc_html(wp_unslash($_GET['mascot_notice'])) . '</p></div>';
-    echo '<ul>';
-    foreach (($config['characters'] ?? []) as $id=>$c) echo '<li>' . esc_html($id . ' — ' . $c['name'] . ' — ' . $c['credit']) . '</li>';
-    echo '</ul><p>模型 ZIP 限 64 MiB、1000 项、解压总大小 64 MiB；只接受单个 model3 的运行文件（moc3、PNG、JSON），不能带编辑工程、声音、脚本、HTML 或其他模型。导出后至少保留一个动作，待机优先使用 Idle 组第一个动作。上传现成 catalog 时仍按 model3 重新生成目录。</p>';
-    foreach (['core'=>'导入 Core JS（固定 SHA256）','model'=>'导入单模型运行 ZIP'] as $kind=>$label) {
-        echo '<h2>' . esc_html($label) . '</h2><form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
-        wp_nonce_field('wzf_mascot_import');
-        echo '<input type="hidden" name="action" value="wzf_mascot_import"><input type="hidden" name="kind" value="' . esc_attr($kind) . '"><input type="file" name="resource" required accept="' . ($kind==='core'?'.js':'.zip') . '">';
-        if ($kind==='model') echo '<p><label>角色 ID <input name="id" required pattern="[a-z][a-z0-9-]{0,63}"></label> <label>名称 <input name="name" required maxlength="100"></label> <label>署名／来源 <input name="credit" maxlength="150"></label></p>';
-        echo '<p><label><input type="checkbox" name="rights" value="1" required> 我有权在本站使用资源，并已阅读其来源许可与使用条件。</label></p>';
-        submit_button('导入'); echo '</form>';
-    }
-    echo '</div>';
-}
+require_once __DIR__ . '/admin-settings.php';
 add_action('admin_menu', function() { add_options_page('WordPress Live2D Mascot','Live2D Mascot','manage_options','wzf-mascot','wzf_mascot_admin_page'); });
 add_action('admin_post_wzf_mascot_import','wzf_mascot_import_post');

@@ -23,7 +23,7 @@ class ReleasePackageTests(unittest.TestCase):
                'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
                'tools/ci.py','tools/verify_release.py',
                'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',
-               'plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/characters.json','plugin/haru-assets.json',
+               'plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','plugin/admin.css','plugin/characters.json','plugin/haru-assets.json',
                'plugin/usage-imported-resources.html','plugin/licenses/Framework-LICENSE.md']
         assets=json.loads((ROOT/'plugin/haru-assets.json').read_bytes())
         names += ['plugin/'+assets[key] for key in ['engine','loader','css']]

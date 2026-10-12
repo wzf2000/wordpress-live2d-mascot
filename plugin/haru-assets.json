@@ -1,7 +1,1 @@
-{
-  "engine": "haru-engine-4d6382933c4f.js",
-  "loader": "haru-loader-900de09423b5.js",
-  "css": "haru-css-a1cfaee253c9.css",
-  "shaders": "shaders/",
-  "terms": "usage-imported-resources.html"
-}
+{"engine": "haru-engine-296b56e2d33a.js", "loader": "haru-loader-e2f3146ba3b5.js", "css": "haru-css-c2cae850d0c7.css", "shaders": "shaders/", "terms": "usage-imported-resources.html"}

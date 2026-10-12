@@ -1,6 +1,8 @@
 """Synthetic ZIP/PHP-stub importer security tests; no Core download or production writes."""
 import base64
 import json
+import struct
+import zlib
 import os
 from pathlib import Path
 import subprocess
@@ -269,6 +271,402 @@ class ImporterTests(unittest.TestCase):
         self.assertEqual(character['welcome'],'motion-1')
         self.assertEqual(character['greetings'],['motion-1'])
         self.assertEqual(character['credit'],'Example owner')
+
+    def settings_setup(self):
+        path=json.dumps(str(self.fixture()))
+        return """wzf_mascot_save_resource('model',"""+path+""",['id'=>'editable','name'=>'Example','credit'=>'Owner']);
+        $u=wzf_mascot_uploads(); $c=$options[WZF_MASCOT_OPTION]['characters']['editable'];
+        $model=json_decode(file_get_contents($u['path'].'/'.$c['root'].$c['file']),true);
+        $model['FileReferences']['Motions']['Idle'][]=['File'=>'motion/greet.motion3.json'];
+        file_put_contents($u['path'].'/'.$c['root'].'motion/greet.motion3.json','{"Version":3}');
+        file_put_contents($u['path'].'/'.$c['root'].$c['file'],json_encode($model));
+        file_put_contents($u['path'].'/'.$c['root'].'catalog.json',json_encode(['motions'=>[
+          ['id'=>'custom_idle','file'=>'motion/idle.motion3.json','label'=>'Idle'],
+          ['id'=>'01','file'=>'motion/greet.motion3.json','label'=>'Greeting']], 'expressions'=>[]]));
+        $c['idle']='custom_idle';$c['offset']=8.5;$c['termsAnchor']='owner';$c['renderScale']=1.1;
+        $options[WZF_MASCOT_OPTION]['characters']=['legacy_character'=>$c];
+        $options[WZF_MASCOT_OPTION]['presentation']=['keep'=>'unchanged'];
+        $before=$options[WZF_MASCOT_OPTION];$version=wzf_mascot_config_version($before);
+        $fields=['name'=>'Edited','credit'=>'New owner','size'=>'200','offset'=>'6.5','idle'=>'custom_idle','welcome'=>'01','greetings'=>['01']];
+        """
+
+    def test_settings_edit_retains_paths_unknown_fields_and_legacy_ids(self):
+        report=self.php(self.settings_setup()+"""
+        $catalog_before=file_get_contents($u['path'].'/'.$c['root'].'catalog.json');
+        wzf_mascot_save_character('legacy_character',$version,$fields);
+        $after=get_option(WZF_MASCOT_OPTION);
+        echo json_encode(['ok'=>true,'before'=>$before,'after'=>$after,
+          'catalog_unchanged'=>$catalog_before===file_get_contents($u['path'].'/'.$c['root'].'catalog.json'),
+          'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        before=report['before']['characters']['legacy_character'];after=report['after']['characters']['legacy_character']
+        self.assertEqual(after['name'],'Edited');self.assertEqual(after['offset'],6.5)
+        self.assertEqual(after['welcome'],'01');self.assertEqual(after['greetings'],['01'])
+        for key in ['root','file','termsAnchor','renderScale']:self.assertEqual(before[key],after[key])
+        self.assertEqual(report['before']['presentation'],report['after']['presentation'])
+        self.assertTrue(report['catalog_unchanged']);self.assertFalse(report['lock'])
+
+    def test_settings_conflict_shared_lock_and_failed_write_preserve_config(self):
+        for setup,expected in [("$options[WZF_MASCOT_OPTION]['changed']=true;",'刷新'),
+                               ("$options[WZF_MASCOT_LOCK]=['token'=>'other'];",'正在进行'),
+                               ('$write_fail=true;','保存失败')]:
+            with self.subTest(setup=setup):
+                report=self.php(self.settings_setup()+setup+"""
+                $snapshot=get_option(WZF_MASCOT_OPTION);$error='';
+                try {wzf_mascot_save_character('legacy_character',$version,$fields);} catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['ok'=>true,'error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+                self.assertIn(expected,report['error']);self.assertTrue(report['unchanged'])
+                if 'other' in setup:self.assertEqual(report['lock']['token'],'other')
+                else:self.assertFalse(report['lock'])
+
+    def test_settings_invalid_fields_and_catalog_references_fail_closed(self):
+        invalid=["$fields['idle']='unknown';", "$fields['welcome']='expression-1';",
+                 "$fields['greetings']=['01','01'];", "$fields['greetings']=['missing'];",
+                 "$fields['name']='<b>Injected</b>';", "$fields['offset']='INF';",
+                 "$fields['size']='205';", "$fields['size']='270';", "$fields['offset']='101';",
+                 "$fields['root']='other/';", "$fields['credit']=['bad'];",
+                 "$fields['greetings']=['key'=>'01'];",
+                 "unlink($u['path'].'/'.$c['root'].'motion/greet.motion3.json');",
+                 "file_put_contents($u['path'].'/'.$c['root'].'catalog.json',json_encode(['motions'=>[['id'=>'custom_idle','file'=>'missing.motion3.json']]]));",
+                 "unlink($u['path'].'/'.$c['root'].'motion/greet.motion3.json');symlink($u['path'].'/'.$c['root'].'motion/idle.motion3.json',$u['path'].'/'.$c['root'].'motion/greet.motion3.json');"]
+        for change in invalid:
+            with self.subTest(change=change):
+                report=self.php(self.settings_setup()+change+"""
+                $error='';try {wzf_mascot_save_character('legacy_character',$version,$fields);} catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['ok'=>true,'error'=>$error,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+                self.assertTrue(report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+
+    def test_settings_maintained_extra_catalog_motion_and_greetings_order(self):
+        report=self.php(self.settings_setup()+"""
+        $catalog=json_decode(file_get_contents($u['path'].'/'.$c['root'].'catalog.json'),true);
+        $catalog['motions'][]=['id'=>'legacy_extra','file'=>'motion/extra.motion3.json'];
+        file_put_contents($u['path'].'/'.$c['root'].'motion/extra.motion3.json','{"Version":3}');
+        file_put_contents($u['path'].'/'.$c['root'].'catalog.json',json_encode($catalog));
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['greetings']=['01','custom_idle'];
+        $version=wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION));
+        $fields['welcome']='legacy_extra';$fields['greetings']=['custom_idle','legacy_extra','01'];
+        wzf_mascot_save_character('legacy_character',$version,$fields);
+        echo json_encode(['character'=>get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']]);""")
+        self.assertEqual(report['character']['welcome'],'legacy_extra')
+        self.assertEqual(report['character']['greetings'],['01','custom_idle','legacy_extra'])
+
+    def test_settings_disabled_welcome_greetings_and_noop(self):
+        report=self.php(self.settings_setup()+"""
+        $fields['welcome']='';$fields['greetings']=[];
+        wzf_mascot_save_character('legacy_character',$version,$fields);
+        $after=get_option(WZF_MASCOT_OPTION);$version=wzf_mascot_config_version($after);
+        $write_fail=true;wzf_mascot_save_character('legacy_character',$version,$fields);
+        echo json_encode(['ok'=>true,'character'=>$after['characters']['legacy_character'],'unchanged'=>$after===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertIsNone(report['character']['welcome']);self.assertEqual(report['character']['greetings'],[])
+        self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+
+    def test_settings_permission_and_nonce_before_changes(self):
+        self.assertEqual(self.php('$allowed=false; wzf_mascot_settings_post();')['error'],'forbidden')
+        self.assertEqual(self.php('wzf_mascot_settings_post();')['error'],'nonce rejected')
+        report=self.php(self.settings_setup()+"""$allowed=false;
+        $error='';try{wzf_mascot_save_character('legacy_character',$version,$fields);}catch(Throwable $e){$error=$e->getMessage();}
+        echo json_encode(['error'=>$error,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertIn('管理员',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+
+    def test_admin_and_profile_render_are_scoped_escaped_and_readonly(self):
+        report=self.php(self.settings_setup()+"""
+        function admin_url($s){return '/wp-admin/'.$s;}
+        function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
+        function esc_attr($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
+        function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
+        function wp_unslash($s){return $s;}
+        function add_query_arg($k,$v,$s){return $s.'&'.$k.'='.urlencode($v);}
+        function wp_nonce_field(...$x){echo '<input type="hidden" name="nonce" value="stub">';}
+        function submit_button($s){echo '<button>'.$s.'</button>';}
+        function selected($a,$b,$echo){return $a===$b?'selected':'';}
+        function checked($a,$b,$echo){return $a===$b?'checked':'';}
+        function metadata_exists(...$x){return false;}
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['credit']='<script>alert(1)</script>';
+        $snapshot=get_option(WZF_MASCOT_OPTION);$_GET['character']='legacy_character';
+        ob_start();wzf_mascot_admin_page();$admin=ob_get_clean();
+        ob_start();wzf_haru_profile((object)['ID'=>1]);$profile=ob_get_clean();
+        echo json_encode(['admin'=>$admin,'profile'=>$profile,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+        self.assertNotIn('<script>',report['admin']);self.assertIn('&lt;script&gt;',report['admin'])
+        self.assertIn('name="version"',report['admin']);self.assertIn('value="01"',report['admin'])
+        self.assertIn('value="8.5"',report['admin']);self.assertIn('wzf-mascot-admin',report['admin'])
+        self.assertIn('wzf-mascot-profile',report['profile']);self.assertIn('name="live2d_front"',report['profile'])
+
+    def replacement_fixture(self, incompatible=False):
+        def change(files):
+            refs=files['Model.model3.json']['FileReferences']
+            if incompatible:
+                refs['Motions']={'Idle':[{'File':'motion/new.motion3.json'}]}
+                files['motion/new.motion3.json']={'Version':3}
+            else:
+                refs['Motions']={'Idle':[{'File':'motion/greet.motion3.json'},{'File':'motion/idle.motion3.json'}]}
+                files['motion/greet.motion3.json']={'Version':3}
+        return json.dumps(str(self.fixture(change)))
+
+    def test_replacement_maps_files_and_resource_rollback_preserves_new_settings(self):
+        replacement=self.replacement_fixture()
+        report=self.php(self.settings_setup()+"""
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['welcome']='01';
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['greetings']=['01','custom_idle'];
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['status']='disabled';
+        $original=get_option(WZF_MASCOT_OPTION)['characters']['legacy_character'];
+        wzf_mascot_replace_resource("""+replacement+""",'legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)));
+        $updated=get_option(WZF_MASCOT_OPTION)['characters']['legacy_character'];
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['name']='New display name';
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['size']=220;
+        wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)),'rollback');
+        $rolled=get_option(WZF_MASCOT_OPTION)['characters']['legacy_character'];
+        wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)),'rollback');
+        echo json_encode(['original'=>$original,'updated'=>$updated,'rolled'=>$rolled,'again'=>get_option(WZF_MASCOT_OPTION)['characters']['legacy_character'],
+          'old_file'=>is_file($u['path'].'/'.$original['root'].$original['file']),'new_file'=>is_file($u['path'].'/'.$updated['root'].$updated['file']),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertNotEqual(report['original']['root'],report['updated']['root'])
+        self.assertEqual(report['updated']['idle'],'motion-2');self.assertEqual(report['updated']['welcome'],'motion-1')
+        self.assertEqual(report['updated']['greetings'],['motion-1','motion-2'])
+        for key in ['name','credit','offset','size','renderScale','termsAnchor','status']:
+            self.assertEqual(report['original'][key],report['updated'][key])
+        self.assertEqual(report['rolled']['root'],report['original']['root'])
+        self.assertEqual(report['rolled']['name'],'New display name');self.assertEqual(report['rolled']['size'],220)
+        self.assertEqual(report['rolled']['status'],'disabled');self.assertEqual(report['again']['root'],report['updated']['root'])
+        self.assertTrue(report['old_file']);self.assertTrue(report['new_file']);self.assertFalse(report['lock'])
+
+    def test_replacement_incompatible_requires_explicit_reset(self):
+        replacement=self.replacement_fixture(True)
+        report=self.php(self.settings_setup()+"""
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['welcome']='01';
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['greetings']=['01'];
+        $before=get_option(WZF_MASCOT_OPTION);$version=wzf_mascot_config_version($before);
+        $error='';try {wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version);}catch(Throwable $e){$error=$e->getMessage();}
+        $unchanged=$before===get_option(WZF_MASCOT_OPTION);
+        wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version,true);
+        echo json_encode(['error'=>$error,'unchanged'=>$unchanged,'after'=>get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']]);""")
+        self.assertIn('允许重置',report['error']);self.assertTrue(report['unchanged'])
+        self.assertEqual(report['after']['idle'],'motion-1');self.assertIsNone(report['after']['welcome'])
+        self.assertEqual(report['after']['greetings'],[])
+        self.assertEqual(len(list((self.root/'uploads/wzf-mascot').glob('model-*'))),2)
+
+    def test_management_lifecycle_and_rollback_in_trash_preserve_files(self):
+        replacement=self.replacement_fixture()
+        report=self.php(self.settings_setup()+"""
+        wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version);
+        $statuses=[];
+        foreach(['disable','trash','rollback','restore','enable'] as $operation){
+          wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)),$operation);
+          $statuses[]=wzf_mascot_character_status(get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']);
+        }
+        echo json_encode(['statuses'=>$statuses,'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertEqual(report['statuses'],['disabled','trash','trash','disabled','active']);self.assertFalse(report['lock'])
+        self.assertEqual(len(list((self.root/'uploads/wzf-mascot').glob('model-*'))),2)
+
+    def test_rollback_missing_moc_or_texture_preserves_option_and_history(self):
+        replacement=self.replacement_fixture()
+        for missing in ['Model.moc3','textures/a.png']:
+            with self.subTest(missing=missing):
+                report=self.php(self.settings_setup()+"""
+                wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version);
+                $snapshot=get_option(WZF_MASCOT_OPTION);
+                unlink($u['path'].'/'.$c['root'].'"""+missing+"""');
+                $error='';try {wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($snapshot),'rollback');}catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+                self.assertIn('运行引用',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+
+    def test_management_conflict_lock_write_failure_permission_and_nonce(self):
+        for change,operation in [("$options[WZF_MASCOT_OPTION]['changed']=true;",'disable'),
+                                 ("$options[WZF_MASCOT_LOCK]=['token'=>'other'];",'trash'),
+                                 ('$write_fail=true;','disable'),('$allowed=false;','disable'),('', 'restore'),('', 'permanent-delete')]:
+            with self.subTest(change=change,operation=operation):
+                report=self.php(self.settings_setup()+change+"""
+                $snapshot=get_option(WZF_MASCOT_OPTION);$error='';
+                try{wzf_mascot_manage_character('legacy_character',$version,'"""+operation+"""');}catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+                self.assertTrue(report['error']);self.assertTrue(report['unchanged'])
+                if 'other' in change:self.assertEqual(report['lock']['token'],'other')
+                else:self.assertFalse(report['lock'])
+        self.assertEqual(self.php('wzf_mascot_manage_post();')['error'],'nonce rejected')
+        self.assertEqual(self.php('$allowed=false;wzf_mascot_manage_post();')['error'],'forbidden')
+
+    def test_replacement_write_failure_and_conflict_clean_candidate(self):
+        replacement=self.replacement_fixture()
+        for change in ['$write_fail=true;',"$options[WZF_MASCOT_OPTION]['changed']=true;", "$options[WZF_MASCOT_LOCK]=['token'=>'other'];"]:
+            with self.subTest(change=change):
+                report=self.php(self.settings_setup()+change+"""
+                $snapshot=get_option(WZF_MASCOT_OPTION);$error='';
+                try{wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version);}catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION)]);""")
+                self.assertTrue(report['error']);self.assertTrue(report['unchanged'])
+        self.assertFalse(list((self.root/'uploads/wzf-mascot').glob('stage-*')))
+        self.assertEqual(len(list((self.root/'uploads/wzf-mascot').glob('model-*'))),3)
+
+    def test_frontend_filters_disabled_trash_and_management_metadata(self):
+        report=self.php(self.settings_setup()+"""
+        mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
+        $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['status']='active';
+        $options[WZF_MASCOT_OPTION]['characters']['disabled']=$c;$options[WZF_MASCOT_OPTION]['characters']['disabled']['status']='disabled';
+        $options[WZF_MASCOT_OPTION]['characters']['trash']=$c;$options[WZF_MASCOT_OPTION]['characters']['trash']['status']='trash';
+        $options[WZF_MASCOT_OPTION]['history']=['private-history'=>$c];unset($options[WZF_MASCOT_OPTION]['presentation']);
+        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function plugins_url(...$args){return '/plugins/live2d-show';}
+        function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
+        function wp_json_encode($s,$f){return json_encode($s,$f);}
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        ob_start();wzf_haru_output();$html=ob_get_clean();
+        preg_match('~<script id="wzf-live2d-config"[^>]*>(.*?)</script>~s',$html,$match);
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['status']='disabled';
+        ob_start();wzf_haru_output();$empty=ob_get_clean();
+        echo json_encode(['config'=>json_decode($match[1],true),'empty'=>$empty]);""")
+        self.assertEqual(set(report['config']['characters']),{'legacy_character'})
+        self.assertNotIn('status',report['config']['characters']['legacy_character'])
+        self.assertNotIn('history',report['config']);self.assertEqual(report['empty'],'')
+
+    def test_administrator_diagnostics_are_readonly_and_report_resource_categories(self):
+        report=self.php(self.settings_setup()+"""
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        unset($options[WZF_MASCOT_OPTION]['presentation']);
+        mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','invalid core');
+        $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+        $before=get_option(WZF_MASCOT_OPTION);
+        $good=wzf_mascot_diagnose_resources($before);
+        unlink($u['path'].'/'.$c['root'].'Model.moc3');
+        $missing=wzf_mascot_diagnose_resources($before);
+        $allowed=false;$error='';try{wzf_mascot_diagnose_resources($before);}catch(Throwable $e){$error=$e->getMessage();}
+        echo json_encode(['good'=>$good,'missing'=>$missing,'error'=>$error,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertFalse(report['good']['core']['ok']);self.assertIn('SHA256',report['good']['core']['message'])
+        self.assertTrue(report['good']['characters'][0]['checks']['runtime']['ok'])
+        self.assertTrue(report['good']['characters'][0]['checks']['catalog']['ok'])
+        self.assertFalse(report['missing']['characters'][0]['checks']['runtime']['ok'])
+        self.assertTrue(report['missing']['characters'][0]['checks']['catalog']['ok'])
+        self.assertTrue(report['good']['presentation']['ok']);self.assertIn('管理员',report['error'])
+        self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+        self.assertNotIn(str(self.root),json.dumps(report));self.assertNotIn('https://',json.dumps(report))
+
+    def thumbnail_fixture(self, width=32, height=16, metadata=False):
+        self.counter+=1
+        path=self.root/f'thumbnail-{self.counter}.png'
+        def chunk(kind,data):
+            return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data)&0xffffffff)
+        image=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',width,height,8,2,0,0,0))
+        if metadata:image+=chunk(b'tEXt',b'Comment\x00private-test-metadata-marker')
+        image+=chunk(b'IDAT',zlib.compress((b'\x00'+b'\x10\x80\xc0'*width)*height))+chunk(b'IEND',b'')
+        if metadata:image+=b'<?php malicious-test-trailer ?>'
+        path.write_bytes(image)
+        return json.dumps(str(path))
+
+    def test_thumbnail_reencodes_pixels_removes_metadata_and_is_independent_of_model(self):
+        image=self.thumbnail_fixture(1024,512,True)
+        replacement=self.replacement_fixture()
+        report=self.php(self.settings_setup()+"""
+        wzf_mascot_save_thumbnail('legacy_character',$version,"""+image+""");
+        $with_thumbnail=get_option(WZF_MASCOT_OPTION);$thumbnail=$with_thumbnail['characters']['legacy_character']['thumbnail'];
+        $bytes=file_get_contents($u['path'].'/'.$thumbnail);
+        wzf_mascot_replace_resource("""+replacement+""",'legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)));
+        $updated=get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']['thumbnail'];
+        wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)),'rollback');
+        $rolled=get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']['thumbnail'];
+        $url=wzf_mascot_thumbnail_url(get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']);
+        wzf_mascot_save_thumbnail('legacy_character',wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION)));
+        echo json_encode(['thumbnail'=>$thumbnail,'updated'=>$updated,'rolled'=>$rolled,'url'=>$url,'info'=>getimagesizefromstring($bytes),
+          'clean'=>!str_contains($bytes,'private-test-metadata-marker')&&!str_contains($bytes,'malicious-test-trailer'),
+          'removed'=>!isset(get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']['thumbnail']),
+          'retained'=>is_file($u['path'].'/'.$thumbnail),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertRegex(report['thumbnail'],r'^thumbnail-[0-9a-f]{32}/image\.png$')
+        self.assertEqual(report['updated'],report['thumbnail']);self.assertEqual(report['rolled'],report['thumbnail'])
+        self.assertEqual(report['info']['0'],512);self.assertEqual(report['info']['1'],256)
+        self.assertTrue(report['clean']);self.assertTrue(report['removed']);self.assertTrue(report['retained']);self.assertFalse(report['lock'])
+        self.assertTrue(report['url'].endswith(report['thumbnail']))
+
+    def test_mobile_defaults_noop_and_explicit_change_preserve_existing_config(self):
+        report=self.php(self.settings_setup()+"""
+        $before=$options[WZF_MASCOT_OPTION];$version=wzf_mascot_config_version($before);
+        wzf_mascot_save_mobile($version,false,true);$noop=$options[WZF_MASCOT_OPTION];
+        wzf_mascot_save_mobile($version,true,false);$changed=$options[WZF_MASCOT_OPTION];
+        echo json_encode(['noop'=>$noop===$before,'enabled'=>$changed['mobileEnabled'],'pause'=>$changed['mobilePauseOnInput'],'character'=>$changed['characters']===$before['characters'],'lock'=>isset($options[WZF_MASCOT_LOCK])]);
+        """)
+        self.assertEqual(report,{'noop':True,'enabled':True,'pause':False,'character':True,'lock':False})
+
+    def test_mobile_conflict_lock_permission_and_nonce_are_enforced(self):
+        for mode in ['conflict','lock','write','permission']:
+            report=self.php(self.settings_setup()+"""
+            $before=$options[WZF_MASCOT_OPTION];$version=wzf_mascot_config_version($before);
+            """+{'conflict':"$version=str_repeat('0',64);",'lock':"$options[WZF_MASCOT_LOCK]=['token'=>'owner'];",'write':"$write_fail=true;",'permission':"$allowed=false;"}[mode]+"""
+            try{wzf_mascot_save_mobile($version,true,true);}catch(Throwable $e){$error=$e->getMessage();}
+            echo json_encode(['error'=>isset($error),'unchanged'=>$before===$options[WZF_MASCOT_OPTION],'lock'=>$options[WZF_MASCOT_LOCK]??null]);
+            """)
+            self.assertTrue(report['error']);self.assertTrue(report['unchanged'])
+            self.assertEqual(report['lock'],{'token':'owner'} if mode=='lock' else None)
+        self.assertEqual(self.php('wzf_mascot_mobile_post();')['error'],'nonce rejected')
+        self.assertEqual(self.php('$allowed=false;wzf_mascot_mobile_post();')['error'],'forbidden')
+
+    def test_thumbnail_real_jpeg_and_webp_are_reencoded_to_png(self):
+        report=self.php("""
+        $image=imagecreatetruecolor(32,16);$files=[];
+        foreach(['jpeg','webp'] as $type){
+          $file=getenv('TEST_UPLOADS').'-'.$type;
+          $fn='image'.$type;$fn($image,$file);
+          $bytes=wzf_mascot_thumbnail_bytes($file);$files[$type]=getimagesizefromstring($bytes)[2];
+        }
+        echo json_encode(['types'=>$files]);""")
+        self.assertEqual(report['types'],{'jpeg':3,'webp':3})
+
+    def test_thumbnail_invalid_svg_large_geometry_urls_and_symlinks_are_rejected(self):
+        svg=self.root/'bad.svg';svg.write_text('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')
+        huge=self.root/'large.png'
+        with huge.open('wb') as stream:stream.truncate(4*1024*1024+1)
+        good=json.loads(self.thumbnail_fixture())
+        link=self.root/'link.png';link.symlink_to(good)
+        cases=[json.dumps(str(svg)),json.dumps(str(huge)),self.thumbnail_fixture(2049,1),json.dumps(str(link)),json.dumps('https://external.invalid/a.png')]
+        for image in cases:
+            with self.subTest(image=image):
+                self.assertFalse(self.php('wzf_mascot_thumbnail_bytes('+image+');echo json_encode(["ok"=>true]);')['ok'])
+
+    def test_thumbnail_conflict_lock_and_failed_write_cleanup_without_option_changes(self):
+        image=self.thumbnail_fixture()
+        for change in ['$write_fail=true;',"$options[WZF_MASCOT_OPTION]['changed']=true;", "$options[WZF_MASCOT_LOCK]=['token'=>'other'];"]:
+            with self.subTest(change=change):
+                report=self.php(self.settings_setup()+change+"""
+                $snapshot=get_option(WZF_MASCOT_OPTION);$error='';
+                try{wzf_mascot_save_thumbnail('legacy_character',$version,"""+image+""");}catch(Throwable $e){$error=$e->getMessage();}
+                echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+                self.assertTrue(report['error']);self.assertTrue(report['unchanged'])
+                if 'other' in change:self.assertEqual(report['lock']['token'],'other')
+                else:self.assertFalse(report['lock'])
+        self.assertFalse(list((self.root/'uploads/wzf-mascot').glob('thumbnail-*')))
+        self.assertFalse(list((self.root/'uploads/wzf-mascot').glob('stage-thumbnail-*')))
+
+    def test_thumbnail_clear_failed_write_and_invalid_reference_are_safe(self):
+        image=self.thumbnail_fixture()
+        report=self.php(self.settings_setup()+"""
+        wzf_mascot_save_thumbnail('legacy_character',$version,"""+image+""");
+        $snapshot=get_option(WZF_MASCOT_OPTION);$write_fail=true;$error='';
+        try{wzf_mascot_save_thumbnail('legacy_character',wzf_mascot_config_version($snapshot));}catch(Throwable $e){$error=$e->getMessage();}
+        $bad=[];foreach(['https://external.invalid/a.png','../outside.png','model-root/a.png'] as $path){$bad[]=wzf_mascot_thumbnail_url(['thumbnail'=>$path]);}
+        echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'bad'=>$bad,'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
+        self.assertTrue(report['error']);self.assertTrue(report['unchanged']);self.assertEqual(report['bad'],[None,None,None]);self.assertFalse(report['lock'])
+        self.assertEqual(self.php('wzf_mascot_thumbnail_post();')['error'],'nonce rejected')
+        self.assertEqual(self.php('$allowed=false;wzf_mascot_thumbnail_post();')['error'],'forbidden')
+
+    def test_diagnostic_nonce_gate_runs_without_rendering(self):
+        report=self.php("$_GET['page']='wzf-mascot';$_POST['mascot_diagnostics']='1';wzf_mascot_diagnostics_gate();")
+        self.assertEqual(report['error'],'nonce rejected')
+        report=self.php("$allowed=false;$_GET['page']='wzf-mascot';$_POST['mascot_diagnostics']='1';wzf_mascot_diagnostics_gate();")
+        self.assertEqual(report['error'],'forbidden')
+        report=self.php("$_GET['page']='wzf-mascot';wzf_mascot_diagnostics_gate();echo json_encode(['ok'=>true,'option'=>get_option(WZF_MASCOT_OPTION)]);")
+        self.assertTrue(report['ok']);self.assertFalse(report['option'])
+
+    def test_profile_save_preserves_permission_nonce_and_checkbox_semantics(self):
+        report=self.php("""
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        $writes=[];$nonce_good=true;
+        function wp_unslash($s){return $s;}
+        function wp_verify_nonce(...$x){global $nonce_good;return $nonce_good;}
+        function update_user_meta($id,$key,$value){global $writes;$writes[]=[$id,$key,$value];}
+        $_POST=['wzf_haru_nonce'=>'valid','live2d_front'=>'1'];
+        $allowed=false;wzf_haru_profile_save(7);
+        $allowed=true;$nonce_good=false;wzf_haru_profile_save(7);
+        $nonce_good=true;$_POST['wzf_haru_nonce']=['bad'];wzf_haru_profile_save(7);
+        $_POST['wzf_haru_nonce']='valid';wzf_haru_profile_save(7);
+        unset($_POST['live2d_front']);wzf_haru_profile_save(7);
+        echo json_encode(['writes'=>$writes]);""")
+        self.assertEqual(report['writes'],[[7,'show_live2d_front','true'],[7,'show_live2d_front','false']])
 
     def test_zero_resources_frontend_empty(self):
         env=dict(os.environ,TEST_ENTRY=str(ROOT/'plugin/live2d-show.php'))

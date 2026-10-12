@@ -4,6 +4,7 @@ export class ResourceError extends Error {
   constructor(
     public code: string,
     message: string,
+    public category: string = 'resource',
   ) {
     super(message);
     this.name = 'ResourceError';

@@ -81,7 +81,7 @@ def collect(repo, expected_version=None, source_sha=None):
     if assets['shaders'] != 'shaders/' or assets['terms'] != 'usage-imported-resources.html':
         raise ValueError('Unexpected shader/terms entry')
     files = {name: read(plugin, name) for name in (
-        'live2d-show.php', 'includes/admin-import.php', 'characters.json', 'haru-assets.json',
+        'live2d-show.php', 'includes/admin-import.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','admin.css', 'characters.json', 'haru-assets.json',
         'usage-imported-resources.html', 'licenses/Framework-LICENSE.md')}
     if json.loads(files['characters.json']) != {}:
         raise ValueError('Shipped registry must be empty')
