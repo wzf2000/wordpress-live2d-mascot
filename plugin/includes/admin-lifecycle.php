@@ -128,7 +128,9 @@ function wzf_mascot_management_fields($config, $id) {
     echo '<input type="hidden" name="action" value="wzf_mascot_manage"><input type="hidden" name="character" value="' . esc_attr($id) . '"><input type="hidden" name="version" value="' . esc_attr(wzf_mascot_config_version($config)) . '">';
 }
 function wzf_mascot_character_management($config, $id) {
-    $c = $config['characters'][$id]; $status = wzf_mascot_character_status($c);
+    $c = $config['characters'][$id];
+    if (!is_string($c['name'] ?? null)) $c['name'] = (string)$id;
+    $status = wzf_mascot_character_status($c);
     echo '<section class="wzf-mascot-card"><h2>资源与状态 · ' . esc_html($c['name'] ?? $id) . '</h2><p class="description">停用或移入回收站会从前台隐藏角色，保留文件、浏览器收藏及已有选择。恢复后重新可用；回收站不会永久删除资源。</p><div class="wzf-mascot-actions">';
     $buttons = $status === 'trash' ? ['restore'=>'从回收站恢复'] : ($status === 'disabled' ? ['enable'=>'启用角色','trash'=>'移入回收站'] : ['disable'=>'停用角色','trash'=>'移入回收站']);
     if (is_array($config['history'][$id] ?? null)) $buttons['rollback'] = '回退到上一版资源与动作';

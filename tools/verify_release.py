@@ -14,7 +14,7 @@ RUNTIME_FIXED = {'live2d-show.php','includes/admin-import.php','includes/admin-s
 SOURCE_FIXED = {'build.py','package.json','package-lock.json','LICENSE','COPYING','README.md',
                 'docs/DISTRIBUTION.md','tools/package_release.py','tools/ci.py','tools/verify_release.py',
                 'tests/test_release_package.py','tests/test_importer.py','tests/test_release_pipeline.py',
-                'tests/release-smoke.cjs','DISTRIBUTION-NOTICE.txt'}
+                'tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','DISTRIBUTION-NOTICE.txt'}
 SOURCE_TOP = {'src/engine.ts','src/resources.ts','src/loader.js','src/style.css'}
 SHADERS = {'fragshadersrcalphablend.frag','fragshadersrccolorblend.frag','fragshadersrccopy.frag',
            'fragshadersrcmaskinvertedpremultipliedalpha.frag','fragshadersrcmaskpremultipliedalpha.frag',

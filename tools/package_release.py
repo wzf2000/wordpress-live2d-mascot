@@ -104,7 +104,7 @@ def collect(repo, expected_version=None, source_sha=None):
     source = {name: read(repo, name) for name in (
         'build.py', 'package.json', 'package-lock.json', 'LICENSE', 'COPYING', 'README.md',
         'docs/DISTRIBUTION.md', 'tools/package_release.py', 'tests/test_release_package.py',
-        'tests/test_importer.py', 'tests/release-smoke.cjs', 'tests/test_release_pipeline.py',
+        'tests/test_importer.py', 'tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs', 'tests/test_release_pipeline.py',
         'tools/ci.py', 'tools/verify_release.py')}
     for path in sorted(checked(repo / 'src').rglob('*')):
         checked(path)

@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""New isolated real WordPress + HTTP admin forms; synthetic data, no render acceptance."""
+import argparse
+import struct
+import zlib
+import hashlib
+from html.parser import HTMLParser
+import http.cookiejar
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import shutil
+import socket
+import subprocess
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+PINS = {
+    'wordpress': ('7.1.3', 'https://wordpress.org/wordpress-7.1.3.zip', 'eb58a90ed55147f90f7bd55d0d3334960a69b7e8a4cc142c8ddfea8965218227'),
+    'wp-cli': ('2.12.0', 'https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar', 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c'),
+}
+def png_chunk(kind, data):
+    return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
+
+
+PNG = b'\x89PNG\r\n\x1a\n' + png_chunk(b'IHDR', struct.pack('>IIBBBBB', 2, 2, 8, 2, 0, 0, 0)) + png_chunk(b'IDAT', zlib.compress((b'\x00' + b'\x10\x80\xc0' * 2) * 2)) + png_chunk(b'IEND', b'')
+
+
+class Forms(HTMLParser):
+    def __init__(self, html):
+        super().__init__(); self.forms = []; self.current = None; self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'form': self.current = {}; self.forms.append(self.current)
+        if self.current is not None and tag in ('input', 'button') and attrs.get('name'):
+            if attrs.get('type') not in ('checkbox', 'file', 'submit'):
+                self.current[attrs['name']] = attrs.get('value', '')
+
+    def handle_endtag(self, tag):
+        if tag == 'form': self.current = None
+
+
+def model_zip(path):
+    with zipfile.ZipFile(path, 'w') as z:
+        z.writestr('Model.model3.json', json.dumps({'Version': 3, 'FileReferences': {'Moc': 'Model.moc3', 'Textures': ['texture.png'], 'Motions': {'Idle': [{'File': 'motion/idle.motion3.json'}]}, 'Expressions': []}}))
+        z.writestr('Model.moc3', b'MOC3synthetic-only')
+        z.writestr('texture.png', PNG)
+        z.writestr('motion/idle.motion3.json', '{"Version":3}')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--lab', type=Path, required=True, help='New direct /tmp/mascot-ci-* directory')
+    parser.add_argument('--port', type=int, default=18129)
+    parser.add_argument('--downloads', type=Path, help='Optional cache of public pinned dependencies')
+    args = parser.parse_args()
+    lab = args.lab.absolute()
+    database = os.environ.get('MASCOT_CI_DB_NAME', '')
+    host = os.environ.get('MASCOT_CI_DB_HOST', '')
+    if lab.parent != Path('/tmp') or not re.fullmatch(r'mascot-ci-[a-z0-9-]+', lab.name) or lab.exists() or lab.is_symlink():
+        parser.error('Refusing existing/non-temporary lab')
+    if not re.fullmatch(r'mascot_ci_[a-z0-9_]+', database) or not re.fullmatch(r'127\.0\.0\.1:[0-9]{1,5}', host):
+        parser.error('Explicit new mascot_ci_* database on loopback required')
+    if not 1024 <= args.port <= 65535: parser.error('Unprivileged HTTP port required')
+    with socket.socket() as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('127.0.0.1', args.port))
+    os.umask(0o077)
+    lab.mkdir(); (lab / 'mascot-ci-owner').write_text('synthetic-wordpress-mascot-v1\n')
+    downloads = args.downloads or lab / 'downloads'; downloads.mkdir(parents=True, exist_ok=True)
+    no_proxy = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    paths = {}
+    for name, (_, url, digest) in PINS.items():
+        target = downloads / Path(url).name
+        if not target.exists():
+            with no_proxy.open(url, timeout=60) as response: data = response.read(64 * 1024 * 1024 + 1)
+            if len(data) > 64 * 1024 * 1024: raise RuntimeError('Public download too large')
+            target.write_bytes(data)
+        if target.is_symlink() or hashlib.sha256(target.read_bytes()).hexdigest() != digest:
+            raise RuntimeError('Pinned download SHA256 mismatch: ' + name)
+        paths[name] = target.resolve()
+    site = lab / 'site'; site.mkdir()
+    with zipfile.ZipFile(paths['wordpress']) as archive:
+        for item in archive.infolist():
+            relative = Path(item.filename)
+            if relative.parts[0] != 'wordpress' or '..' in relative.parts or (item.external_attr >> 16) & 0o170000 == 0o120000:
+                raise RuntimeError('Unsafe public WordPress ZIP')
+            target = site.joinpath(*relative.parts[1:])
+            if item.is_dir(): target.mkdir(parents=True, exist_ok=True)
+            else: target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(archive.read(item))
+    env = dict(os.environ)
+    command = ['php', str(paths['wp-cli']), '--skip-packages', '--no-color', '--path=' + str(site)]
+    if os.geteuid() == 0: command += ['--allow-root']
+
+    def wp(*arguments, mode=None):
+        current = dict(env)
+        if mode: current['MASCOT_CI_MODE'] = mode
+        result = subprocess.run(command + list(arguments), env=current, text=True, capture_output=True)
+        if result.returncode: raise RuntimeError('WP-CLI failed: ' + ' '.join(arguments[:2]))
+        return result.stdout.strip()
+
+    # Dedicated service only: reject any unrelated application database and
+    # never reuse, truncate or reset an existing database even with a test-like name.
+    guard = """$h=explode(':',getenv('MASCOT_CI_DB_HOST'));mysqli_report(MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT);$m=new mysqli($h[0],getenv('MASCOT_CI_DB_USER'),getenv('MASCOT_CI_DB_PASSWORD'),'',(int)$h[1]);$n=getenv('MASCOT_CI_DB_NAME');$r=$m->query('SELECT SCHEMA_NAME FROM information_schema.SCHEMATA');while($row=$r->fetch_row()){$db=$row[0];if($db===$n || (!in_array($db,['information_schema','performance_schema','mysql','sys'],true) && !preg_match('/^mascot_ci_[a-z0-9_]+$/D',$db)))exit(2);}exit(0);"""
+    checked = subprocess.run(['php', '-r', guard], env=env, capture_output=True)
+    if checked.returncode: raise RuntimeError('Database service unavailable, contains unrelated data or requested database exists; refusing reuse')
+    if wp('--version') != 'WP-CLI ' + PINS['wp-cli'][0]: raise RuntimeError('WP-CLI version mismatch')
+    wp('config', 'create', '--dbname=' + database, '--dbhost=' + host, '--dbuser=' + env.get('MASCOT_CI_DB_USER', 'root'), '--dbpass=' + env.get('MASCOT_CI_DB_PASSWORD', ''), '--skip-check', '--skip-salts')
+    wp('config', 'set', 'WP_ENVIRONMENT_TYPE', 'local')
+    wp('config', 'set', 'DISABLE_WP_CRON', 'true', '--raw')
+    wp('config', 'set', 'AUTOMATIC_UPDATER_DISABLED', 'true', '--raw')
+    wp('config', 'set', 'WP_HTTP_BLOCK_EXTERNAL', 'true', '--raw')
+    mu = site / 'wp-content/mu-plugins'; mu.mkdir(exist_ok=True)
+    (mu / 'synthetic-no-mail.php').write_text("<?php add_filter('pre_wp_mail', '__return_true');\n")
+    wp('db', 'create')
+    origin = 'http://127.0.0.1:' + str(args.port)
+    password = secrets.token_urlsafe(24)
+    wp('core', 'install', '--url=' + origin, '--title=Synthetic mascot CI', '--admin_user=mascot-admin', '--admin_password=' + password, '--admin_email=admin@example.invalid', '--skip-email')
+    if wp('core', 'version') != PINS['wordpress'][0]: raise RuntimeError('WordPress version mismatch')
+    wp('user', 'create', 'mascot-reader', 'reader@example.invalid', '--role=subscriber', '--user_pass=' + password)
+    plugin = site / 'wp-content/plugins/live2d-show'; plugin.mkdir()
+    (plugin / 'live2d-show.php').write_text('<?php /*\nPlugin Name: Synthetic prior mascot\nVersion: 3.6.0\n*/\n')
+    wp('plugin', 'activate', 'live2d-show')
+    wp('option', 'update', 'wzf_mascot_resources_v1', '{"characters":[],"upgradeMarker":"synthetic-retained"}', '--format=json')
+    # Exercise WP's actual upgrader, including overwrite, with the current install package.
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from tools.package_release import package
+    package(ROOT, lab / 'package', source_sha='0' * 40)
+    bundle = next(p for p in (lab / 'package').glob('*.zip') if not p.name.endswith('-source.zip'))
+    wp('plugin', 'install', str(bundle), '--force', '--activate')
+    state = json.loads(wp('option', 'get', 'wzf_mascot_resources_v1', '--format=json'))
+    assert state == {'characters': [], 'upgradeMarker': 'synthetic-retained'}
+    router = lab / 'router.php'
+    router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
+    logfile = (lab / 'http.log').open('w')
+    server = subprocess.Popen(['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)], env=env, stdout=logfile, stderr=logfile)
+    checks = []
+
+    def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    anonymous, admin, reader = client(), client(), client()
+
+    def request(opener, path, data=None, files=None):
+        url = origin + path
+        headers = {}
+        if files:
+            boundary = 'mascot-' + secrets.token_hex(12); parts = []
+            for k, v in data.items():
+                parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
+            for k, (filename, raw) in files.items():
+                parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"; filename="{filename}"\r\nContent-Type: application/octet-stream\r\n\r\n'.encode() + raw + b'\r\n')
+            payload = b''.join(parts) + f'--{boundary}--\r\n'.encode(); headers['Content-Type'] = 'multipart/form-data; boundary=' + boundary
+        else: payload = urllib.parse.urlencode(data, doseq=True).encode() if data is not None else None
+        try:
+            with opener.open(urllib.request.Request(url, payload, headers), timeout=15) as response: return response.status, response.read().decode()
+        except urllib.error.HTTPError as error: return error.code, error.read().decode()
+
+    def state(): return json.loads(wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode='state'))
+    def fixture(mode): return wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode=mode)
+    def front():
+        status, html = request(anonymous, '/'); assert status == 200
+        m = re.search(r'<script id="wzf-live2d-config"[^>]*>(.*?)</script>', html, re.S)
+        return json.loads(m[1]) if m else None
+    def form(action, operation=None, character='legacy_character'):
+        status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=' + character); assert status == 200
+        return next(f for f in Forms(html).forms if f.get('action') == action and (operation is None or f.get('operation') == operation))
+    def post(data, files=None, opener=None): return request(opener or admin, '/wp-admin/admin-post.php', data, files)
+    def record(name): checks.append(name); print('PASS ' + name, flush=True)
+
+    try:
+        for _ in range(50):
+            try: request(anonymous, '/wp-login.php'); break
+            except (urllib.error.URLError, ConnectionError): time.sleep(.1)
+        assert front() is None; record('real install/upgrade preserves existing option; empty resources emit nothing')
+        for opener, user in [(admin, 'mascot-admin'), (reader, 'mascot-reader')]:
+            request(opener, '/wp-login.php')
+            status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
+            assert status == 200 and 'login_error' not in html
+        before = state()
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import']:
+            payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
+            assert post(payload, opener=reader)[0] == 403
+            assert post(payload)[0] == 403
+            assert post(payload, opener=anonymous)[0] in (400, 403)
+        assert state() == before; record('real HTTP authorization and nonce failures preserve options')
+        z = lab / 'synthetic-model.zip'; model_zip(z)
+        data = form('wzf_mascot_import', character=''); data.update(kind='model', id='fixture', name='Synthetic fixture', credit='Synthetic owner', rights='1')
+        post(data, {'resource': (z.name, z.read_bytes())})
+        assert 'fixture' in state()['config']['characters']; record('real multipart import with administrator nonce')
+        fixture('seed'); original = state()['config']; snapshot = lab / 'snapshot.json'; snapshot.write_text(json.dumps(original)); env['MASCOT_CI_SNAPSHOT'] = str(snapshot)
+        assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
+        assert front()['mobileEnabled'] is False; record('legacy IDs, maintained extra action, mobile default and server output')
+        # A full synthetic baseline goes through the actual WordPress upgrader.
+        # Browser localStorage remains a browser-layer contract, not server metadata.
+        uid = wp('user', 'get', 'mascot-admin', '--field=ID')
+        wp('user', 'meta', 'update', uid, 'show_live2d_front', 'false')
+        upgrade_state = state()
+        uploads = site / 'wp-content/uploads/wzf-mascot'
+        resource_hashes = {p.relative_to(uploads).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in uploads.rglob('*') if p.is_file()}
+        wp('plugin', 'install', str(bundle), '--force', '--activate')
+        assert state() == upgrade_state
+        assert wp('user', 'meta', 'get', uid, 'show_live2d_front') == 'false'
+        assert resource_hashes == {p.relative_to(uploads).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in uploads.rglob('*') if p.is_file()}
+        assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
+        record('real overwrite upgrade preserves full synthetic resources/options and user profile preference')
+        data = form('wzf_mascot_settings'); stale = dict(data)
+        data.update(name='Updated synthetic', credit='Synthetic credit', size='200', offset='6.5', idle='motion-1', welcome='01_extra', **{'greetings[]': '01_extra'})
+        post(data); updated = state()['config']; c = updated['characters']['legacy_character']; old = original['characters']['legacy_character']
+        assert c['name'] == 'Updated synthetic' and c['renderScale'] == 1.1 and c['root'] == old['root'] and c['termsAnchor'] == old['termsAnchor'] and updated['retainedMarker'] == original['retainedMarker']
+        stale.update(name='Stale', credit='Synthetic', size='180', offset='0', idle='motion-1', welcome='')
+        post(stale); assert state()['config'] == updated; record('real settings save preserves unexposed fields and rejects stale version')
+        data = form('wzf_mascot_manage', 'replace'); data.update(rights='1'); post(data, {'resource': (z.name, z.read_bytes())})
+        assert state()['config'] == updated  # extra welcome cannot be mapped; explicit reset required
+        data['reset_motions'] = '1'; post(data, {'resource': (z.name, z.read_bytes())})
+        replaced = state()['config']; assert replaced['characters']['legacy_character']['root'] != c['root']
+        assert replaced['characters']['legacy_character']['welcome'] is None
+        post(form('wzf_mascot_manage', 'rollback')); rolled = state()['config']['characters']['legacy_character']
+        assert rolled['root'] == c['root'] and rolled['welcome'] == '01_extra' and rolled['name'] == c['name']
+        for operation, status in [('disable', 'disabled'), ('trash', 'trash'), ('restore', 'disabled'), ('enable', 'active')]:
+            post(form('wzf_mascot_manage', operation)); assert state()['config']['characters']['legacy_character']['status'] == status
+            assert ('legacy_character' in front()['characters']) == (status == 'active')
+        record('real multipart replacement/reset, rollback, disable/trash/restore/enable')
+        data = form('wzf_mascot_thumbnail', 'upload'); data['rights'] = '1'; post(data, {'thumbnail': ('synthetic.png', PNG + b'fixture-trailer')})
+        thumbnail_state = state()['config']['characters']['legacy_character']
+        assert 'thumbnail' in thumbnail_state, 'Synthetic thumbnail upload failed'
+        thumb = thumbnail_state['thumbnail']; thumb_file = site / 'wp-content/uploads/wzf-mascot' / thumb
+        assert 'thumbnail-' in front()['characters']['legacy_character']['thumbnail'] and b'fixture-trailer' not in thumb_file.read_bytes()
+        post(form('wzf_mascot_thumbnail', 'clear')); assert 'thumbnail' not in state()['config']['characters']['legacy_character'] and thumb_file.exists()
+        data = form('wzf_mascot_mobile'); data.update(mobile_enabled='1', pause_input='1'); post(data)
+        assert front()['mobileEnabled'] is True and front()['mobilePauseOnInput'] is True
+        record('real thumbnail upload/reencode/clear and explicit mobile settings')
+        fixture('restore'); fixture('fault'); faulty = state(); assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
+        status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and '被隔离' in html
+        assert str(site) not in request(anonymous, '/')[1] and state() == faulty
+        diagnosis = json.loads(fixture('diagnose')); assert not diagnosis['core']['ok']  # synthetic Core never passes full hash diagnosis
+        assert state() == faulty; record('bad roles isolated, valid roles continue; admin diagnosis read-only and synthetic Core fails full hash')
+        for mode in ['all-bad', 'bad-core', 'bad-terms', 'bad-structure']:
+            fixture('restore'); fixture(mode); before = state(); assert front() is None and state() == before
+        record('all-bad roles/shared Core/terms/base structure fail closed without option writes')
+        fixture('restore'); before = state(); wp('plugin', 'deactivate', 'live2d-show'); assert front() is None
+        wp('plugin', 'activate', 'live2d-show'); assert state() == before and front() is not None
+        record('real plugin deactivation/reactivation retains resources and configuration')
+    finally:
+        server.terminate(); server.wait(timeout=10); logfile.close()
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 11, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__': main()

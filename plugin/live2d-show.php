@@ -3,7 +3,7 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.6.0
+Version: 3.6.1
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
@@ -43,7 +43,7 @@ function wzf_mascot_presentation($resources, $uploads) {
     }
     $terms = wzf_mascot_path($value['terms'] ?? null);
     $path = wzf_mascot_no_links($uploads['path'] . '/' . $terms);
-    if (!str_ends_with($terms, '.html') || !is_file($path) || filesize($path) > 2 * 1024 * 1024) {
+    if (!str_ends_with($terms, '.html') || !is_file($path) || !is_readable($path) || filesize($path) > 2 * 1024 * 1024) {
         throw new RuntimeException('站点条款文件无效。');
     }
     foreach (['termsVersion'=>200,'consentText'=>2000] as $key=>$limit) {
@@ -58,31 +58,38 @@ function wzf_haru_output() {
     if (is_admin() || in_array($GLOBALS['pagenow']??'', ['wp-login.php','wp-register.php','wp-signup.php','wp-activate.php'],true)) return;
     if (is_user_logged_in() && !wzf_haru_visible(wp_get_current_user())) return;
     $resources = get_option(WZF_MASCOT_OPTION, []);
-    if (!is_array($resources) || empty($resources['core']) || empty($resources['characters']) || !is_array($resources['characters'])) return;
+    if (!is_array($resources) || !is_array($resources['core'] ?? null) || empty($resources['core']) || empty($resources['characters']) || !is_array($resources['characters'])) return;
     $available = array_filter($resources['characters'], function($c) { return is_array($c) && wzf_mascot_character_status($c) === 'active'; });
     if (!$available) return;
     try {
         $uploads = wzf_mascot_uploads();
         $core = wzf_mascot_path($resources['core']['path'] ?? null);
-        if (($resources['core']['sha256'] ?? '') !== WZF_MASCOT_CORE_SHA || !is_file(wzf_mascot_no_links($uploads['path'].'/'.$core))) return;
+        $core_path = wzf_mascot_no_links($uploads['path'].'/'.$core);
+        if (($resources['core']['sha256'] ?? '') !== WZF_MASCOT_CORE_SHA || !is_file($core_path) || !is_readable($core_path) || filesize($core_path) < 1 || filesize($core_path) > 8 * 1024 * 1024) return;
         $characters = [];
         foreach ($available as $id=>$c) {
-            if (!is_array($c)) return;
-            $root = wzf_mascot_path(rtrim($c['root'] ?? '', '/'));
-            $file = wzf_mascot_path($c['file'] ?? null);
-            if (!is_file(wzf_mascot_no_links($uploads['path'].'/'.$root.'/'.$file))) return;
+            try { $root = wzf_mascot_character_display_check($id, $c, $uploads); }
+            catch (Throwable $e) { continue; }
             $thumbnail = wzf_mascot_thumbnail_url($c);
             unset($c['status'], $c['restoreStatus'], $c['thumbnail']);
             if ($thumbnail !== null) $c['thumbnail'] = $thumbnail;
             $c['root'] = $uploads['url'] . $root . '/';
             $characters[$id] = $c;
         }
-        $assets=json_decode(file_get_contents(__DIR__.'/haru-assets.json'),true,32,JSON_THROW_ON_ERROR);
+        if (!$characters) return;
+        $asset_raw = @file_get_contents(__DIR__.'/haru-assets.json');
+        if (!is_string($asset_raw)) return;
+        $assets=json_decode($asset_raw,true,32,JSON_THROW_ON_ERROR);
+        if (!is_array($assets)) return;
+        foreach (['engine','loader','css','shaders','terms'] as $key) {
+            if (!is_string($assets[$key] ?? null)) return;
+            wzf_mascot_path(rtrim($assets[$key], '/'));
+        }
         $presentation = wzf_mascot_presentation($resources, $uploads);
     } catch (Throwable $e) { return; }
     $base=plugins_url('',__FILE__).'/';
     $first=reset($characters);
-    $config=['version'=>'3.6.0','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
+    $config=['version'=>'3.6.1','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
     $config = array_merge($config, $presentation);
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';

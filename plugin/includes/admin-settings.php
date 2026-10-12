@@ -138,7 +138,7 @@ function wzf_mascot_settings_post() {
 }
 function wzf_mascot_admin_styles($hook) {
     if (!in_array($hook, ['settings_page_wzf-mascot','profile.php','user-edit.php'], true)) return;
-    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.6.0');
+    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.6.1');
 }
 function wzf_mascot_motion_select($key, $label, $motions, $value, $optional = false) {
     echo '<div class="wzf-mascot-field"><label for="mascot-' . esc_attr($key) . '">' . esc_html($label) . '</label><select id="mascot-' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
@@ -149,6 +149,9 @@ function wzf_mascot_motion_select($key, $label, $motions, $value, $optional = fa
 }
 function wzf_mascot_character_editor($config, $id) {
     $character = $config['characters'][$id];
+    // Safe form defaults are local only; opening the editor never repairs options.
+    foreach (['name','credit','idle','welcome','size','offset'] as $key) if (isset($character[$key]) && !is_scalar($character[$key])) $character[$key] = '';
+    if (!is_array($character['greetings'] ?? null)) $character['greetings'] = [];
     echo '<section class="wzf-mascot-card" aria-labelledby="mascot-edit-title"><h2 id="mascot-edit-title">角色设置 · ' . esc_html($character['name'] ?? $id) . '</h2><p class="description">修改显示信息和动作引用；模型文件保持原位。大小为浏览器布局默认值，读者已有的本地大小偏好优先。</p>';
     try { $motions = wzf_mascot_character_motions($character); }
     catch (Throwable $e) { echo '<div class="notice notice-error inline"><p>' . esc_html($e->getMessage()) . ' 请检查已安装资源后重试。</p></div></section>'; return; }
@@ -179,10 +182,14 @@ function wzf_mascot_admin_page() {
     else {
         echo '<div class="wzf-mascot-table"><table class="widefat striped"><thead><tr><th scope="col">角色</th><th scope="col">署名／来源</th><th scope="col">管理</th></tr></thead><tbody>';
         foreach ($characters as $id=>$c) {
-            if (!is_array($c)) continue;
+            if (!is_array($c)) { echo '<tr><th scope="row">' . esc_html($id) . '</th><td>配置结构无效 · 被隔离</td><td>请恢复配置备份后重试。</td></tr>'; continue; }
+            $name = is_string($c['name'] ?? null) ? $c['name'] : (string)$id;
+            $credit = is_string($c['credit'] ?? null) ? $c['credit'] : '配置无效';
+            $status = wzf_mascot_character_status($c);
+            $status_label = is_string($status) ? (['active'=>'启用','disabled'=>'停用','trash'=>'回收站'][$status] ?? '状态无效') : '状态无效';
             echo '<tr><th scope="row">';
             wzf_mascot_admin_thumbnail($c);
-            echo '<strong>' . esc_html($c['name'] ?? $id) . '</strong> · ' . esc_html(['active'=>'启用','disabled'=>'停用','trash'=>'回收站'][wzf_mascot_character_status($c)] ?? '状态无效') . '<br><code>' . esc_html($id) . '</code></th><td>' . esc_html($c['credit'] ?? '') . '</td><td><a class="button" aria-label="' . esc_attr('编辑角色 ' . ($c['name'] ?? $id)) . '" href="' . esc_url(add_query_arg('character', $id, admin_url('options-general.php?page=wzf-mascot'))) . '#mascot-edit-title">编辑</a></td></tr>';
+            echo '<strong>' . esc_html($name) . '</strong> · ' . esc_html($status_label) . '<br><code>' . esc_html($id) . '</code></th><td>' . esc_html($credit) . '</td><td><a class="button" aria-label="' . esc_attr('编辑角色 ' . $name) . '" href="' . esc_url(add_query_arg('character', $id, admin_url('options-general.php?page=wzf-mascot'))) . '#mascot-edit-title">编辑</a></td></tr>';
         }
         echo '</tbody></table></div>';
     }

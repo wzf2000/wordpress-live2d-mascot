@@ -668,6 +668,99 @@ class ImporterTests(unittest.TestCase):
         echo json_encode(['writes'=>$writes]);""")
         self.assertEqual(report['writes'],[[7,'show_live2d_front','true'],[7,'show_live2d_front','false']])
 
+    def test_frontend_isolates_bad_roles_without_repair_or_full_resource_scan(self):
+        body = self.settings_setup() + """
+        unset($options[WZF_MASCOT_OPTION]['presentation']);
+        mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
+        $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+        $options[WZF_MASCOT_OPTION]['characters'][23]=$c;
+        $bad=[['root'=>[]],['root'=>'missing/'],['root'=>'../escape/'],['file'=>'https://example.invalid/model.model3.json'],['file'=>'missing.model3.json'],['name'=>[]],['status'=>[]],['size'=>[]],['offset'=>false],['idle'=>[]],['welcome'=>[]],['greetings'=>'bad']];
+        foreach($bad as $i=>$patch) $options[WZF_MASCOT_OPTION]['characters']['bad-'.$i]=array_replace($c,$patch);
+        $options[WZF_MASCOT_OPTION]['characters']['non-array']='invalid';
+        symlink($u['path'].'/'.$c['root'],$u['path'].'/linked');
+        $options[WZF_MASCOT_OPTION]['characters']['linked']=array_replace($c,['root'=>'linked/']);
+        // Missing texture/moc or broken model body belongs to explicit full
+        // diagnosis/browser loading, not the front-page entry metadata gate.
+        unlink($u['path'].'/'.$c['root'].'Model.moc3');
+        file_put_contents($u['path'].'/'.$c['root'].$c['file'],'synthetic broken body');
+        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function plugins_url(...$args){return '/plugins/live2d-show';}
+        function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
+        function wp_json_encode($s,$f){return json_encode($s,$f);}
+        require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+        $before=get_option(WZF_MASCOT_OPTION);ob_start();wzf_haru_output();$html=ob_get_clean();
+        preg_match('~<script id="wzf-live2d-config"[^>]*>(.*?)</script>~s',$html,$match);
+        $report=wzf_mascot_display_report($before);
+        echo json_encode(['config'=>json_decode($match[1],true),'report'=>$report,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);"""
+        report = self.php(body)
+        self.assertEqual(set(report['config']['characters']), {'legacy_character', '23'})
+        self.assertEqual(report['config']['characters']['legacy_character']['renderScale'], 1.1)
+        self.assertEqual(report['config']['characters']['legacy_character']['idle'], 'custom_idle')
+        self.assertEqual(sum(row['ok'] for row in report['report']), 2)
+        self.assertTrue(report['unchanged']); self.assertFalse(report['lock'])
+        self.assertNotIn(str(self.root), json.dumps(report))
+
+    def test_full_diagnostic_matches_display_gate_for_optional_layout_and_terms_types(self):
+        for key in ['renderScale', 'termsAnchor']:
+            with self.subTest(key=key):
+                report = self.php(self.settings_setup() + """
+                require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+                unset($options[WZF_MASCOT_OPTION]['presentation']);
+                $options[WZF_MASCOT_OPTION]['characters']['legacy_character'][""" + json.dumps(key) + """]=[];
+                $before=get_option(WZF_MASCOT_OPTION);
+                echo json_encode(['full'=>wzf_mascot_diagnose_resources($before),'light'=>wzf_mascot_display_report($before),'unchanged'=>$before===get_option(WZF_MASCOT_OPTION)]);""")
+                self.assertFalse(report['light'][0]['ok'])
+                self.assertFalse(report['full']['characters'][0]['checks']['catalog']['ok'])
+                self.assertTrue(report['unchanged'])
+
+    def test_missing_or_invalid_shared_asset_manifest_emits_no_markup_or_path_warning(self):
+        # Copy only the entry file; reuse the already loaded importer via its
+        # test environment path, so no installed/plugin files are changed.
+        entry = self.root / 'live2d-show.php'
+        entry.write_text((ROOT / 'plugin/live2d-show.php').read_text().replace(
+            "require_once __DIR__ . '/includes/admin-import.php';",
+            "require_once getenv('TEST_MODULE');"))
+        report = self.php(self.settings_setup() + """
+        unset($options[WZF_MASCOT_OPTION]['presentation']);
+        mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
+        $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        require """ + json.dumps(str(entry)) + """;
+        $before=get_option(WZF_MASCOT_OPTION);$outputs=[];
+        ob_start();wzf_haru_output();$outputs[]=ob_get_clean();
+        $manifest=dirname(""" + json.dumps(str(entry)) + """).'/haru-assets.json';
+        foreach (['broken-json', '{"engine":[],"loader":"loader.js","css":"style.css","shaders":"shaders/","terms":"terms.html"}'] as $raw) {
+            file_put_contents($manifest,$raw);ob_start();wzf_haru_output();$outputs[]=ob_get_clean();
+        }
+        echo json_encode(['outputs'=>$outputs,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION)]);""")
+        self.assertEqual(report['outputs'], ['', '', ''])
+        self.assertTrue(report['unchanged'])
+
+    def test_frontend_unreadable_entry_and_catalog_and_shared_failures(self):
+        for failure in ['unreadable-model', 'missing-catalog', 'linked-model', 'all-bad', 'core-type', 'core-unreadable', 'terms']:
+            with self.subTest(failure=failure):
+                report = self.php(self.settings_setup() + """
+                unset($options[WZF_MASCOT_OPTION]['presentation']);
+                if(!is_dir($u['path'].'/core-test'))mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
+                $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
+                $file=$u['path'].'/'.$c['root'].$c['file'];
+                """ + {
+                    'unreadable-model': 'chmod($file,0000);',
+                    'missing-catalog': "unlink($u['path'].'/'.$c['root'].'catalog.json');",
+                    'linked-model': "rename($file,$file.'.bak');symlink($file.'.bak',$file);",
+                    'all-bad': "$options[WZF_MASCOT_OPTION]['characters']=['invalid'=>false];",
+                    'core-type': "$options[WZF_MASCOT_OPTION]['core']='broken';",
+                    'core-unreadable': "chmod($u['path'].'/core-test/core.js',0000);",
+                    'terms': "$options[WZF_MASCOT_OPTION]['presentation']=['terms'=>'../escape.html'];",
+                }[failure] + """
+                function is_admin(){return false;}function is_user_logged_in(){return false;}
+                require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
+                $before=get_option(WZF_MASCOT_OPTION);ob_start();wzf_haru_output();$html=ob_get_clean();
+                chmod($file,0644);chmod($u['path'].'/core-test/core.js',0644);
+                echo json_encode(['html'=>$html,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION)]);""")
+                self.assertEqual(report['html'], '')
+                self.assertTrue(report['unchanged'])
+
     def test_zero_resources_frontend_empty(self):
         env=dict(os.environ,TEST_ENTRY=str(ROOT/'plugin/live2d-show.php'))
         code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'

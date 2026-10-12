@@ -20,7 +20,7 @@ class ReleasePackageTests(unittest.TestCase):
         self.repo.mkdir()
         self.out=Path(self.temp.name)/'package'
         names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md',
-               'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
+               'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
                'tools/ci.py','tools/verify_release.py',
                'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',
                'plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','plugin/admin.css','plugin/characters.json','plugin/haru-assets.json',

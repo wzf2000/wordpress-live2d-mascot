@@ -2,14 +2,14 @@
 
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
-<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.6.0">下载 3.6.0</a> · <a href="#许可与资源来源">许可</a></p>
+<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.6.1">下载 3.6.1</a> · <a href="#许可与资源来源">许可</a></p>
 
-**当前发行版：3.6.0。** 插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
+**当前发行版：3.6.1。** 插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
 | 你需要准备 | 当前要求与验收范围                                                                              |
 | ---------- | ----------------------------------------------------------------------------------------------- |
 | 服务器     | PHP **8.2+**、ZipArchive 扩展、可写的 WordPress uploads                                         |
-| WordPress  | 已在 **WordPress 7.1 / PHP 8.2** 独立环境完成安装与导入验收；7.1 是已验版本，不表示最低版本要求 |
+| WordPress  | 真实 CI 固定 **WordPress 7.1.3**，分别使用 **PHP 8.2 / 8.5**；已验范围不表示最低 WordPress 版本要求 |
 | 浏览器     | 支持 WebGL 的浏览器；移动端默认关闭，减少动画始终抑制显示                                           |
 | 资源       | 固定 Web 5 R5 Core，以及一个有权在本站使用的 Cubism model3 运行模型                             |
 
@@ -30,11 +30,11 @@
 
 ### 1. 下载并安装插件
 
-[**下载 WordPress 安装包：wordpress-live2d-mascot-3.6.0.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.0/wordpress-live2d-mascot-3.6.0.zip)
+[**下载 WordPress 安装包：wordpress-live2d-mascot-3.6.1.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.1/wordpress-live2d-mascot-3.6.1.zip)
 
 在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在站点或网络后台插件列表的操作区，以及本插件说明区，可通过 **设置** 直达资源配置（仅对具备设置权限的管理员显示），也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
 
-发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.0/SHA256SUMS) 核对下载。
+发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.1/SHA256SUMS) 核对下载。
 
 ### 2. 导入自己取得的 Core
 
@@ -134,7 +134,7 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
 
-以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.6.0 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
+以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.6.1 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
 
 ```sh
 npm ci --ignore-scripts
@@ -152,13 +152,13 @@ python3 tools/package_release.py --out build/public-release-unique
 
 输出安装 ZIP、源码 ZIP、SHA256SUMS 与机器清单。工具只读取明确白名单、当前前端资源和固定 13 个着色器；不读取忽略目录中的旧 Core、模型、历史元数据或备份。拒绝软链、缺失、非空角色清单、带 Core/model 的清单与哈希不一致。
 
-Python 回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 smoke 检查没有前端输出。3.5.0 另通过独立 WordPress 7.1 / PHP 8.2 环境的 37 项安装、导入和浏览器检查；这不代表所有 WordPress 版本、模型或真机均已验证。工具直接核对 loader/CSS 源码字节；引擎必须用固定 esbuild 重建并比较 SHA256，不能用文件名检查替代源码对应性验证。
+Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 smoke 检查没有前端输出。真实 WordPress 集成另以独立数据库和 HTTP 登录／表单验证服务端行为。3.5.0 另通过独立 WordPress 7.1 / PHP 8.2 环境的 37 项安装、导入和浏览器检查；这不代表所有 WordPress 版本、模型或真机均已验证。工具直接核对 loader/CSS 源码字节；引擎必须用固定 esbuild 重建并比较 SHA256，不能用文件名检查替代源码对应性验证。
 
 ### GitHub Actions
 
 [CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2 与 esbuild 0.25.12；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
 
-检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。普通 CI 只读，不需要私有 secret，不下载 Core 或模型；**不代替真实 SDK、模型画面、WordPress 安装或许可验收**。
+检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。真实 WordPress integration job 必须通过，发布所复用的 CI 完成前会等待该 job 的 PHP 8.2／8.5 两项。隔离 MySQL 服务、新建 WordPress 7.1.3 和 WP-CLI 2.12.0 下载均固定版本，下载核对 SHA256；测试禁用邮件与 cron。升级测试以合成旧插件入口起步，再将完整合成资源、配置和账号显示偏好经真实 WordPress 覆写升级，逐项核对 option、user meta 和资源文件摘要；它不是历史真实素材或旧版渲染验收。以 Python 标准库 cookiejar 完成真实 HTTP 登录、nonce／权限失败、设置保存与过期版本冲突、multipart 导入／更新／缩略图，以及回退、停用恢复、移动设置和角色隔离。测试用独立 option 配置合成非执行 Core 占位文件及固定哈希元数据，仅验证服务端输出；生产常量和 Core 上传校验保持完整，占位文件也无法通过完整哈希诊断。只上传不含凭据的测试摘要，合成素材不作为 artifact 或发行附件。**不代替真实 SDK、模型画面、GPU、手机或许可验收。**
 
 新版本发布从 [Manual Live2D Mascot Release](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/release.yml) 手动发起：
 
@@ -167,6 +167,19 @@ Python 回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 smoke �
 3. 准备正式发布时再次发起，明确选择 `publish=true`。已存在的 tag 或 release 会拒绝，不覆盖既有 v3.5.0 附件。
 
 每次运行固定触发时的 `github.sha`，附件携带该 SHA、版本和文件摘要。发布任务仅验证本次运行的 artifact，具有写权限的任务不 checkout 或执行仓库代码；原子创建对应 tag，先建立草稿、上传并核对所有附件摘要，确认 tag 仍指向核验的提交后才公开。失败会保留已创建的草稿/tag 供检查，不自动覆盖或删除。
+
+### 本地运行真实 WordPress 集成
+
+为测试预先准备专用空数据库服务和 PHP mysqli／zip／GD、MySQL CLI；只接受显式 loopback 地址、新的 `mascot_ci_*` 数据库和新的 `/tmp/mascot-ci-*` 目录。脚本拒绝含其他应用数据库的服务、复用已有数据库／目录、生产路径或非本地地址，不清空已有站点。凭据通过环境变量设置，勿写入源码或终端共享记录。
+
+```sh
+# MASCOT_CI_DB_NAME=mascot_ci_example
+# MASCOT_CI_DB_HOST=127.0.0.1:专用数据库端口
+# MASCOT_CI_DB_USER / MASCOT_CI_DB_PASSWORD 由本机测试环境提供
+python3 tools/wordpress-integration.py --lab /tmp/mascot-ci-example --port 18129
+```
+
+测试只下载固定公开 WordPress／WP-CLI，不下载 Core、官方或私人模型。执行后 HTTP 服务停止，摘要保存在实验目录的 `results.json`；数据库与含合成凭据的实验目录由实验负责人按本机保留规则清理，不上传。测试摘要明确标记未做渲染验收。
 
 ### 阅读协调
 
@@ -197,7 +210,9 @@ document.dispatchEvent(
 
 ### 本地诊断
 
-管理员在设置页点击 **检查已安装资源**，只读核对 Core SHA256、运行引用、catalog、布局与条款配置。不会修改选项或模型，不代表已通过画面验收。
+设置页的 **前台入口检查** 自动进行轻量只读门禁：检查角色配置类型，以及安全模型／catalog 入口路径、可读性和大小；不解析 model3，不扫描动作引用或贴图，也不哈希所有角色。异常角色标为“被隔离”，其他有效角色继续显示；所有角色异常或共享 Core／条款配置无效时停止输出。原配置、文件和浏览器收藏／选择保留；修复后重新可用。可显示仅表示角色入口通过，仍须共享资源有效，并由读者开启。
+
+管理员在设置页点击 **检查已安装资源**，另外只读核对 Core SHA256、运行引用、catalog、布局与条款配置。不会修改选项或模型，不代表已通过画面验收。
 
 前台的 **本地诊断** 独立于角色就绪状态，加载失败时也能打开。展开不会采集；点击 **开启本地诊断** 后才读取当前 WebGL / GPU renderer，并在内存中记录白名单阶段及错误码。请先开启诊断，再显示或重试角色，才能记录完整加载时间。`readyMs` 是引擎初始化完成时间，`firstFrameMs` 必须在实际 `frames > 0` 后记录；未观察到首帧时留空并注明原因。
 
@@ -210,6 +225,18 @@ document.dispatchEvent(
 设置页“移动端显示”默认关闭，未配置也视为关闭。管理员允许后，手机浏览器仍须点击显示按钮、同意条款并单独开启；已有桌面显示偏好不会自动开启手机。收起只保存本设备类型的偏好，减少动画、账号显示权限、阅读暂停和后台标签限制始终有效。升级不自动打开移动端或改写原配置。
 
 手机采用紧凑尺寸并标明实际像素大小，保留桌面位置／大小偏好；面板可滚动、按钮至少 44 像素并避让安全区。默认在外部输入框聚焦时暂停，可由管理员关闭该规则；插件自身搜索与选择控件不触发此暂停。输入结束后只有其他暂停原因也解除才会恢复。
+
+### 实机采样步骤
+
+以下是待管理员执行的实机流程，文档和合成 CI 不表示已经完成真机验收。准备有合法真实资源的隔离站；移动默认关闭，手机测试须由管理员在该隔离站另行开启，读者仍需自行同意并开启。不要把桌面模拟手机尺寸或软件 WebGL 的结果当作 Android／iOS 或真实桌面 GPU 验收。
+
+1. 分别准备真实桌面 GPU、Android、iOS。记录插件版本、浏览器及版本、系统、设备／GPU、角色 ID；选定同一页面、视口、缩放和网络条件，每个角色保持一致。手机记录竖屏／横屏实际视口、安全区和软键盘状态。
+2. 每轮先收起角色，再重新打开页面，避免加载早于诊断授权；打开 **本地诊断 → 开启本地诊断** 后再点击显示并加载角色。开启前不会采集 GPU 信息；仅当前页面内存保存。先做冷加载 3 次（清除此隔离站相关浏览器资源缓存，再重新开启诊断），再做暖加载 3 次（保留缓存），分别下载诊断 JSON 并标记轮次。避免把清缓存造成的网络差异混为渲染差异。
+3. 每次就绪后重复 **采样 3 秒** 至少 3 个完整窗口，记录 `readyMs`、实际首帧 `firstFrameMs`、FPS、CPU 绘制统计、renderer 及是否软件 renderer；被切换／暂停／后台中断的窗口单列，未观察到首帧的字段保持空值。
+4. 连续切换／预览角色、播放动作／表情、收起再显示；打开阅读面板后关闭，切到后台再返回。检查原选择、收藏、暂停原因和恢复画面。桌面用键盘完成控件操作；手机打开外部输入框和软键盘，检查暂停及结束后的恢复，再测试旋转、安全区和面板滚动。
+5. 在固定角色和条件下长驻至少 15 分钟，在开始、中段和结束各做 3 秒采样，检查画面、响应及异常日志。记录长驻期间发生的后台、网络变化和操作；用相同条件重现异常，报告当前角色与设备，不推断未测机型。
+
+JSON 只在点击下载时保存在本机，无自动采集、自动上传或远程汇总。`cpuDrawMsAvg` 是 CPU 侧耗时，不能解释为 GPU 执行时间；诊断仍须配合肉眼画面检查。资源、条款或前台入口异常先修复，再继续该角色的采样。
 
 ### 本地联动 API v1
 
