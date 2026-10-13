@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -127,6 +128,8 @@ class WorkflowPublishTests(unittest.TestCase):
                      'Release workflow is available in the Git checkout, not the source ZIP')
 class WorkflowNotesTests(unittest.TestCase):
     def setUp(self):
+        self.node=shutil.which('node')
+        self.assertIsNotNone(self.node,'Node.js must be available on the test runner PATH')
         self.temp=tempfile.TemporaryDirectory(prefix='mascot-notes-test-')
         self.addCleanup(self.temp.cleanup)
         self.repo=Path(self.temp.name)
@@ -158,7 +161,7 @@ class WorkflowNotesTests(unittest.TestCase):
         return result,encoded_notes
 
     def decode(self,encoded_notes):
-        return subprocess.run(['node','-e',self.decoder],
+        return subprocess.run([self.node,'-e',self.decoder],
                               env={'RELEASE_NOTES_BASE64':encoded_notes},capture_output=True,text=True)
 
     def test_versioned_chinese_notes_roundtrip_as_text(self):
