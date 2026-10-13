@@ -2,11 +2,9 @@
 
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
-<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.6.1">下载 3.6.1</a> · <a href="#许可与资源来源">许可</a></p>
+<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.7.0">下载 3.7.0</a> · <a href="#许可与资源来源">许可</a></p>
 
-**开发预览：3.7.0-rc.1（UNRELEASED，尚未发行）。** 新增后台筛选、双语界面、只读资源盘点和离线采样汇总，请在独立测试环境试用；下面的正式下载仍指向 3.6.1。
-
-**当前发行版：3.6.1。** 插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
+**当前发行版：3.7.0。** 新增后台搜索与状态筛选、中英文界面、只读资源盘点和离线采样汇总。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
 | 你需要准备 | 当前要求与验收范围                                                                              |
 | ---------- | ----------------------------------------------------------------------------------------------- |
@@ -32,11 +30,11 @@
 
 ### 1. 下载并安装插件
 
-[**下载 WordPress 安装包：wordpress-live2d-mascot-3.6.1.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.1/wordpress-live2d-mascot-3.6.1.zip)
+[**下载 WordPress 安装包：wordpress-live2d-mascot-3.7.0.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.7.0/wordpress-live2d-mascot-3.7.0.zip)
 
 在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在站点或网络后台插件列表的操作区，以及本插件说明区，可通过 **设置** 直达资源配置（仅对具备设置权限的管理员显示），也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
 
-发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.6.1/SHA256SUMS) 核对下载。
+发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.7.0/SHA256SUMS) 核对下载。
 
 ### 2. 导入自己取得的 Core
 
@@ -136,7 +134,7 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
 
-以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.6.1 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
+以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.7.0 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
 
 ```sh
 npm ci --ignore-scripts
@@ -172,7 +170,7 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 
 每次运行固定触发时的 `github.sha`，附件携带该 SHA、版本和文件摘要。发布任务仅验证本次运行的 artifact，具有写权限的任务不 checkout 或执行仓库代码；原子创建对应 tag，先建立草稿、上传并核对所有附件摘要，确认 tag 仍指向核验的提交后才公开。失败会保留已创建的草稿/tag 供检查，不自动覆盖或删除。
 
-开发预览的检查入口还覆盖翻译目录完整性与占位符、PO/MO 编译重现、未保存提醒、离线采样输入边界，以及真实后台的搜索／状态筛选、盘点权限与只读行为、英文／中文页面。资源仍全部使用合成样例；GitHub 流水线运行结果以对应提交为准。
+检查入口还覆盖翻译目录完整性与占位符、PO/MO 编译重现、未保存提醒、离线采样输入边界，以及真实后台的搜索／状态筛选、盘点权限与只读行为、英文／中文页面。资源仍全部使用合成样例；GitHub 流水线运行结果以对应提交为准。
 
 ### 本地运行真实 WordPress 集成
 
@@ -214,9 +212,9 @@ document.dispatchEvent(
 
 前台仅在互动面板打开并选中候选角色时按需加载这一张图片，不预取 Core 或模型。缩略图须来自本站同源的插件缩略图目录；缺省、无效或解码失败时显示名称缩写。搜索、收藏和候选变化只更新候选图，仍须明确预览／确认才会切换并保存角色。升级不会自动生成图片或改写旧配置。
 
-### 未发行候选的管理与双语界面
+### 管理与双语界面
 
-3.7.0-rc.1 在角色管理中增加名称／ID 搜索与全部、启用、停用、回收站、被隔离、入口可显示筛选。状态数量复用已有轻量入口检查；被隔离与生命周期状态可以重叠，入口通过仍不代表画面或完整资源正常。搜索和筛选只读，不保存设置。首次使用清单区分 Core 入口、启用角色与条款，提示下一步导入、修复或前台同意。
+3.7.0 在角色管理中增加名称／ID 搜索与全部、启用、停用、回收站、被隔离、入口可显示筛选。状态数量复用已有轻量入口检查；被隔离与生命周期状态可以重叠，入口通过仍不代表画面或完整资源正常。搜索和筛选只读，不保存设置。首次使用清单区分 Core 入口、启用角色与条款，提示下一步导入、修复或前台同意。
 
 修改角色／手机设置或选择上传文件后，离页会触发浏览器的未保存提醒；提交另一个表单也会提醒仍未保存的修改。有效提交自己的表单可继续，未改动的只读搜索不提醒。多个表单分别保存，提醒不会自动保存文件或输入内容。
 
@@ -224,7 +222,7 @@ document.dispatchEvent(
 
 修改 `plugin/languages/live2d-show-*.po` 后执行 `python3 tools/translations.py` 生成 POT/MO；`--check` 只读核对 PHP 嵌套包含文件、自有前台错误与控件的完整覆盖、插值参数及逐字节可重现性。只使用 Python 标准库，无在线翻译或额外依赖。
 
-### 未发行候选的只读磁盘盘点
+### 只读磁盘盘点
 
 管理员主动点击 **盘点磁盘用量 / Inspect disk usage** 后，使用权限与 nonce 校验的 POST 在当前站点 `uploads/wzf-mascot` 精确根内盘点文件元数据。打开设置页不会自动遍历磁盘。报告只向管理员显示相对路径、文件数、逻辑字节数、当前／上一版模型、缩略图、共享 Core 与条款引用；不把盘点数据加入前台配置。
 

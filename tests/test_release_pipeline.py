@@ -1,7 +1,11 @@
 """Release identity, tamper, version and whitelist failure regressions."""
 import json
 from pathlib import Path
+import re
+import subprocess
 import sys
+import tempfile
+import textwrap
 import unittest
 import zipfile
 ROOT=Path(__file__).resolve().parents[1]
@@ -71,6 +75,52 @@ class PipelineTests(unittest.TestCase):
         (self.out/'release-manifest.json').write_bytes(encoded(report))
         (self.out/'SHA256SUMS').write_text(''.join(f'{report[k]["sha256"]}  {report[k]["filename"]}\n' for k in ('archive','source_archive')))
         with self.assertRaisesRegex(ValueError,'Source whitelist'):verify(self.out,'3.5.0','a'*40)
+
+
+@unittest.skipUnless((ROOT/'.github/workflows/release.yml').is_file(),
+                     'Release workflow is available in the Git checkout, not the source ZIP')
+class WorkflowPublishTests(unittest.TestCase):
+    """Execute the write-token job's independent validator against the current package."""
+    proof=PipelineTests.proof
+
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory(prefix='mascot-workflow-test-')
+        self.addCleanup(self.temp.cleanup)
+        self.out=Path(self.temp.name)/'release'
+        self.version=plugin_version(ROOT)
+        self.report=package(ROOT,self.out,self.version,'a'*40)
+        self.proof(self.report)
+        workflow=(ROOT/'.github/workflows/release.yml').read_text()
+        publish=workflow.split('\n  publish:\n',1)[1]
+        self.assertNotIn('actions/checkout',publish)
+        step=publish.split("      - name: Validate this run's attachment identity, hashes and closed file sets\n",1)[1]
+        scripts=re.findall(r"^          python3 - <<'PY'\n(.*?)^          PY$",step,re.M|re.S)
+        self.assertEqual(len(scripts),1,'Expected exactly one independent publish validator')
+        self.script=textwrap.dedent(scripts[0])
+
+    def validate(self):
+        # Only the two public identities reach this process; no tokens or inherited credentials.
+        return subprocess.run([sys.executable,'-I','-c',self.script],cwd=self.out.parent,
+                              env={'RELEASE_VERSION':self.version,'SOURCE_SHA':'a'*40},
+                              capture_output=True,text=True)
+
+    def test_actual_current_package_passes_inline_publish_validation(self):
+        result=self.validate()
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_rehashed_unknown_source_file_fails_inline_publish_validation(self):
+        report=self.report;path=self.out/report['source_archive']['filename']
+        with zipfile.ZipFile(path,'a') as archive:
+            archive.writestr('wordpress-live2d-mascot/tools/unapproved.py',b'not allowed')
+        data=path.read_bytes()
+        report['source_archive']['sha256']=digest(data);report['source_archive']['bytes']=len(data)
+        report['source_files'].append({'path':'tools/unapproved.py','sha256':digest(b'not allowed')})
+        (self.out/'release-manifest.json').write_bytes(encoded(report))
+        (self.out/'SHA256SUMS').write_text(''.join(f'{report[k]["sha256"]}  {report[k]["filename"]}\n' for k in ('archive','source_archive')))
+        self.proof(report)
+        result=self.validate()
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('AssertionError',result.stderr)
 
 
 if __name__=='__main__':unittest.main()
