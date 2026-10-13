@@ -162,9 +162,9 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 
 检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。真实 WordPress integration job 必须通过，发布所复用的 CI 完成前会等待该 job 的 PHP 8.2／8.5 两项。隔离 MySQL 服务、新建 WordPress 7.1.3 和 WP-CLI 2.12.0 下载均固定版本，下载核对 SHA256；测试禁用邮件与 cron。升级测试以合成旧插件入口起步，再将完整合成资源、配置和账号显示偏好经真实 WordPress 覆写升级，逐项核对 option、user meta 和资源文件摘要；它不是历史真实素材或旧版渲染验收。以 Python 标准库 cookiejar 完成真实 HTTP 登录、nonce／权限失败、设置保存与过期版本冲突、multipart 导入／更新／缩略图，以及回退、停用恢复、移动设置和角色隔离。测试用独立 option 配置合成非执行 Core 占位文件及固定哈希元数据，仅验证服务端输出；生产常量和 Core 上传校验保持完整，占位文件也无法通过完整哈希诊断。只上传不含凭据的测试摘要，合成素材不作为 artifact 或发行附件。**不代替真实 SDK、模型画面、GPU、手机或许可验收。**
 
-新版本发布从 [Manual Live2D Mascot Release](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/release.yml) 手动发起：
+新版本发布从 [Live2D Mascot 手动发布](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/release.yml) 发起：
 
-1. 将新版本的 PHP 版本入口、源码和核验过的构建产物提交到 main。
+1. 将新版本的 PHP 版本入口、源码和核验过的构建产物提交到 main，并在 `.github/release-notes/<版本>.md` 写好中文发行说明，介绍本次更新和安装方式。
 2. 选择 main，填写与 PHP 入口完全一致的版本号（不带 `v`），保留 `publish=false`，先下载该次运行的 artifact 审阅。
 3. 准备正式发布时再次发起，明确选择 `publish=true`。已存在的 tag 或 release 会拒绝，不覆盖既有 v3.5.0 附件。
 

@@ -1,14 +1,14 @@
-name: Manual Live2D Mascot Release
+name: Live2D Mascot 手动发布
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Exact PHP plugin version, without v (X.Y.Z or X.Y.Z-rc.N/beta.N/alpha.N)'
+        description: '填写与插件一致的版本号，不带 v（如 3.7.0 或 3.8.0-rc.1）'
         required: true
         type: string
       publish:
-        description: 'Publish a new release; false builds downloadable artifacts only'
+        description: '公开新版本；关闭时仅构建可下载的审阅附件'
         type: boolean
         default: false
 
@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.source.outputs.sha }}
+      release_notes: ${{ steps.notes.outputs.release_notes }}
     steps:
       - name: Require main
         env:
@@ -48,6 +49,28 @@ jobs:
           plugin_version('.', os.environ['RELEASE_VERSION'])
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('sha=' + sha + '\n')
+          PY
+      # Versioned prose is read from the pinned checkout with a read-only token.
+      # Add .github/release-notes/<version>.md when preparing each new version.
+      - name: 读取当前版本中文发行说明
+        id: notes
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 - <<'PY'
+          import base64, os, pathlib, re
+          version = os.environ['RELEASE_VERSION']
+          assert re.fullmatch(r'(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:alpha|beta|rc)\.[1-9]\d*)?', version)
+          path = pathlib.Path('.github/release-notes') / (version + '.md')
+          if not path.is_file() or path.is_symlink():
+              raise ValueError('请先补写当前版本发行说明：' + str(path))
+          if not 0 < path.stat().st_size <= 16384:
+              raise ValueError('发行说明必须为非空 UTF-8 文本，且不超过 16 KiB')
+          raw = path.read_bytes()
+          if len(raw) > 16384 or not raw.decode('utf-8').strip():
+              raise ValueError('发行说明必须为非空 UTF-8 文本，且不超过 16 KiB')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('release_notes=' + base64.b64encode(raw).decode('ascii') + '\n')
           PY
       - name: Refuse an existing tag or release when publishing
         if: inputs.publish
@@ -162,9 +185,16 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
           SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+          RELEASE_NOTES_BASE64: ${{ needs.resolve.outputs.release_notes }}
         with:
           script: |
             const fs = require('node:fs');
+            // Decode trusted prose as data only; never evaluate repository or attachment code.
+            const encodedNotes = process.env.RELEASE_NOTES_BASE64 || '';
+            const notes = Buffer.from(encodedNotes, 'base64');
+            if (notes.length > 16384 || notes.toString('base64') !== encodedNotes) throw new Error('Invalid release notes');
+            const body = notes.toString('utf8');
+            if (!body.trim()) throw new Error('Missing release notes');
             const tag = `v${process.env.RELEASE_VERSION}`;
             for (const [method, params] of [
               [github.rest.git.getRef, {ref: `tags/${tag}`}],
@@ -180,7 +210,7 @@ jobs:
               ...context.repo, tag_name: tag, target_commitish: process.env.SOURCE_SHA,
               name: `WordPress Live2D Mascot ${process.env.RELEASE_VERSION}`,
               draft: true, prerelease: process.env.RELEASE_VERSION.includes('-'),
-              body: fs.readFileSync('release/DISTRIBUTION-NOTICE.txt', 'utf8'),
+              body,
             });
             for (const name of fs.readdirSync('release').sort()) {
               const data = fs.readFileSync(`release/${name}`);
