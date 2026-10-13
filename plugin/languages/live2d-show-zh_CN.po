@@ -1,0 +1,1416 @@
+# GPL-2.0-or-later. Generated template; edit locale PO translations.
+msgid ""
+msgstr "Project-Id-Version: WordPress Live2D Mascot\nContent-Type: text/plain; charset=UTF-8\nLanguage: zh_CN\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid "%1$s (%2$s)"
+msgstr "%1$s（%2$s）"
+
+msgid "%1$s greeted you"
+msgstr "%1$s 向你打了个招呼"
+
+msgid "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
+msgstr "共 %2$s 个文件，逻辑大小 %1$s 字节；%3$s 条路径存在多个硬链接。这不是实际物理磁盘占用。"
+
+msgid "%1$s mascot"
+msgstr "%1$s 看板娘"
+
+msgid "%1$s of %2$s character shown."
+msgid_plural "%1$s of %2$s characters shown."
+msgstr[0] "显示 %1$s / %2$s 位角色。"
+
+msgid "%1$s pixels"
+msgstr "%1$s 像素"
+
+msgid "%1$s welcomes you"
+msgstr "%1$s 欢迎你"
+
+msgid "%1$s · %2$s · Sources and terms"
+msgstr "%1$s · %2$s · 来源与条款"
+
+msgid "%1$s · Previewing"
+msgstr "%1$s · 预览中"
+
+msgid "%1$s; returned to the original character. You can retry."
+msgstr "%1$s；已返回原角色，可重试"
+
+msgid "%s active character entry passed."
+msgid_plural "%s active character entries passed."
+msgstr[0] "%s 位启用角色通过入口检查。"
+
+msgid "%s character"
+msgid_plural "%s characters"
+msgstr[0] "%s 位角色"
+
+msgid "%s has no thumbnail"
+msgstr "%s 暂无缩略图"
+
+msgid "%s is valid."
+msgstr "%s 正常。"
+
+msgid "%s must be an array."
+msgstr "%s 必须是数组。"
+
+msgid "(click to retry)"
+msgstr "（点击重试）"
+
+msgid "; returned to the original character. You can retry."
+msgstr "；已返回原角色，可重试"
+
+msgid "; this browser will remember your selection."
+msgstr "，下次打开会记住"
+
+msgid "A PNG texture is invalid or too large."
+msgstr "PNG 贴图无效或过大。"
+
+msgid "A Version 3 Cubism runtime model is required."
+msgstr "需要 Version 3 的 Cubism 运行模型。"
+
+msgid "A ZIP file is too large or has an abnormal compression ratio."
+msgstr "ZIP 文件过大或压缩比异常。"
+
+msgid "A configured reference is invalid, missing, inaccessible or exceeds the report limit; classification is unknown."
+msgstr "配置引用无效、缺失、无法访问或超出报告限制；引用分类未知。"
+
+msgid "A greeting motion is not in the current character catalog."
+msgstr "招呼动作不在当前角色目录中。"
+
+msgid "A greeting motion reference is invalid."
+msgstr "招呼动作引用无效。"
+
+msgid "A model reference is missing or has an invalid format."
+msgstr "模型引用缺失或格式错误。"
+
+msgid "A model runtime reference is missing, outside the allowed directory or has an invalid size."
+msgstr "模型运行引用缺失、越界或大小无效。"
+
+msgid "A motion catalog entry is invalid."
+msgstr "动作目录条目无效。"
+
+msgid "A resource or settings task is in progress. Try again later."
+msgstr "已有资源或设置任务正在进行，请稍后重试。"
+
+msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
+msgstr "资源任务正在进行，或盘点期间配置发生变化；引用分类未知。"
+
+msgid "Accept terms and enable mobile animation in this browser"
+msgstr "同意条款并在本浏览器开启移动动画"
+
+msgid "Accept terms and show"
+msgstr "同意条款并显示"
+
+msgid "Active"
+msgstr "启用"
+
+msgid "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
+msgstr "前台启用角色：%s 位。单个角色入口失效时仅隔离该角色；共享 Core 或条款无效时全部停止输出。"
+
+msgid "Administrator permission is required."
+msgstr "需要管理员权限。"
+
+msgid "Administrator-imported resources"
+msgstr "管理员导入资源"
+
+msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
+msgstr "主动开启后读取当前 WebGL / GPU 信息并在本地记录加载与短时帧率。报告不包含页面地址、查询参数、Cookie 或用户资料；不会发送到服务器。"
+
+msgid "All"
+msgstr "全部"
+
+msgid "Allow incompatible motion reset: use the new default idle if unmappable and remove unmappable welcome/greetings. Preserve compatible motions and greeting order."
+msgstr "允许重置不兼容动作：无法映射的待机使用新默认动作，移除无法映射的欢迎与招呼；可映射的动作和招呼顺序保留。"
+
+msgid "Allow readers to opt in to the mascot in mobile browsers"
+msgstr "允许读者在手机浏览器单独开启看板娘"
+
+msgid "Allow the mascot on the frontend"
+msgstr "允许前台显示看板娘"
+
+msgid "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
+msgstr "已有导入正在进行，配置未改变。若异常中断，请管理员检查导入锁后重试。"
+
+msgid "Another request changed the resource configuration. Refresh before editing again."
+msgstr "资源配置已被其他请求修改，请刷新页面后重新编辑。"
+
+msgid "Another request changed the resource configuration. Refresh before retrying."
+msgstr "资源配置已被其他请求修改，请刷新后重试。"
+
+msgid "Another request changed the resource configuration. Refresh before trying again."
+msgstr "资源配置已被其他请求修改，请刷新页面后重新操作。"
+
+msgid "Arms crossed · glance aside"
+msgstr "抱臂侧望"
+
+msgid "Arms crossed · head tilt"
+msgstr "抱臂歪头"
+
+msgid "Arms crossed · nod"
+msgstr "抱臂点头"
+
+msgid "Arms crossed · thinking"
+msgstr "抱臂沉思"
+
+msgid "Arms crossed · turn head"
+msgstr "抱臂侧头"
+
+msgid "Arms open · gentle sway"
+msgstr "展臂轻摆"
+
+msgid "Arms open · head tilt"
+msgstr "展臂歪头"
+
+msgid "Arms open · smile"
+msgstr "展臂微笑"
+
+msgid "Arms open · smile with eyes closed"
+msgstr "展臂闭眼笑"
+
+msgid "Arms slightly open"
+msgstr "双臂微张"
+
+msgid "Available favorites:"
+msgstr "可用收藏"
+
+msgid "Available favorites: %1$s characters"
+msgstr "可用收藏 %1$s 个角色"
+
+msgid "Between 1 and 16 textures are required."
+msgstr "需要 1–16 张贴图。"
+
+msgid "Blush"
+msgstr "脸红"
+
+msgid "Bottom left"
+msgstr "左下角"
+
+msgid "Bottom right"
+msgstr "右下角"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Cancel preview"
+msgstr "取消预览"
+
+msgid "Cancelled"
+msgstr "已取消"
+
+msgid "Candidate:"
+msgstr "候选："
+
+msgid "Candidate: %1$s"
+msgstr "候选：%1$s"
+
+msgid "Cannot clear the thumbnail reference."
+msgstr "缩略图清除失败。"
+
+msgid "Cannot create a resource directory."
+msgstr "资源目录建立失败。"
+
+msgid "Cannot create a thumbnail staging directory."
+msgstr "不能建立缩略图候选目录。"
+
+msgid "Cannot create an isolated staging directory."
+msgstr "不能建立独立候选目录。"
+
+msgid "Cannot create the resource directory."
+msgstr "不能建立资源目录。"
+
+msgid "Cannot create the thumbnail."
+msgstr "不能建立缩略图。"
+
+msgid "Cannot generate the thumbnail."
+msgstr "不能生成缩略图。"
+
+msgid "Cannot read a ZIP entry."
+msgstr "ZIP 文件读取失败。"
+
+msgid "Cannot read the character catalog."
+msgstr "不能读取角色目录。"
+
+msgid "Cannot read the thumbnail."
+msgstr "不能读取缩略图。"
+
+msgid "Cannot save character management changes."
+msgstr "角色管理保存失败。"
+
+msgid "Cannot save character settings."
+msgstr "角色设置保存失败。"
+
+msgid "Cannot save configuration."
+msgstr "配置保存失败。"
+
+msgid "Cannot save mobile settings."
+msgstr "移动端设置保存失败。"
+
+msgid "Cannot save the character resource update."
+msgstr "角色资源更新保存失败。"
+
+msgid "Cannot save thumbnail configuration."
+msgstr "缩略图配置保存失败。"
+
+msgid "Cannot write the directory protection files."
+msgstr "不能写入目录保护文件。"
+
+msgid "Catalog"
+msgstr "目录"
+
+msgid "Catalog and motion configuration"
+msgstr "目录与动作配置"
+
+msgid "Change expression"
+msgstr "切换表情"
+
+msgid "Character"
+msgstr "角色"
+
+msgid "Character ID"
+msgstr "角色 ID"
+
+msgid "Character ID or configuration structure is invalid."
+msgstr "角色 ID 或配置结构无效。"
+
+msgid "Character ID, name or credit is invalid."
+msgstr "角色 ID、名称或署名无效。"
+
+msgid "Character configuration is invalid."
+msgstr "角色配置无效。"
+
+msgid "Character configuration structure is invalid."
+msgstr "角色配置结构无效。"
+
+msgid "Character history configuration is invalid."
+msgstr "角色历史配置无效。"
+
+msgid "Character initialization timed out. Try again."
+msgstr "角色初始化超时，请重试"
+
+msgid "Character layout configuration is invalid."
+msgstr "角色布局配置无效。"
+
+msgid "Character management"
+msgstr "角色管理"
+
+msgid "Character management changes saved."
+msgstr "角色管理操作已保存。"
+
+msgid "Character management operation is invalid."
+msgstr "角色管理操作无效。"
+
+msgid "Character management request is invalid."
+msgstr "角色管理请求无效。"
+
+msgid "Character model configuration is invalid. Choose another character."
+msgstr "角色模型配置无效，请选择其他角色"
+
+msgid "Character model entry is invalid."
+msgstr "角色模型入口无效。"
+
+msgid "Character motion catalog is invalid. Choose another character."
+msgstr "角色动作目录无效，请选择其他角色"
+
+msgid "Character name"
+msgstr "角色名称"
+
+msgid "Character position"
+msgstr "人物位置"
+
+msgid "Character references are invalid; classification is unknown."
+msgstr "角色引用无效；引用分类未知。"
+
+msgid "Character rendering failed"
+msgstr "角色绘制失败"
+
+msgid "Character resource format is invalid. Retry or choose another character."
+msgstr "角色资源格式无效，请重试或选择其他角色"
+
+msgid "Character resource path is invalid."
+msgstr "角色资源路径无效。"
+
+msgid "Character resources are invalid. Cannot display; try again."
+msgstr "角色资源无效，无法显示，请重试"
+
+msgid "Character resources are invalid. Retry or choose another character."
+msgstr "角色资源无效，无法显示此角色，请重试或选择其他角色"
+
+msgid "Character resources are missing. Retry or choose another character."
+msgstr "角色资源不存在，请重试或选择其他角色"
+
+msgid "Character resources updated. The previous version is available for rollback."
+msgstr "角色资源已更新，上一版可回退。"
+
+msgid "Character selection, favorites, size and visibility are stored in this browser. Mobile display requires administrator permission and separate browser opt-in. Reduced motion always prevents display. You must still accept the terms and show the mascot on the frontend."
+msgstr "角色选择、收藏、大小和收起状态保存在当前浏览器。手机需管理员允许，并由当前浏览器单独开启；减少动画始终抑制显示。开启后仍需在前台自行同意条款并显示。"
+
+msgid "Character settings request is invalid."
+msgstr "角色设置请求无效。"
+
+msgid "Character settings saved."
+msgstr "角色设置已保存。"
+
+msgid "Character settings · %s"
+msgstr "角色设置 · %s"
+
+msgid "Character size"
+msgstr "人物大小"
+
+msgid "Character status is invalid."
+msgstr "角色状态无效。"
+
+msgid "Character thumbnail"
+msgstr "角色缩略图"
+
+msgid "Characters and runtime libraries are imported by this site’s administrator. See source information for credits and terms; this plugin grants no redistribution or other rights to resources."
+msgstr "角色与运行库由本站管理员自行导入。制作署名和适用条款见来源说明；本插件不授予素材再分发或其他使用权。"
+
+msgid "Check installed resources"
+msgstr "检查已安装资源"
+
+msgid "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
+msgstr "请核对资源署名与条款，然后在每个浏览器中点击前台“显示看板娘”并同意条款。"
+
+msgid "Check the installed resources before retrying."
+msgstr "请检查已安装资源后重试。"
+
+msgid "Checked %1$s characters; %2$s isolated."
+msgstr "已检查 %1$s 位角色，隔离 %2$s 位。"
+
+msgid "Checks only character configuration types and model/catalog entry paths, readability and sizes. It does not read model references or textures, or hash Core. Display also requires valid shared Core and terms and reader opt-in; this is not visual or full resource validation."
+msgstr "只检查角色配置类型及模型／目录入口路径、可读性和大小，不读取模型引用或贴图，不核对 Core 哈希。可显示仍须共享 Core 与条款有效，并由读者开启；不代表画面或完整资源正常。"
+
+msgid "Chin in hand · open palm"
+msgstr "托腮摊手"
+
+msgid "Choose a resource file before importing."
+msgstr "请先选择要导入的资源文件。"
+
+msgid "Choose an image"
+msgstr "选择图片"
+
+msgid "Choose character"
+msgstr "选择角色"
+
+msgid "Choose expression"
+msgstr "选择表情"
+
+msgid "Choose motion"
+msgstr "选择动作"
+
+msgid "Clear"
+msgstr "清空"
+
+msgid "Clear character search"
+msgstr "清空角色搜索"
+
+msgid "Clear filters"
+msgstr "清除筛选"
+
+msgid "Clear thumbnail reference (retain file)"
+msgstr "清除缩略图引用（保留文件）"
+
+msgid "Close interaction"
+msgstr "收起互动"
+
+msgid "Compact mobile size:"
+msgstr "移动端紧凑大小："
+
+msgid "Compact mobile size: %1$s pixels (desktop settings retained)"
+msgstr "移动端紧凑大小：%1$s 像素（桌面设置保留）"
+
+msgid "Configuration"
+msgstr "配置"
+
+msgid "Configured characters"
+msgstr "已配置角色"
+
+msgid "Configured · Web 5 R5"
+msgstr "已配置 · Web 5 R5"
+
+msgid "Confirm your right to use the thumbnail."
+msgstr "请确认有权使用缩略图。"
+
+msgid "Confirm your right to use the uploaded resources."
+msgstr "请确认有权使用上传资源。"
+
+msgid "Control whether this account allows the mascot to appear on the frontend."
+msgstr "控制此账号是否允许前台显示看板娘。"
+
+msgid "Core SHA256 does not match the required Web 5 R5 file."
+msgstr "Core SHA256 不匹配固定 Web 5 R5。"
+
+msgid "Core entry is present. Run resource diagnostics to verify its hash."
+msgstr "Core 入口已存在。请运行资源诊断核对其哈希。"
+
+msgid "Core is not configured yet."
+msgstr "Core 尚未配置。"
+
+msgid "Core must match the required Web 5 R5 SHA256. Model ZIPs are limited to 64 MiB and 1,000 entries: one model3 runtime with no sound, scripts or editor projects. Keep at least one motion; the first Idle-group motion is preferred as default idle. Adjust it in character settings after import."
+msgstr "Core 仅接受固定 Web 5 R5 SHA256。模型 ZIP 限 64 MiB、1000 项；仅含单个 model3 的运行文件，不含声音、脚本或编辑工程。至少保留一个动作，默认待机优先取 Idle 组第一个动作；导入后可在角色设置中调整。"
+
+msgid "Core resources"
+msgstr "Core 资源"
+
+msgid "Credit / source"
+msgstr "署名／来源"
+
+msgid "Current model directory"
+msgstr "当前模型目录"
+
+msgid "Current thumbnail"
+msgstr "当前缩略图"
+
+msgid "Current, previous and shared references"
+msgstr "当前、上一版与共享资源引用"
+
+msgid "Default layout configuration is invalid."
+msgstr "默认布局配置无效。"
+
+msgid "Default size (pixels)"
+msgstr "默认大小（像素）"
+
+msgid "Diagnostics are not enabled."
+msgstr "诊断尚未开启。"
+
+msgid "Directory protection file"
+msgstr "目录保护文件"
+
+msgid "Disable character"
+msgstr "停用角色"
+
+msgid "Disabled"
+msgstr "停用"
+
+msgid "Disabled / trashed"
+msgstr "已停用／回收站"
+
+msgid "Disabling or trashing hides the character from the frontend while retaining files, browser favorites and selections. Restoring makes it available again. Trash never permanently deletes resources."
+msgstr "停用或移入回收站会从前台隐藏角色，保留文件、浏览器收藏及已有选择。恢复后重新可用；回收站不会永久删除资源。"
+
+msgid "Disk inventory"
+msgstr "磁盘资源盘点"
+
+msgid "Display entry ready"
+msgstr "可显示"
+
+msgid "Displeased"
+msgstr "不满"
+
+msgid "Do not automatically play a welcome motion"
+msgstr "不自动播放欢迎动作"
+
+msgid "Documentation"
+msgstr "文档"
+
+msgid "Download diagnostic JSON"
+msgstr "下载诊断 JSON"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Edit character %s"
+msgstr "编辑角色 %s"
+
+msgid "Edit display information and motion references; model files stay in place. Size is the browser layout default; the reader’s existing local size preference takes priority."
+msgstr "修改显示信息和动作引用；模型文件保持原位。大小为浏览器布局默认值，读者已有的本地大小偏好优先。"
+
+msgid "Enable character"
+msgstr "启用角色"
+
+msgid "Enable local diagnostics"
+msgstr "开启本地诊断"
+
+msgid "Encrypted ZIP files are not supported."
+msgstr "不支持加密 ZIP。"
+
+msgid "Engine"
+msgstr "引擎"
+
+msgid "Existing resource configuration is invalid."
+msgstr "现有资源配置无效。"
+
+msgid "Expression"
+msgstr "表情"
+
+msgid "Expression is invalid."
+msgstr "Expression 无效。"
+
+msgid "Expression reset"
+msgstr "已恢复默认表情"
+
+msgid "Favorite %1$s"
+msgstr "收藏 %1$s"
+
+msgid "Favorite selected character"
+msgstr "收藏选中角色"
+
+msgid "Favorite selected character:"
+msgstr "收藏选中角色："
+
+msgid "Favorites apply only to this page; the browser did not allow saving."
+msgstr "仅本页生效，浏览器未允许保存收藏"
+
+msgid "Favorites only"
+msgstr "只看收藏"
+
+msgid "Feedback"
+msgstr "反馈"
+
+msgid "First-use readiness"
+msgstr "首次使用准备"
+
+msgid "Frontend display"
+msgstr "前台显示"
+
+msgid "Frontend entry checks"
+msgstr "前台入口检查"
+
+msgid "Greeting motion request is invalid."
+msgstr "招呼动作请求无效。"
+
+msgid "Greeting motions"
+msgstr "招呼动作"
+
+msgid "Greeting motions must not be duplicated."
+msgstr "招呼动作不能重复。"
+
+msgid "Hands behind to hands together"
+msgstr "背手转合手"
+
+msgid "Hands behind · blink"
+msgstr "背手眨眼"
+
+msgid "Hands behind · head tilt"
+msgstr "双手背后·侧头"
+
+msgid "Hands behind · smile"
+msgstr "背手微笑"
+
+msgid "Hands in front · soft response"
+msgstr "双手身前·轻声回应"
+
+msgid "Hands on cheeks · soft smile"
+msgstr "捧脸轻笑"
+
+msgid "Hands together to arms open"
+msgstr "合手转展臂"
+
+msgid "Hands together to hands behind"
+msgstr "合手转背手"
+
+msgid "Hands together · blink"
+msgstr "合手眨眼"
+
+msgid "Hands together · gentle sway"
+msgstr "合手轻摆"
+
+msgid "Hands together · light sway"
+msgstr "合手轻晃"
+
+msgid "Head lowered · listening"
+msgstr "低头倾听"
+
+msgid "Hide mascot"
+msgstr "收起看板娘"
+
+msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
+msgstr "我有权在本站使用新资源，并已阅读来源许可与使用条件。"
+
+msgid "I have the right to use these resources on this site and have read their source licenses and terms."
+msgstr "我有权在本站使用资源，并已阅读其来源许可与使用条件。"
+
+msgid "I have the right to use this image on this site and have read its source license and terms."
+msgstr "我有权在本站使用这张图片，并已阅读来源许可与使用条件。"
+
+msgid "Idle motion (loop)"
+msgstr "待机动作（循环）"
+
+msgid "Image decoding failed."
+msgstr "图片解码失败。"
+
+msgid "Import Core JS"
+msgstr "导入 Core JS"
+
+msgid "Import model ZIP"
+msgstr "导入模型 ZIP"
+
+msgid "Import one model, enable a character, or repair isolated entries using resource diagnostics. Existing files and preferences are retained."
+msgstr "请导入一个模型、启用角色，或根据资源诊断修复被隔离的入口。现有文件与偏好会保留。"
+
+msgid "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
+msgstr "请导入指定 Web 5 R5 Core 文件，或恢复缺失文件。不能用其他版本替代。"
+
+msgid "Import type is invalid."
+msgstr "导入类型无效。"
+
+msgid "Inspect disk usage"
+msgstr "盘点磁盘用量"
+
+msgid "Interact"
+msgstr "互动"
+
+msgid "Invalid JSON. Re-export valid model runtime JSON and check its references."
+msgstr "JSON 无效。请重新导出有效的模型运行 JSON，并检查引用。"
+
+msgid "Invalid configuration"
+msgstr "配置无效"
+
+msgid "Invalid configuration structure · Isolated"
+msgstr "配置结构无效 · 被隔离"
+
+msgid "Invalid status"
+msgstr "状态无效"
+
+msgid "Inventory complete."
+msgstr "盘点已完成。"
+
+msgid "Inventory incomplete or references unknown. Unreferenced classification is withheld."
+msgstr "盘点不完整或引用未知；不判断哪些文件未被引用。"
+
+msgid "Isolated"
+msgstr "被隔离"
+
+msgid "Isolated characters retain their configuration, files and browser favorites/selection. Other valid characters remain available. Run the full diagnostics below and restore missing resources or a configuration backup; editable fields can be corrected in character settings. Invalid shared Core or terms prevents all frontend output."
+msgstr "被隔离角色保留原配置、文件与浏览器收藏／选择；其他有效角色继续显示。请运行下方完整诊断，恢复缺失资源或配置备份；可编辑的字段通过角色设置修正。共享 Core 或条款无效时全部停止输出。"
+
+msgid "JSON must be an object."
+msgstr "JSON 必须是对象。"
+
+msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
+msgstr "限制：20,000 项、3 秒、显示 500 条路径、1,000 条引用。统计可能不完整。资源使用权限未知；应保留所有被引用目录，包括停用与回收站角色。"
+
+msgid "Loading cancelled"
+msgstr "已取消加载"
+
+msgid "Loading character…"
+msgstr "正在加载角色…"
+
+msgid "Loading mascot…"
+msgstr "加载看板娘…"
+
+msgid "Loading…"
+msgstr "正在加载…"
+
+msgid "Local diagnostics"
+msgstr "本地诊断"
+
+msgid "Local state recorded. Sample now, or show the mascot again to record loading time. You choose whether to share downloaded reports."
+msgstr "已记录本地状态。可采样，或重新显示看板娘记录加载时间；下载报告由你自行分享。"
+
+msgid "Logical bytes"
+msgstr "逻辑字节数"
+
+msgid "Lowered brows"
+msgstr "低眉"
+
+msgid "Manage"
+msgstr "管理"
+
+msgid "Manage Core and character resources"
+msgstr "管理 Core 与角色资源"
+
+msgid "Manage resources and characters so readers can use the mascot on their own terms."
+msgstr "管理资源与角色，让读者按自己的习惯使用看板娘。"
+
+msgid "Mascot interaction"
+msgstr "看板娘互动"
+
+msgid "Mobile display"
+msgstr "移动端显示"
+
+msgid "Mobile settings request is invalid."
+msgstr "移动端设置请求无效。"
+
+msgid "Mobile settings saved. Each browser still requires separate consent and opt-in."
+msgstr "移动端设置已保存。每个浏览器仍需单独同意并开启。"
+
+msgid "Model"
+msgstr "模型"
+
+msgid "Model motion references are invalid."
+msgstr "模型动作引用无效。"
+
+msgid "Model runtime configuration is invalid."
+msgstr "模型运行配置无效。"
+
+msgid "Model texture references are invalid."
+msgstr "模型贴图引用无效。"
+
+msgid "Model validation failed"
+msgstr "模型校验失败"
+
+msgid "Motion"
+msgstr "动作"
+
+msgid "Motion file unavailable"
+msgstr "动作文件不可用"
+
+msgid "Motion files must be Version 3 JSON."
+msgstr "动作文件必须是 Version 3 JSON。"
+
+msgid "Motion or expression resources are invalid. Try again."
+msgstr "动作或表情资源无效，请重试"
+
+msgid "Motion stopped; returned to idle"
+msgstr "已停止动作，恢复待机"
+
+msgid "Motions is invalid."
+msgstr "Motions 无效。"
+
+msgid "Move to trash"
+msgstr "移入回收站"
+
+msgid "Name and credit must be valid plain text."
+msgstr "名称或署名必须是有效纯文本。"
+
+msgid "Name or character ID"
+msgstr "名称或角色 ID"
+
+msgid "Needs attention"
+msgstr "需处理"
+
+msgid "Network connection failed. Check your connection and retry."
+msgstr "网络连接失败，请检查网络后重试"
+
+msgid "New single-model runtime ZIP"
+msgstr "新单模型运行 ZIP"
+
+msgid "No candidate character"
+msgstr "暂无候选角色"
+
+msgid "No characters match. Change the search or status filter."
+msgstr "没有匹配的角色。请更换搜索词或状态筛选。"
+
+msgid "No characters yet. Import Core and one model, then configure the character."
+msgstr "暂无角色。请先导入 Core 和一个模型，再配置角色。"
+
+msgid "No favorites yet. Turn off “Favorites only” to see all characters."
+msgstr "还没有收藏的角色，取消“只看收藏”可查看全部角色"
+
+msgid "No matching characters. Change the search or clear it."
+msgstr "没有匹配的角色，请更换关键词或清空搜索"
+
+msgid "No matching favorites. Change the search or clear it."
+msgstr "收藏中没有匹配的角色，请更换关键词或清空搜索"
+
+msgid "No previous character resources are available for rollback."
+msgstr "没有可回退的上一版角色资源。"
+
+msgid "No selectable character"
+msgstr "当前没有可选角色"
+
+msgid "Not imported"
+msgstr "尚未导入"
+
+msgid "Observed paths (admin only)"
+msgstr "已观察路径（仅管理员可见）"
+
+msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
+msgstr "请从官方 SDK 取得指定 Web 5 R5 的 live2dcubismcore.min.js。不要通过重命名替代 Core 版本。现有资源已保留。"
+
+msgid "Off by default. After mobile display is allowed, each browser must still consent and opt in separately. Desktop preferences never automatically enable mobile animation. Reduced motion, account display permission and reading suspension always apply."
+msgstr "默认关闭。允许手机显示后，每个浏览器仍需单独同意并开启，已有桌面显示偏好不会自动开启手机动画。减少动画、账号显示权限和阅读暂停规则始终有效。"
+
+msgid "Official Cubism SDK for Web download"
+msgstr "Cubism SDK for Web 官方下载"
+
+msgid "Official samples"
+msgstr "官方样例"
+
+msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
+msgstr "仅接受 PNG、JPEG 或 WebP；宽高均须不超过 2048，最多 4M 像素。"
+
+msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
+msgstr "只接受已核验的 Web 5 R5 live2dcubismcore.min.js；SHA256 不匹配。"
+
+msgid "Open mouth · frown"
+msgstr "张嘴皱眉"
+
+msgid "Open palms · head tilt"
+msgstr "摊手侧头"
+
+msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
+msgstr "手机输入框聚焦时暂停（避免遮挡输入与软键盘）"
+
+msgid "Physics"
+msgstr "物理"
+
+msgid "Play motion"
+msgstr "播放动作"
+
+msgid "Pose"
+msgstr "姿态"
+
+msgid "Position and size"
+msgstr "位置与大小"
+
+msgid "Preview character"
+msgstr "预览角色"
+
+msgid "Previewing. Select “Use this character” to save."
+msgstr "正在预览，点击“使用这个角色”才会保存"
+
+msgid "Previewing:"
+msgstr "正在预览："
+
+msgid "Previewing: %1$s"
+msgstr "正在预览：%1$s"
+
+msgid "Previous model directory"
+msgstr "上一版模型目录"
+
+msgid "Previous thumbnail"
+msgstr "上一版缩略图"
+
+msgid "Pursed lips"
+msgstr "抿嘴"
+
+msgid "Raise hand to greet"
+msgstr "举手招呼"
+
+msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
+msgstr "请重新导出单个 model3 运行 ZIP。检查 model3 的相对引用，包含必需文件和至少一个动作，移除声音、脚本与编辑工程文件。保留原始文件与配置备份。"
+
+msgid "Readers opt in"
+msgstr "读者自行开启"
+
+msgid "Ready"
+msgstr "已就绪"
+
+msgid "Reduced motion enabled"
+msgstr "已减少动画"
+
+msgid "Reference classification"
+msgstr "引用分类"
+
+msgid "Reference inspection reached its bound; classification is unknown."
+msgstr "引用检查已达到限制；引用分类未知。"
+
+msgid "Relative path"
+msgstr "相对路径"
+
+msgid "Rendering failed. Try again."
+msgstr "绘图失败，请重试"
+
+msgid "Reset defaults"
+msgstr "恢复默认"
+
+msgid "Reset expression"
+msgstr "恢复默认表情"
+
+msgid "Resource commit failed."
+msgstr "资源提交失败。"
+
+msgid "Resource configuration is damaged. Restore a configuration backup before importing; opening this page does not repair or overwrite data."
+msgstr "资源配置已损坏。请先恢复配置备份再导入；打开此页不会修复或覆盖数据。"
+
+msgid "Resource configuration is invalid."
+msgstr "资源配置无效。"
+
+msgid "Resource configuration is invalid; classification is unknown."
+msgstr "资源配置无效；引用分类未知。"
+
+msgid "Resource configuration structure is invalid."
+msgstr "资源配置结构无效。"
+
+msgid "Resource diagnostics"
+msgstr "资源诊断"
+
+msgid "Resource download interrupted. Check your connection and retry."
+msgstr "资源下载中断，请检查网络后重试"
+
+msgid "Resource file"
+msgstr "资源文件"
+
+msgid "Resource loading timed out. Try again."
+msgstr "资源加载超时，请重试"
+
+msgid "Resource path escapes the allowed directory."
+msgstr "资源路径越界。"
+
+msgid "Resource path is invalid."
+msgstr "资源路径无效。"
+
+msgid "Resource paths must not use symbolic links."
+msgstr "资源路径不能使用软链接。"
+
+msgid "Resource preparation"
+msgstr "资源准备"
+
+msgid "Resource write verification failed."
+msgstr "资源写入校验失败。"
+
+msgid "Resources and status · %s"
+msgstr "资源与状态 · %s"
+
+msgid "Resources cannot be downloaded right now. Try again later."
+msgstr "资源暂时无法下载，请稍后重试"
+
+msgid "Resources imported."
+msgstr "资源已导入。"
+
+msgid "Restore a configuration backup before retrying."
+msgstr "请恢复配置备份后重试。"
+
+msgid "Restore from trash"
+msgstr "从回收站恢复"
+
+msgid "Restore the character to a valid status before updating resources."
+msgstr "请先恢复角色有效状态再更新资源。"
+
+msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
+msgstr "请恢复已配置的站点条款文件或配置备份。共享条款失效会停止所有前台输出。"
+
+msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
+msgstr "保留角色 ID、名称、署名、布局与其他显示配置。使用新独立资源目录，旧文件保留供缓存与回退；回退只恢复资源和动作，保留当前显示信息与启用状态。动作按相对文件路径映射；无法保留时默认拒绝。"
+
+msgid "Returned to the original character"
+msgstr "已返回原角色"
+
+msgid "Roll back to previous resources and motions"
+msgstr "回退到上一版资源与动作"
+
+msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
+msgstr "在限定范围内只读盘点 uploads/wzf-mascot 的文件元数据。未引用不代表可以安全删除。不会清理文件、计算哈希、读取贴图或修改配置。"
+
+msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
+msgstr "点击后只读检查 Core 哈希、角色运行引用、目录、布局和条款配置。不会写入配置或加载模型画面；运行文件总大小不含目录中的额外维护动作。"
+
+msgid "Runtime download failed. Check your connection and retry."
+msgstr "运行组件下载失败，请检查网络后重试"
+
+msgid "Runtime download failed. Try again later."
+msgstr "运行组件下载失败，请稍后重试"
+
+msgid "Runtime loading timed out. Try again."
+msgstr "运行组件加载超时，请重试"
+
+msgid "Runtime references and file sizes"
+msgstr "运行引用与文件大小"
+
+msgid "Runtime references: %1$s files, %2$s KiB."
+msgstr "运行引用：%1$s 个文件，%2$s KiB。"
+
+msgid "Runtime startup timed out. Refresh and retry."
+msgstr "运行组件启动超时，请刷新页面后重试"
+
+msgid "Sample complete:"
+msgstr "采样完成："
+
+msgid "Sample complete: %1$s FPS."
+msgstr "采样完成：%1$s FPS。"
+
+msgid "Sample for 3 seconds"
+msgstr "采样 3 秒"
+
+msgid "Sample interrupted."
+msgstr "采样已中断。"
+
+msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
+msgstr "正在采样；收起、阅读暂停或切换角色会中断。"
+
+msgid "Save character settings"
+msgstr "保存角色设置"
+
+msgid "Save mobile settings"
+msgstr "保存移动端设置"
+
+msgid "Save thumbnail"
+msgstr "保存缩略图"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "Search characters"
+msgstr "搜索角色"
+
+msgid "Search name or character ID"
+msgstr "搜索名称或角色 ID"
+
+msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
+msgstr "选择角色编辑名称、署名、默认布局与动作。升级插件保留 uploads 中的资源和浏览器偏好。"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Shader"
+msgstr "着色器"
+
+msgid "Shared Core"
+msgstr "共享 Core"
+
+msgid "Shared terms"
+msgstr "共享条款"
+
+msgid "Show mascot"
+msgstr "显示看板娘"
+
+msgid "Showing"
+msgstr "显示"
+
+msgid "Showing %1$s of %2$s characters"
+msgstr "显示 %1$s / %2$s 个角色"
+
+msgid "Site terms configuration is invalid."
+msgstr "站点条款配置无效。"
+
+msgid "Site terms file is invalid."
+msgstr "站点条款文件无效。"
+
+msgid "Site terms information must be valid plain text."
+msgstr "站点条款说明必须是有效纯文本。"
+
+msgid "Size and offset must be valid numbers."
+msgstr "大小或偏移必须是有效数字。"
+
+msgid "Size must be 140–260 pixels in steps of 10; offset must be -100–100%."
+msgstr "大小须为 140–260 像素（步长 10），偏移须为 -100–100%。"
+
+msgid "Smile"
+msgstr "微笑"
+
+msgid "Smile with eyes closed"
+msgstr "闭眼笑"
+
+msgid "Sound references are not supported."
+msgstr "不支持声音引用。"
+
+msgid "Staging / preserve"
+msgstr "候选目录／保留"
+
+msgid "Stand quietly (idle)"
+msgstr "安静站立（待机）"
+
+msgid "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
+msgstr "小写字母开头，使用字母、数字或短横线；已有 ID 不覆盖。"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Stop motion and return to idle"
+msgstr "停止动作，恢复待机"
+
+msgid "Stop recording"
+msgstr "停止采集"
+
+msgid "Surprised"
+msgstr "惊讶"
+
+msgid "Tap"
+msgstr "轻点"
+
+msgid "Tap %1$s to greet"
+msgstr "轻点 %1$s 打招呼"
+
+msgid "Tap to greet"
+msgstr "轻点打招呼"
+
+msgid "Terms"
+msgstr "条款"
+
+msgid "Terms configuration is valid."
+msgstr "条款配置正常。"
+
+msgid "Texture"
+msgstr "贴图"
+
+msgid "Texture creation failed"
+msgstr "纹理创建失败"
+
+msgid "The Core file is missing or has an invalid size."
+msgstr "Core 文件缺失或大小无效。"
+
+msgid "The JSON file is too large."
+msgstr "JSON 文件过大。"
+
+msgid "The MOC3 header is invalid."
+msgstr "MOC3 头无效。"
+
+msgid "The ZIP contains duplicate paths."
+msgstr "ZIP 有重复路径。"
+
+msgid "The ZIP contains non-runtime resources. Upload only the exported runtime files of one model."
+msgstr "ZIP 含非运行资源，请只上传单个模型导出的运行文件。"
+
+msgid "The ZIP entry count exceeds the limit."
+msgstr "ZIP 文件数量超限。"
+
+msgid "The ZIP is invalid."
+msgstr "ZIP 无效。"
+
+msgid "The ZIP must contain exactly one model3.json."
+msgstr "ZIP 必须且只能包含一个 model3.json。"
+
+msgid "The ZIP must not contain symbolic links or special files."
+msgstr "ZIP 不能包含软链接或特殊文件。"
+
+msgid "The actual expanded size exceeds the limit."
+msgstr "实际解压大小超限。"
+
+msgid "The browser blocked mascot execution. Refresh and retry."
+msgstr "浏览器阻止了看板娘运行，请刷新页面后重试"
+
+msgid "The browser did not allow saving. This preview is still usable."
+msgstr "浏览器未允许保存，当前预览仍可使用"
+
+msgid "The character catalog or model file is unavailable."
+msgstr "角色目录或模型文件不可用。"
+
+msgid "The character does not exist or its configuration is invalid."
+msgstr "角色不存在或配置无效。"
+
+msgid "The character does not exist. Select one from the list."
+msgstr "角色不存在，请从列表重新选择。"
+
+msgid "The character model or catalog entry is missing, unreadable or has an invalid size."
+msgstr "角色模型或目录入口缺失、不可读或大小无效。"
+
+msgid "The character motion catalog is empty or too large."
+msgstr "角色动作目录为空或过大。"
+
+msgid "The character status has changed. Refresh before trying again."
+msgstr "角色状态已经改变，请刷新页面后重试。"
+
+msgid "The character texture cannot be decoded. Retry or choose another character."
+msgstr "角色贴图无法解码，请重试或选择其他角色"
+
+msgid "The current reference is invalid; choose again"
+msgstr "当前引用无效，请重新选择"
+
+msgid "The expression catalog contains duplicate, missing or invalid references."
+msgstr "表情目录含重复、缺失或无效引用。"
+
+msgid "The frontend greeting cycles through selected motions. Existing order is retained and new selections are appended. Leave all unchecked to disable greetings. Welcome playback still follows first-display, reading suspension and manual interaction rules."
+msgstr "点击前台“打招呼”时依次播放已选动作；原有动作顺序保留，新选动作追加；不勾选则关闭此入口。欢迎动作仍遵循首次显示、阅读暂停和手动操作规则。"
+
+msgid "The graphics context was lost. Try again."
+msgstr "绘图连接已中断，请重试"
+
+msgid "The greeting could not load yet. Tap again to retry."
+msgstr "招呼暂未加载成功，可以再点一次"
+
+msgid "The greeting motion count is invalid."
+msgstr "招呼动作数量无效。"
+
+msgid "The idle motion reference is invalid."
+msgstr "待机动作引用无效。"
+
+msgid "The idle or welcome motion is not in the current character catalog."
+msgstr "待机或欢迎动作不在当前角色目录中。"
+
+msgid "The lightweight entry check passed."
+msgstr "轻量入口检查通过。"
+
+msgid "The model contains unsupported reference types."
+msgstr "存在不支持的模型引用类型。"
+
+msgid "The model requires at least one valid motion for idle playback."
+msgstr "模型至少需要一个合法动作，供待机使用。"
+
+msgid "The motion catalog contains duplicate IDs or invalid file references."
+msgstr "动作目录包含重复 ID 或无效文件引用。"
+
+msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
+msgstr "新模型无法按文件路径保留现有 %s 动作。配置未改变；确认后勾选“允许重置不兼容动作”再上传。"
+
+msgid "The path display is truncated; metadata counts cover the bounded scan."
+msgstr "路径列表已截断；元数据统计覆盖本次有界扫描。"
+
+msgid "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
+msgstr "插件不附带 Core 或模型。请自行取得有权在本站使用的资源，阅读来源许可与使用条件；导入成功不代表取得再分发许可。"
+
+msgid "The rendering program is invalid; this character cannot be displayed."
+msgstr "绘图程序无效，无法显示此角色"
+
+msgid "The required Core file and SHA256 are valid."
+msgstr "固定 Core 文件和 SHA256 正常。"
+
+msgid "The resource operation failed. Check the installed resources and server permissions, then retry. Existing configuration is retained."
+msgstr "资源操作失败。请检查已安装资源和服务器权限后重试。现有配置已保留。"
+
+msgid "The resource root exists but is not a directory."
+msgstr "资源根路径已存在，但不是目录。"
+
+msgid "The resource root is unavailable or unsafe."
+msgstr "资源根目录不可用或不安全。"
+
+msgid "The runtime component is invalid. Try again."
+msgstr "运行组件无效，请重试"
+
+msgid "The runtime component is missing. Try again later."
+msgstr "运行组件不存在，请稍后重试"
+
+msgid "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
+msgstr "服务器无法接收上传。请让管理员检查临时上传目录的存储空间与写入权限，然后重试。"
+
+msgid "The server requires PHP ZipArchive."
+msgstr "服务器需要 PHP ZipArchive。"
+
+msgid "The thumbnail must be a local image file no larger than 4 MiB."
+msgstr "缩略图须为不超过 4 MiB 的本地图片文件。"
+
+msgid "The total expanded ZIP size exceeds 64 MiB."
+msgstr "ZIP 解压总大小超过 64 MiB。"
+
+msgid "The upload exceeds the server upload limit. Ask the server administrator to check upload_max_filesize and post_max_size; keep the plugin file-size limits."
+msgstr "上传超过服务器限制。请让服务器管理员检查 upload_max_filesize 与 post_max_size；仍须遵守插件的文件大小限制。"
+
+msgid "The upload was interrupted. Check your connection and upload the complete file again."
+msgstr "上传已中断。请检查网络连接，并重新上传完整文件。"
+
+msgid "The uploaded file is invalid."
+msgstr "上传文件无效。"
+
+msgid "The uploaded file or update request is invalid."
+msgstr "上传文件或更新请求无效。"
+
+msgid "The uploads directory is unavailable."
+msgstr "上传目录不可用。"
+
+msgid "The welcome motion reference is invalid."
+msgstr "欢迎动作引用无效。"
+
+msgid "This browser does not support WebGL; the mascot cannot be displayed."
+msgstr "浏览器不支持 WebGL，无法显示看板娘"
+
+msgid "This character ID already exists. Use a new ID; the existing character will not be overwritten."
+msgstr "角色 ID 已存在，请使用新的 ID；现有角色不会被覆盖。"
+
+msgid "This character requires WebGL 2. Choose another character or browser."
+msgstr "此角色需要 WebGL 2，请选择其他角色或更换浏览器"
+
+msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
+msgstr "此入口检查不渲染模型。移动端仍默认关闭；减少动画与账号显示偏好仍然有效。"
+
+msgid "Thumbnail commit failed."
+msgstr "缩略图提交失败。"
+
+msgid "Thumbnail encoding failed."
+msgstr "缩略图编码失败。"
+
+msgid "Thumbnail import requires PHP GD."
+msgstr "缩略图导入需要 PHP GD。"
+
+msgid "Thumbnail of %1$s"
+msgstr "%1$s 的缩略图"
+
+msgid "Thumbnail operation is invalid."
+msgstr "缩略图操作无效。"
+
+msgid "Thumbnail reference cleared; the original file is retained."
+msgstr "缩略图引用已清除，原文件保留。"
+
+msgid "Thumbnail upload failed."
+msgstr "缩略图上传失败。"
+
+msgid "Thumbnail uploaded and re-encoded."
+msgstr "缩略图已上传并重新编码。"
+
+msgid "Thumbnail write verification failed."
+msgstr "缩略图写入校验失败。"
+
+msgid "Trash"
+msgstr "回收站"
+
+msgid "Turn with hands behind"
+msgstr "转身背手"
+
+msgid "Unfavorite %1$s"
+msgstr "取消收藏 %1$s"
+
+msgid "Unfavorite selected character"
+msgstr "取消选中收藏"
+
+msgid "Unfavorite selected character:"
+msgstr "取消收藏选中角色："
+
+msgid "Unknown / protected"
+msgstr "未知／保护"
+
+msgid "Unknown motion"
+msgstr "未知动作"
+
+msgid "Unreferenced / preserve"
+msgstr "未引用／保留"
+
+msgid "Update character resources"
+msgstr "更新角色资源"
+
+msgid "Update confirmation is invalid."
+msgstr "更新确认无效。"
+
+msgid "Update this character’s model ZIP"
+msgstr "更新此角色的模型 ZIP"
+
+msgid "Upload failed."
+msgstr "上传失败。"
+
+msgid "Use this character"
+msgstr "使用这个角色"
+
+msgid "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
+msgstr "用于候选角色预览，不自动生成或抓取图片。PNG／JPEG／WebP 最多 4 MiB，宽高不超过 2048（最多 4M 像素）；解码后缩至最长边 512 并重编码 PNG，移除元数据与尾部内容。独立保存，不随模型更新或回退改变。"
+
+msgid "Using"
+msgstr "已使用"
+
+msgid "Using %1$s; this browser will remember your selection."
+msgstr "已使用 %1$s，下次打开会记住"
+
+msgid "Valid"
+msgstr "正常"
+
+msgid "Vertical offset (%)"
+msgstr "垂直偏移（%）"
+
+msgid "View character entry status"
+msgstr "查看角色入口状态"
+
+msgid "View character sources, terms and notices"
+msgstr "查看角色来源、使用条款及声明"
+
+msgid "Welcome motion (first display)"
+msgstr "欢迎动作（首次显示时播放）"
+
+msgid "You have unsaved changes. Leave this page?"
+msgstr "有尚未保存的修改。确定离开此页吗？"
+
+msgid "ZIP must not exceed 64 MiB."
+msgstr "ZIP 不能超过 64 MiB。"
+
+msgid "characters"
+msgstr "个角色"
+
+msgid "greeted you"
+msgstr "向你打了个招呼"
+
+msgid "greeting"
+msgstr "招呼"
+
+msgid "idle"
+msgstr "待机"
+
+msgid "mascot"
+msgstr "看板娘"
+
+msgid "pixels"
+msgstr "像素"
+
+msgid "pixels (desktop settings retained)"
+msgstr "像素（桌面设置保留）"
+
+msgid "thumbnail"
+msgstr "的缩略图"
+
+msgid "to greet"
+msgstr "打招呼"
+
+msgid "welcome"
+msgstr "欢迎"
+
+msgid "welcomes you"
+msgstr "欢迎你"
+
+msgid "· Previewing"
+msgstr "· 预览中"
+
+msgid "· Sources and terms"
+msgstr "· 来源与条款"

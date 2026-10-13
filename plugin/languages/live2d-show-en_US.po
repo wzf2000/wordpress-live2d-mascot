@@ -1,0 +1,1419 @@
+# GPL-2.0-or-later. Generated template; edit locale PO translations.
+msgid ""
+msgstr "Project-Id-Version: WordPress Live2D Mascot\nContent-Type: text/plain; charset=UTF-8\nLanguage: en_US\nPlural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "%1$s (%2$s)"
+msgstr "%1$s (%2$s)"
+
+msgid "%1$s greeted you"
+msgstr "%1$s greeted you"
+
+msgid "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
+msgstr "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
+
+msgid "%1$s mascot"
+msgstr "%1$s mascot"
+
+msgid "%1$s of %2$s character shown."
+msgid_plural "%1$s of %2$s characters shown."
+msgstr[0] "%1$s of %2$s character shown."
+msgstr[1] "%1$s of %2$s characters shown."
+
+msgid "%1$s pixels"
+msgstr "%1$s pixels"
+
+msgid "%1$s welcomes you"
+msgstr "%1$s welcomes you"
+
+msgid "%1$s · %2$s · Sources and terms"
+msgstr "%1$s · %2$s · Sources and terms"
+
+msgid "%1$s · Previewing"
+msgstr "%1$s · Previewing"
+
+msgid "%1$s; returned to the original character. You can retry."
+msgstr "%1$s; returned to the original character. You can retry."
+
+msgid "%s active character entry passed."
+msgid_plural "%s active character entries passed."
+msgstr[0] "%s active character entry passed."
+msgstr[1] "%s active character entries passed."
+
+msgid "%s character"
+msgid_plural "%s characters"
+msgstr[0] "%s character"
+msgstr[1] "%s characters"
+
+msgid "%s has no thumbnail"
+msgstr "%s has no thumbnail"
+
+msgid "%s is valid."
+msgstr "%s is valid."
+
+msgid "%s must be an array."
+msgstr "%s must be an array."
+
+msgid "(click to retry)"
+msgstr "(click to retry)"
+
+msgid "; returned to the original character. You can retry."
+msgstr "; returned to the original character. You can retry."
+
+msgid "; this browser will remember your selection."
+msgstr "; this browser will remember your selection."
+
+msgid "A PNG texture is invalid or too large."
+msgstr "A PNG texture is invalid or too large."
+
+msgid "A Version 3 Cubism runtime model is required."
+msgstr "A Version 3 Cubism runtime model is required."
+
+msgid "A ZIP file is too large or has an abnormal compression ratio."
+msgstr "A ZIP file is too large or has an abnormal compression ratio."
+
+msgid "A configured reference is invalid, missing, inaccessible or exceeds the report limit; classification is unknown."
+msgstr "A configured reference is invalid, missing, inaccessible or exceeds the report limit; classification is unknown."
+
+msgid "A greeting motion is not in the current character catalog."
+msgstr "A greeting motion is not in the current character catalog."
+
+msgid "A greeting motion reference is invalid."
+msgstr "A greeting motion reference is invalid."
+
+msgid "A model reference is missing or has an invalid format."
+msgstr "A model reference is missing or has an invalid format."
+
+msgid "A model runtime reference is missing, outside the allowed directory or has an invalid size."
+msgstr "A model runtime reference is missing, outside the allowed directory or has an invalid size."
+
+msgid "A motion catalog entry is invalid."
+msgstr "A motion catalog entry is invalid."
+
+msgid "A resource or settings task is in progress. Try again later."
+msgstr "A resource or settings task is in progress. Try again later."
+
+msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
+msgstr "A resource task is in progress or configuration changed during inventory; classification is unknown."
+
+msgid "Accept terms and enable mobile animation in this browser"
+msgstr "Accept terms and enable mobile animation in this browser"
+
+msgid "Accept terms and show"
+msgstr "Accept terms and show"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
+msgstr "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
+
+msgid "Administrator permission is required."
+msgstr "Administrator permission is required."
+
+msgid "Administrator-imported resources"
+msgstr "Administrator-imported resources"
+
+msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
+msgstr "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
+
+msgid "All"
+msgstr "All"
+
+msgid "Allow incompatible motion reset: use the new default idle if unmappable and remove unmappable welcome/greetings. Preserve compatible motions and greeting order."
+msgstr "Allow incompatible motion reset: use the new default idle if unmappable and remove unmappable welcome/greetings. Preserve compatible motions and greeting order."
+
+msgid "Allow readers to opt in to the mascot in mobile browsers"
+msgstr "Allow readers to opt in to the mascot in mobile browsers"
+
+msgid "Allow the mascot on the frontend"
+msgstr "Allow the mascot on the frontend"
+
+msgid "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
+msgstr "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
+
+msgid "Another request changed the resource configuration. Refresh before editing again."
+msgstr "Another request changed the resource configuration. Refresh before editing again."
+
+msgid "Another request changed the resource configuration. Refresh before retrying."
+msgstr "Another request changed the resource configuration. Refresh before retrying."
+
+msgid "Another request changed the resource configuration. Refresh before trying again."
+msgstr "Another request changed the resource configuration. Refresh before trying again."
+
+msgid "Arms crossed · glance aside"
+msgstr "Arms crossed · glance aside"
+
+msgid "Arms crossed · head tilt"
+msgstr "Arms crossed · head tilt"
+
+msgid "Arms crossed · nod"
+msgstr "Arms crossed · nod"
+
+msgid "Arms crossed · thinking"
+msgstr "Arms crossed · thinking"
+
+msgid "Arms crossed · turn head"
+msgstr "Arms crossed · turn head"
+
+msgid "Arms open · gentle sway"
+msgstr "Arms open · gentle sway"
+
+msgid "Arms open · head tilt"
+msgstr "Arms open · head tilt"
+
+msgid "Arms open · smile"
+msgstr "Arms open · smile"
+
+msgid "Arms open · smile with eyes closed"
+msgstr "Arms open · smile with eyes closed"
+
+msgid "Arms slightly open"
+msgstr "Arms slightly open"
+
+msgid "Available favorites:"
+msgstr "Available favorites:"
+
+msgid "Available favorites: %1$s characters"
+msgstr "Available favorites: %1$s characters"
+
+msgid "Between 1 and 16 textures are required."
+msgstr "Between 1 and 16 textures are required."
+
+msgid "Blush"
+msgstr "Blush"
+
+msgid "Bottom left"
+msgstr "Bottom left"
+
+msgid "Bottom right"
+msgstr "Bottom right"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Cancel preview"
+msgstr "Cancel preview"
+
+msgid "Cancelled"
+msgstr "Cancelled"
+
+msgid "Candidate:"
+msgstr "Candidate:"
+
+msgid "Candidate: %1$s"
+msgstr "Candidate: %1$s"
+
+msgid "Cannot clear the thumbnail reference."
+msgstr "Cannot clear the thumbnail reference."
+
+msgid "Cannot create a resource directory."
+msgstr "Cannot create a resource directory."
+
+msgid "Cannot create a thumbnail staging directory."
+msgstr "Cannot create a thumbnail staging directory."
+
+msgid "Cannot create an isolated staging directory."
+msgstr "Cannot create an isolated staging directory."
+
+msgid "Cannot create the resource directory."
+msgstr "Cannot create the resource directory."
+
+msgid "Cannot create the thumbnail."
+msgstr "Cannot create the thumbnail."
+
+msgid "Cannot generate the thumbnail."
+msgstr "Cannot generate the thumbnail."
+
+msgid "Cannot read a ZIP entry."
+msgstr "Cannot read a ZIP entry."
+
+msgid "Cannot read the character catalog."
+msgstr "Cannot read the character catalog."
+
+msgid "Cannot read the thumbnail."
+msgstr "Cannot read the thumbnail."
+
+msgid "Cannot save character management changes."
+msgstr "Cannot save character management changes."
+
+msgid "Cannot save character settings."
+msgstr "Cannot save character settings."
+
+msgid "Cannot save configuration."
+msgstr "Cannot save configuration."
+
+msgid "Cannot save mobile settings."
+msgstr "Cannot save mobile settings."
+
+msgid "Cannot save the character resource update."
+msgstr "Cannot save the character resource update."
+
+msgid "Cannot save thumbnail configuration."
+msgstr "Cannot save thumbnail configuration."
+
+msgid "Cannot write the directory protection files."
+msgstr "Cannot write the directory protection files."
+
+msgid "Catalog"
+msgstr "Catalog"
+
+msgid "Catalog and motion configuration"
+msgstr "Catalog and motion configuration"
+
+msgid "Change expression"
+msgstr "Change expression"
+
+msgid "Character"
+msgstr "Character"
+
+msgid "Character ID"
+msgstr "Character ID"
+
+msgid "Character ID or configuration structure is invalid."
+msgstr "Character ID or configuration structure is invalid."
+
+msgid "Character ID, name or credit is invalid."
+msgstr "Character ID, name or credit is invalid."
+
+msgid "Character configuration is invalid."
+msgstr "Character configuration is invalid."
+
+msgid "Character configuration structure is invalid."
+msgstr "Character configuration structure is invalid."
+
+msgid "Character history configuration is invalid."
+msgstr "Character history configuration is invalid."
+
+msgid "Character initialization timed out. Try again."
+msgstr "Character initialization timed out. Try again."
+
+msgid "Character layout configuration is invalid."
+msgstr "Character layout configuration is invalid."
+
+msgid "Character management"
+msgstr "Character management"
+
+msgid "Character management changes saved."
+msgstr "Character management changes saved."
+
+msgid "Character management operation is invalid."
+msgstr "Character management operation is invalid."
+
+msgid "Character management request is invalid."
+msgstr "Character management request is invalid."
+
+msgid "Character model configuration is invalid. Choose another character."
+msgstr "Character model configuration is invalid. Choose another character."
+
+msgid "Character model entry is invalid."
+msgstr "Character model entry is invalid."
+
+msgid "Character motion catalog is invalid. Choose another character."
+msgstr "Character motion catalog is invalid. Choose another character."
+
+msgid "Character name"
+msgstr "Character name"
+
+msgid "Character position"
+msgstr "Character position"
+
+msgid "Character references are invalid; classification is unknown."
+msgstr "Character references are invalid; classification is unknown."
+
+msgid "Character rendering failed"
+msgstr "Character rendering failed"
+
+msgid "Character resource format is invalid. Retry or choose another character."
+msgstr "Character resource format is invalid. Retry or choose another character."
+
+msgid "Character resource path is invalid."
+msgstr "Character resource path is invalid."
+
+msgid "Character resources are invalid. Cannot display; try again."
+msgstr "Character resources are invalid. Cannot display; try again."
+
+msgid "Character resources are invalid. Retry or choose another character."
+msgstr "Character resources are invalid. Retry or choose another character."
+
+msgid "Character resources are missing. Retry or choose another character."
+msgstr "Character resources are missing. Retry or choose another character."
+
+msgid "Character resources updated. The previous version is available for rollback."
+msgstr "Character resources updated. The previous version is available for rollback."
+
+msgid "Character selection, favorites, size and visibility are stored in this browser. Mobile display requires administrator permission and separate browser opt-in. Reduced motion always prevents display. You must still accept the terms and show the mascot on the frontend."
+msgstr "Character selection, favorites, size and visibility are stored in this browser. Mobile display requires administrator permission and separate browser opt-in. Reduced motion always prevents display. You must still accept the terms and show the mascot on the frontend."
+
+msgid "Character settings request is invalid."
+msgstr "Character settings request is invalid."
+
+msgid "Character settings saved."
+msgstr "Character settings saved."
+
+msgid "Character settings · %s"
+msgstr "Character settings · %s"
+
+msgid "Character size"
+msgstr "Character size"
+
+msgid "Character status is invalid."
+msgstr "Character status is invalid."
+
+msgid "Character thumbnail"
+msgstr "Character thumbnail"
+
+msgid "Characters and runtime libraries are imported by this site’s administrator. See source information for credits and terms; this plugin grants no redistribution or other rights to resources."
+msgstr "Characters and runtime libraries are imported by this site’s administrator. See source information for credits and terms; this plugin grants no redistribution or other rights to resources."
+
+msgid "Check installed resources"
+msgstr "Check installed resources"
+
+msgid "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
+msgstr "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
+
+msgid "Check the installed resources before retrying."
+msgstr "Check the installed resources before retrying."
+
+msgid "Checked %1$s characters; %2$s isolated."
+msgstr "Checked %1$s characters; %2$s isolated."
+
+msgid "Checks only character configuration types and model/catalog entry paths, readability and sizes. It does not read model references or textures, or hash Core. Display also requires valid shared Core and terms and reader opt-in; this is not visual or full resource validation."
+msgstr "Checks only character configuration types and model/catalog entry paths, readability and sizes. It does not read model references or textures, or hash Core. Display also requires valid shared Core and terms and reader opt-in; this is not visual or full resource validation."
+
+msgid "Chin in hand · open palm"
+msgstr "Chin in hand · open palm"
+
+msgid "Choose a resource file before importing."
+msgstr "Choose a resource file before importing."
+
+msgid "Choose an image"
+msgstr "Choose an image"
+
+msgid "Choose character"
+msgstr "Choose character"
+
+msgid "Choose expression"
+msgstr "Choose expression"
+
+msgid "Choose motion"
+msgstr "Choose motion"
+
+msgid "Clear"
+msgstr "Clear"
+
+msgid "Clear character search"
+msgstr "Clear character search"
+
+msgid "Clear filters"
+msgstr "Clear filters"
+
+msgid "Clear thumbnail reference (retain file)"
+msgstr "Clear thumbnail reference (retain file)"
+
+msgid "Close interaction"
+msgstr "Close interaction"
+
+msgid "Compact mobile size:"
+msgstr "Compact mobile size:"
+
+msgid "Compact mobile size: %1$s pixels (desktop settings retained)"
+msgstr "Compact mobile size: %1$s pixels (desktop settings retained)"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Configured characters"
+msgstr "Configured characters"
+
+msgid "Configured · Web 5 R5"
+msgstr "Configured · Web 5 R5"
+
+msgid "Confirm your right to use the thumbnail."
+msgstr "Confirm your right to use the thumbnail."
+
+msgid "Confirm your right to use the uploaded resources."
+msgstr "Confirm your right to use the uploaded resources."
+
+msgid "Control whether this account allows the mascot to appear on the frontend."
+msgstr "Control whether this account allows the mascot to appear on the frontend."
+
+msgid "Core SHA256 does not match the required Web 5 R5 file."
+msgstr "Core SHA256 does not match the required Web 5 R5 file."
+
+msgid "Core entry is present. Run resource diagnostics to verify its hash."
+msgstr "Core entry is present. Run resource diagnostics to verify its hash."
+
+msgid "Core is not configured yet."
+msgstr "Core is not configured yet."
+
+msgid "Core must match the required Web 5 R5 SHA256. Model ZIPs are limited to 64 MiB and 1,000 entries: one model3 runtime with no sound, scripts or editor projects. Keep at least one motion; the first Idle-group motion is preferred as default idle. Adjust it in character settings after import."
+msgstr "Core must match the required Web 5 R5 SHA256. Model ZIPs are limited to 64 MiB and 1,000 entries: one model3 runtime with no sound, scripts or editor projects. Keep at least one motion; the first Idle-group motion is preferred as default idle. Adjust it in character settings after import."
+
+msgid "Core resources"
+msgstr "Core resources"
+
+msgid "Credit / source"
+msgstr "Credit / source"
+
+msgid "Current model directory"
+msgstr "Current model directory"
+
+msgid "Current thumbnail"
+msgstr "Current thumbnail"
+
+msgid "Current, previous and shared references"
+msgstr "Current, previous and shared references"
+
+msgid "Default layout configuration is invalid."
+msgstr "Default layout configuration is invalid."
+
+msgid "Default size (pixels)"
+msgstr "Default size (pixels)"
+
+msgid "Diagnostics are not enabled."
+msgstr "Diagnostics are not enabled."
+
+msgid "Directory protection file"
+msgstr "Directory protection file"
+
+msgid "Disable character"
+msgstr "Disable character"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Disabled / trashed"
+msgstr "Disabled / trashed"
+
+msgid "Disabling or trashing hides the character from the frontend while retaining files, browser favorites and selections. Restoring makes it available again. Trash never permanently deletes resources."
+msgstr "Disabling or trashing hides the character from the frontend while retaining files, browser favorites and selections. Restoring makes it available again. Trash never permanently deletes resources."
+
+msgid "Disk inventory"
+msgstr "Disk inventory"
+
+msgid "Display entry ready"
+msgstr "Display entry ready"
+
+msgid "Displeased"
+msgstr "Displeased"
+
+msgid "Do not automatically play a welcome motion"
+msgstr "Do not automatically play a welcome motion"
+
+msgid "Documentation"
+msgstr "Documentation"
+
+msgid "Download diagnostic JSON"
+msgstr "Download diagnostic JSON"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Edit character %s"
+msgstr "Edit character %s"
+
+msgid "Edit display information and motion references; model files stay in place. Size is the browser layout default; the reader’s existing local size preference takes priority."
+msgstr "Edit display information and motion references; model files stay in place. Size is the browser layout default; the reader’s existing local size preference takes priority."
+
+msgid "Enable character"
+msgstr "Enable character"
+
+msgid "Enable local diagnostics"
+msgstr "Enable local diagnostics"
+
+msgid "Encrypted ZIP files are not supported."
+msgstr "Encrypted ZIP files are not supported."
+
+msgid "Engine"
+msgstr "Engine"
+
+msgid "Existing resource configuration is invalid."
+msgstr "Existing resource configuration is invalid."
+
+msgid "Expression"
+msgstr "Expression"
+
+msgid "Expression is invalid."
+msgstr "Expression is invalid."
+
+msgid "Expression reset"
+msgstr "Expression reset"
+
+msgid "Favorite %1$s"
+msgstr "Favorite %1$s"
+
+msgid "Favorite selected character"
+msgstr "Favorite selected character"
+
+msgid "Favorite selected character:"
+msgstr "Favorite selected character:"
+
+msgid "Favorites apply only to this page; the browser did not allow saving."
+msgstr "Favorites apply only to this page; the browser did not allow saving."
+
+msgid "Favorites only"
+msgstr "Favorites only"
+
+msgid "Feedback"
+msgstr "Feedback"
+
+msgid "First-use readiness"
+msgstr "First-use readiness"
+
+msgid "Frontend display"
+msgstr "Frontend display"
+
+msgid "Frontend entry checks"
+msgstr "Frontend entry checks"
+
+msgid "Greeting motion request is invalid."
+msgstr "Greeting motion request is invalid."
+
+msgid "Greeting motions"
+msgstr "Greeting motions"
+
+msgid "Greeting motions must not be duplicated."
+msgstr "Greeting motions must not be duplicated."
+
+msgid "Hands behind to hands together"
+msgstr "Hands behind to hands together"
+
+msgid "Hands behind · blink"
+msgstr "Hands behind · blink"
+
+msgid "Hands behind · head tilt"
+msgstr "Hands behind · head tilt"
+
+msgid "Hands behind · smile"
+msgstr "Hands behind · smile"
+
+msgid "Hands in front · soft response"
+msgstr "Hands in front · soft response"
+
+msgid "Hands on cheeks · soft smile"
+msgstr "Hands on cheeks · soft smile"
+
+msgid "Hands together to arms open"
+msgstr "Hands together to arms open"
+
+msgid "Hands together to hands behind"
+msgstr "Hands together to hands behind"
+
+msgid "Hands together · blink"
+msgstr "Hands together · blink"
+
+msgid "Hands together · gentle sway"
+msgstr "Hands together · gentle sway"
+
+msgid "Hands together · light sway"
+msgstr "Hands together · light sway"
+
+msgid "Head lowered · listening"
+msgstr "Head lowered · listening"
+
+msgid "Hide mascot"
+msgstr "Hide mascot"
+
+msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
+msgstr "I have the right to use the new resources on this site and have read their source licenses and terms."
+
+msgid "I have the right to use these resources on this site and have read their source licenses and terms."
+msgstr "I have the right to use these resources on this site and have read their source licenses and terms."
+
+msgid "I have the right to use this image on this site and have read its source license and terms."
+msgstr "I have the right to use this image on this site and have read its source license and terms."
+
+msgid "Idle motion (loop)"
+msgstr "Idle motion (loop)"
+
+msgid "Image decoding failed."
+msgstr "Image decoding failed."
+
+msgid "Import Core JS"
+msgstr "Import Core JS"
+
+msgid "Import model ZIP"
+msgstr "Import model ZIP"
+
+msgid "Import one model, enable a character, or repair isolated entries using resource diagnostics. Existing files and preferences are retained."
+msgstr "Import one model, enable a character, or repair isolated entries using resource diagnostics. Existing files and preferences are retained."
+
+msgid "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
+msgstr "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
+
+msgid "Import type is invalid."
+msgstr "Import type is invalid."
+
+msgid "Inspect disk usage"
+msgstr "Inspect disk usage"
+
+msgid "Interact"
+msgstr "Interact"
+
+msgid "Invalid JSON. Re-export valid model runtime JSON and check its references."
+msgstr "Invalid JSON. Re-export valid model runtime JSON and check its references."
+
+msgid "Invalid configuration"
+msgstr "Invalid configuration"
+
+msgid "Invalid configuration structure · Isolated"
+msgstr "Invalid configuration structure · Isolated"
+
+msgid "Invalid status"
+msgstr "Invalid status"
+
+msgid "Inventory complete."
+msgstr "Inventory complete."
+
+msgid "Inventory incomplete or references unknown. Unreferenced classification is withheld."
+msgstr "Inventory incomplete or references unknown. Unreferenced classification is withheld."
+
+msgid "Isolated"
+msgstr "Isolated"
+
+msgid "Isolated characters retain their configuration, files and browser favorites/selection. Other valid characters remain available. Run the full diagnostics below and restore missing resources or a configuration backup; editable fields can be corrected in character settings. Invalid shared Core or terms prevents all frontend output."
+msgstr "Isolated characters retain their configuration, files and browser favorites/selection. Other valid characters remain available. Run the full diagnostics below and restore missing resources or a configuration backup; editable fields can be corrected in character settings. Invalid shared Core or terms prevents all frontend output."
+
+msgid "JSON must be an object."
+msgstr "JSON must be an object."
+
+msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
+msgstr "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
+
+msgid "Loading cancelled"
+msgstr "Loading cancelled"
+
+msgid "Loading character…"
+msgstr "Loading character…"
+
+msgid "Loading mascot…"
+msgstr "Loading mascot…"
+
+msgid "Loading…"
+msgstr "Loading…"
+
+msgid "Local diagnostics"
+msgstr "Local diagnostics"
+
+msgid "Local state recorded. Sample now, or show the mascot again to record loading time. You choose whether to share downloaded reports."
+msgstr "Local state recorded. Sample now, or show the mascot again to record loading time. You choose whether to share downloaded reports."
+
+msgid "Logical bytes"
+msgstr "Logical bytes"
+
+msgid "Lowered brows"
+msgstr "Lowered brows"
+
+msgid "Manage"
+msgstr "Manage"
+
+msgid "Manage Core and character resources"
+msgstr "Manage Core and character resources"
+
+msgid "Manage resources and characters so readers can use the mascot on their own terms."
+msgstr "Manage resources and characters so readers can use the mascot on their own terms."
+
+msgid "Mascot interaction"
+msgstr "Mascot interaction"
+
+msgid "Mobile display"
+msgstr "Mobile display"
+
+msgid "Mobile settings request is invalid."
+msgstr "Mobile settings request is invalid."
+
+msgid "Mobile settings saved. Each browser still requires separate consent and opt-in."
+msgstr "Mobile settings saved. Each browser still requires separate consent and opt-in."
+
+msgid "Model"
+msgstr "Model"
+
+msgid "Model motion references are invalid."
+msgstr "Model motion references are invalid."
+
+msgid "Model runtime configuration is invalid."
+msgstr "Model runtime configuration is invalid."
+
+msgid "Model texture references are invalid."
+msgstr "Model texture references are invalid."
+
+msgid "Model validation failed"
+msgstr "Model validation failed"
+
+msgid "Motion"
+msgstr "Motion"
+
+msgid "Motion file unavailable"
+msgstr "Motion file unavailable"
+
+msgid "Motion files must be Version 3 JSON."
+msgstr "Motion files must be Version 3 JSON."
+
+msgid "Motion or expression resources are invalid. Try again."
+msgstr "Motion or expression resources are invalid. Try again."
+
+msgid "Motion stopped; returned to idle"
+msgstr "Motion stopped; returned to idle"
+
+msgid "Motions is invalid."
+msgstr "Motions is invalid."
+
+msgid "Move to trash"
+msgstr "Move to trash"
+
+msgid "Name and credit must be valid plain text."
+msgstr "Name and credit must be valid plain text."
+
+msgid "Name or character ID"
+msgstr "Name or character ID"
+
+msgid "Needs attention"
+msgstr "Needs attention"
+
+msgid "Network connection failed. Check your connection and retry."
+msgstr "Network connection failed. Check your connection and retry."
+
+msgid "New single-model runtime ZIP"
+msgstr "New single-model runtime ZIP"
+
+msgid "No candidate character"
+msgstr "No candidate character"
+
+msgid "No characters match. Change the search or status filter."
+msgstr "No characters match. Change the search or status filter."
+
+msgid "No characters yet. Import Core and one model, then configure the character."
+msgstr "No characters yet. Import Core and one model, then configure the character."
+
+msgid "No favorites yet. Turn off “Favorites only” to see all characters."
+msgstr "No favorites yet. Turn off “Favorites only” to see all characters."
+
+msgid "No matching characters. Change the search or clear it."
+msgstr "No matching characters. Change the search or clear it."
+
+msgid "No matching favorites. Change the search or clear it."
+msgstr "No matching favorites. Change the search or clear it."
+
+msgid "No previous character resources are available for rollback."
+msgstr "No previous character resources are available for rollback."
+
+msgid "No selectable character"
+msgstr "No selectable character"
+
+msgid "Not imported"
+msgstr "Not imported"
+
+msgid "Observed paths (admin only)"
+msgstr "Observed paths (admin only)"
+
+msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
+msgstr "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
+
+msgid "Off by default. After mobile display is allowed, each browser must still consent and opt in separately. Desktop preferences never automatically enable mobile animation. Reduced motion, account display permission and reading suspension always apply."
+msgstr "Off by default. After mobile display is allowed, each browser must still consent and opt in separately. Desktop preferences never automatically enable mobile animation. Reduced motion, account display permission and reading suspension always apply."
+
+msgid "Official Cubism SDK for Web download"
+msgstr "Official Cubism SDK for Web download"
+
+msgid "Official samples"
+msgstr "Official samples"
+
+msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
+msgstr "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
+
+msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
+msgstr "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
+
+msgid "Open mouth · frown"
+msgstr "Open mouth · frown"
+
+msgid "Open palms · head tilt"
+msgstr "Open palms · head tilt"
+
+msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
+msgstr "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
+
+msgid "Physics"
+msgstr "Physics"
+
+msgid "Play motion"
+msgstr "Play motion"
+
+msgid "Pose"
+msgstr "Pose"
+
+msgid "Position and size"
+msgstr "Position and size"
+
+msgid "Preview character"
+msgstr "Preview character"
+
+msgid "Previewing. Select “Use this character” to save."
+msgstr "Previewing. Select “Use this character” to save."
+
+msgid "Previewing:"
+msgstr "Previewing:"
+
+msgid "Previewing: %1$s"
+msgstr "Previewing: %1$s"
+
+msgid "Previous model directory"
+msgstr "Previous model directory"
+
+msgid "Previous thumbnail"
+msgstr "Previous thumbnail"
+
+msgid "Pursed lips"
+msgstr "Pursed lips"
+
+msgid "Raise hand to greet"
+msgstr "Raise hand to greet"
+
+msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
+msgstr "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
+
+msgid "Readers opt in"
+msgstr "Readers opt in"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Reduced motion enabled"
+msgstr "Reduced motion enabled"
+
+msgid "Reference classification"
+msgstr "Reference classification"
+
+msgid "Reference inspection reached its bound; classification is unknown."
+msgstr "Reference inspection reached its bound; classification is unknown."
+
+msgid "Relative path"
+msgstr "Relative path"
+
+msgid "Rendering failed. Try again."
+msgstr "Rendering failed. Try again."
+
+msgid "Reset defaults"
+msgstr "Reset defaults"
+
+msgid "Reset expression"
+msgstr "Reset expression"
+
+msgid "Resource commit failed."
+msgstr "Resource commit failed."
+
+msgid "Resource configuration is damaged. Restore a configuration backup before importing; opening this page does not repair or overwrite data."
+msgstr "Resource configuration is damaged. Restore a configuration backup before importing; opening this page does not repair or overwrite data."
+
+msgid "Resource configuration is invalid."
+msgstr "Resource configuration is invalid."
+
+msgid "Resource configuration is invalid; classification is unknown."
+msgstr "Resource configuration is invalid; classification is unknown."
+
+msgid "Resource configuration structure is invalid."
+msgstr "Resource configuration structure is invalid."
+
+msgid "Resource diagnostics"
+msgstr "Resource diagnostics"
+
+msgid "Resource download interrupted. Check your connection and retry."
+msgstr "Resource download interrupted. Check your connection and retry."
+
+msgid "Resource file"
+msgstr "Resource file"
+
+msgid "Resource loading timed out. Try again."
+msgstr "Resource loading timed out. Try again."
+
+msgid "Resource path escapes the allowed directory."
+msgstr "Resource path escapes the allowed directory."
+
+msgid "Resource path is invalid."
+msgstr "Resource path is invalid."
+
+msgid "Resource paths must not use symbolic links."
+msgstr "Resource paths must not use symbolic links."
+
+msgid "Resource preparation"
+msgstr "Resource preparation"
+
+msgid "Resource write verification failed."
+msgstr "Resource write verification failed."
+
+msgid "Resources and status · %s"
+msgstr "Resources and status · %s"
+
+msgid "Resources cannot be downloaded right now. Try again later."
+msgstr "Resources cannot be downloaded right now. Try again later."
+
+msgid "Resources imported."
+msgstr "Resources imported."
+
+msgid "Restore a configuration backup before retrying."
+msgstr "Restore a configuration backup before retrying."
+
+msgid "Restore from trash"
+msgstr "Restore from trash"
+
+msgid "Restore the character to a valid status before updating resources."
+msgstr "Restore the character to a valid status before updating resources."
+
+msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
+msgstr "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
+
+msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
+msgstr "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
+
+msgid "Returned to the original character"
+msgstr "Returned to the original character"
+
+msgid "Roll back to previous resources and motions"
+msgstr "Roll back to previous resources and motions"
+
+msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
+msgstr "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
+
+msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
+msgstr "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
+
+msgid "Runtime download failed. Check your connection and retry."
+msgstr "Runtime download failed. Check your connection and retry."
+
+msgid "Runtime download failed. Try again later."
+msgstr "Runtime download failed. Try again later."
+
+msgid "Runtime loading timed out. Try again."
+msgstr "Runtime loading timed out. Try again."
+
+msgid "Runtime references and file sizes"
+msgstr "Runtime references and file sizes"
+
+msgid "Runtime references: %1$s files, %2$s KiB."
+msgstr "Runtime references: %1$s files, %2$s KiB."
+
+msgid "Runtime startup timed out. Refresh and retry."
+msgstr "Runtime startup timed out. Refresh and retry."
+
+msgid "Sample complete:"
+msgstr "Sample complete:"
+
+msgid "Sample complete: %1$s FPS."
+msgstr "Sample complete: %1$s FPS."
+
+msgid "Sample for 3 seconds"
+msgstr "Sample for 3 seconds"
+
+msgid "Sample interrupted."
+msgstr "Sample interrupted."
+
+msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
+msgstr "Sampling; hiding, reading suspension or character switching will interrupt it."
+
+msgid "Save character settings"
+msgstr "Save character settings"
+
+msgid "Save mobile settings"
+msgstr "Save mobile settings"
+
+msgid "Save thumbnail"
+msgstr "Save thumbnail"
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Search characters"
+msgstr "Search characters"
+
+msgid "Search name or character ID"
+msgstr "Search name or character ID"
+
+msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
+msgstr "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Shader"
+msgstr "Shader"
+
+msgid "Shared Core"
+msgstr "Shared Core"
+
+msgid "Shared terms"
+msgstr "Shared terms"
+
+msgid "Show mascot"
+msgstr "Show mascot"
+
+msgid "Showing"
+msgstr "Showing"
+
+msgid "Showing %1$s of %2$s characters"
+msgstr "Showing %1$s of %2$s characters"
+
+msgid "Site terms configuration is invalid."
+msgstr "Site terms configuration is invalid."
+
+msgid "Site terms file is invalid."
+msgstr "Site terms file is invalid."
+
+msgid "Site terms information must be valid plain text."
+msgstr "Site terms information must be valid plain text."
+
+msgid "Size and offset must be valid numbers."
+msgstr "Size and offset must be valid numbers."
+
+msgid "Size must be 140–260 pixels in steps of 10; offset must be -100–100%."
+msgstr "Size must be 140–260 pixels in steps of 10; offset must be -100–100%."
+
+msgid "Smile"
+msgstr "Smile"
+
+msgid "Smile with eyes closed"
+msgstr "Smile with eyes closed"
+
+msgid "Sound references are not supported."
+msgstr "Sound references are not supported."
+
+msgid "Staging / preserve"
+msgstr "Staging / preserve"
+
+msgid "Stand quietly (idle)"
+msgstr "Stand quietly (idle)"
+
+msgid "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
+msgstr "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Stop motion and return to idle"
+msgstr "Stop motion and return to idle"
+
+msgid "Stop recording"
+msgstr "Stop recording"
+
+msgid "Surprised"
+msgstr "Surprised"
+
+msgid "Tap"
+msgstr "Tap"
+
+msgid "Tap %1$s to greet"
+msgstr "Tap %1$s to greet"
+
+msgid "Tap to greet"
+msgstr "Tap to greet"
+
+msgid "Terms"
+msgstr "Terms"
+
+msgid "Terms configuration is valid."
+msgstr "Terms configuration is valid."
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Texture creation failed"
+msgstr "Texture creation failed"
+
+msgid "The Core file is missing or has an invalid size."
+msgstr "The Core file is missing or has an invalid size."
+
+msgid "The JSON file is too large."
+msgstr "The JSON file is too large."
+
+msgid "The MOC3 header is invalid."
+msgstr "The MOC3 header is invalid."
+
+msgid "The ZIP contains duplicate paths."
+msgstr "The ZIP contains duplicate paths."
+
+msgid "The ZIP contains non-runtime resources. Upload only the exported runtime files of one model."
+msgstr "The ZIP contains non-runtime resources. Upload only the exported runtime files of one model."
+
+msgid "The ZIP entry count exceeds the limit."
+msgstr "The ZIP entry count exceeds the limit."
+
+msgid "The ZIP is invalid."
+msgstr "The ZIP is invalid."
+
+msgid "The ZIP must contain exactly one model3.json."
+msgstr "The ZIP must contain exactly one model3.json."
+
+msgid "The ZIP must not contain symbolic links or special files."
+msgstr "The ZIP must not contain symbolic links or special files."
+
+msgid "The actual expanded size exceeds the limit."
+msgstr "The actual expanded size exceeds the limit."
+
+msgid "The browser blocked mascot execution. Refresh and retry."
+msgstr "The browser blocked mascot execution. Refresh and retry."
+
+msgid "The browser did not allow saving. This preview is still usable."
+msgstr "The browser did not allow saving. This preview is still usable."
+
+msgid "The character catalog or model file is unavailable."
+msgstr "The character catalog or model file is unavailable."
+
+msgid "The character does not exist or its configuration is invalid."
+msgstr "The character does not exist or its configuration is invalid."
+
+msgid "The character does not exist. Select one from the list."
+msgstr "The character does not exist. Select one from the list."
+
+msgid "The character model or catalog entry is missing, unreadable or has an invalid size."
+msgstr "The character model or catalog entry is missing, unreadable or has an invalid size."
+
+msgid "The character motion catalog is empty or too large."
+msgstr "The character motion catalog is empty or too large."
+
+msgid "The character status has changed. Refresh before trying again."
+msgstr "The character status has changed. Refresh before trying again."
+
+msgid "The character texture cannot be decoded. Retry or choose another character."
+msgstr "The character texture cannot be decoded. Retry or choose another character."
+
+msgid "The current reference is invalid; choose again"
+msgstr "The current reference is invalid; choose again"
+
+msgid "The expression catalog contains duplicate, missing or invalid references."
+msgstr "The expression catalog contains duplicate, missing or invalid references."
+
+msgid "The frontend greeting cycles through selected motions. Existing order is retained and new selections are appended. Leave all unchecked to disable greetings. Welcome playback still follows first-display, reading suspension and manual interaction rules."
+msgstr "The frontend greeting cycles through selected motions. Existing order is retained and new selections are appended. Leave all unchecked to disable greetings. Welcome playback still follows first-display, reading suspension and manual interaction rules."
+
+msgid "The graphics context was lost. Try again."
+msgstr "The graphics context was lost. Try again."
+
+msgid "The greeting could not load yet. Tap again to retry."
+msgstr "The greeting could not load yet. Tap again to retry."
+
+msgid "The greeting motion count is invalid."
+msgstr "The greeting motion count is invalid."
+
+msgid "The idle motion reference is invalid."
+msgstr "The idle motion reference is invalid."
+
+msgid "The idle or welcome motion is not in the current character catalog."
+msgstr "The idle or welcome motion is not in the current character catalog."
+
+msgid "The lightweight entry check passed."
+msgstr "The lightweight entry check passed."
+
+msgid "The model contains unsupported reference types."
+msgstr "The model contains unsupported reference types."
+
+msgid "The model requires at least one valid motion for idle playback."
+msgstr "The model requires at least one valid motion for idle playback."
+
+msgid "The motion catalog contains duplicate IDs or invalid file references."
+msgstr "The motion catalog contains duplicate IDs or invalid file references."
+
+msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
+msgstr "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
+
+msgid "The path display is truncated; metadata counts cover the bounded scan."
+msgstr "The path display is truncated; metadata counts cover the bounded scan."
+
+msgid "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
+msgstr "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
+
+msgid "The rendering program is invalid; this character cannot be displayed."
+msgstr "The rendering program is invalid; this character cannot be displayed."
+
+msgid "The required Core file and SHA256 are valid."
+msgstr "The required Core file and SHA256 are valid."
+
+msgid "The resource operation failed. Check the installed resources and server permissions, then retry. Existing configuration is retained."
+msgstr "The resource operation failed. Check the installed resources and server permissions, then retry. Existing configuration is retained."
+
+msgid "The resource root exists but is not a directory."
+msgstr "The resource root exists but is not a directory."
+
+msgid "The resource root is unavailable or unsafe."
+msgstr "The resource root is unavailable or unsafe."
+
+msgid "The runtime component is invalid. Try again."
+msgstr "The runtime component is invalid. Try again."
+
+msgid "The runtime component is missing. Try again later."
+msgstr "The runtime component is missing. Try again later."
+
+msgid "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
+msgstr "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
+
+msgid "The server requires PHP ZipArchive."
+msgstr "The server requires PHP ZipArchive."
+
+msgid "The thumbnail must be a local image file no larger than 4 MiB."
+msgstr "The thumbnail must be a local image file no larger than 4 MiB."
+
+msgid "The total expanded ZIP size exceeds 64 MiB."
+msgstr "The total expanded ZIP size exceeds 64 MiB."
+
+msgid "The upload exceeds the server upload limit. Ask the server administrator to check upload_max_filesize and post_max_size; keep the plugin file-size limits."
+msgstr "The upload exceeds the server upload limit. Ask the server administrator to check upload_max_filesize and post_max_size; keep the plugin file-size limits."
+
+msgid "The upload was interrupted. Check your connection and upload the complete file again."
+msgstr "The upload was interrupted. Check your connection and upload the complete file again."
+
+msgid "The uploaded file is invalid."
+msgstr "The uploaded file is invalid."
+
+msgid "The uploaded file or update request is invalid."
+msgstr "The uploaded file or update request is invalid."
+
+msgid "The uploads directory is unavailable."
+msgstr "The uploads directory is unavailable."
+
+msgid "The welcome motion reference is invalid."
+msgstr "The welcome motion reference is invalid."
+
+msgid "This browser does not support WebGL; the mascot cannot be displayed."
+msgstr "This browser does not support WebGL; the mascot cannot be displayed."
+
+msgid "This character ID already exists. Use a new ID; the existing character will not be overwritten."
+msgstr "This character ID already exists. Use a new ID; the existing character will not be overwritten."
+
+msgid "This character requires WebGL 2. Choose another character or browser."
+msgstr "This character requires WebGL 2. Choose another character or browser."
+
+msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
+msgstr "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
+
+msgid "Thumbnail commit failed."
+msgstr "Thumbnail commit failed."
+
+msgid "Thumbnail encoding failed."
+msgstr "Thumbnail encoding failed."
+
+msgid "Thumbnail import requires PHP GD."
+msgstr "Thumbnail import requires PHP GD."
+
+msgid "Thumbnail of %1$s"
+msgstr "Thumbnail of %1$s"
+
+msgid "Thumbnail operation is invalid."
+msgstr "Thumbnail operation is invalid."
+
+msgid "Thumbnail reference cleared; the original file is retained."
+msgstr "Thumbnail reference cleared; the original file is retained."
+
+msgid "Thumbnail upload failed."
+msgstr "Thumbnail upload failed."
+
+msgid "Thumbnail uploaded and re-encoded."
+msgstr "Thumbnail uploaded and re-encoded."
+
+msgid "Thumbnail write verification failed."
+msgstr "Thumbnail write verification failed."
+
+msgid "Trash"
+msgstr "Trash"
+
+msgid "Turn with hands behind"
+msgstr "Turn with hands behind"
+
+msgid "Unfavorite %1$s"
+msgstr "Unfavorite %1$s"
+
+msgid "Unfavorite selected character"
+msgstr "Unfavorite selected character"
+
+msgid "Unfavorite selected character:"
+msgstr "Unfavorite selected character:"
+
+msgid "Unknown / protected"
+msgstr "Unknown / protected"
+
+msgid "Unknown motion"
+msgstr "Unknown motion"
+
+msgid "Unreferenced / preserve"
+msgstr "Unreferenced / preserve"
+
+msgid "Update character resources"
+msgstr "Update character resources"
+
+msgid "Update confirmation is invalid."
+msgstr "Update confirmation is invalid."
+
+msgid "Update this character’s model ZIP"
+msgstr "Update this character’s model ZIP"
+
+msgid "Upload failed."
+msgstr "Upload failed."
+
+msgid "Use this character"
+msgstr "Use this character"
+
+msgid "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
+msgstr "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
+
+msgid "Using"
+msgstr "Using"
+
+msgid "Using %1$s; this browser will remember your selection."
+msgstr "Using %1$s; this browser will remember your selection."
+
+msgid "Valid"
+msgstr "Valid"
+
+msgid "Vertical offset (%)"
+msgstr "Vertical offset (%)"
+
+msgid "View character entry status"
+msgstr "View character entry status"
+
+msgid "View character sources, terms and notices"
+msgstr "View character sources, terms and notices"
+
+msgid "Welcome motion (first display)"
+msgstr "Welcome motion (first display)"
+
+msgid "You have unsaved changes. Leave this page?"
+msgstr "You have unsaved changes. Leave this page?"
+
+msgid "ZIP must not exceed 64 MiB."
+msgstr "ZIP must not exceed 64 MiB."
+
+msgid "characters"
+msgstr "characters"
+
+msgid "greeted you"
+msgstr "greeted you"
+
+msgid "greeting"
+msgstr "greeting"
+
+msgid "idle"
+msgstr "idle"
+
+msgid "mascot"
+msgstr "mascot"
+
+msgid "pixels"
+msgstr "pixels"
+
+msgid "pixels (desktop settings retained)"
+msgstr "pixels (desktop settings retained)"
+
+msgid "thumbnail"
+msgstr "thumbnail"
+
+msgid "to greet"
+msgstr "to greet"
+
+msgid "welcome"
+msgstr "welcome"
+
+msgid "welcomes you"
+msgstr "welcomes you"
+
+msgid "· Previewing"
+msgstr "· Previewing"
+
+msgid "· Sources and terms"
+msgstr "· Sources and terms"

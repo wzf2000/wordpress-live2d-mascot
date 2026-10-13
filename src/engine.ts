@@ -76,13 +76,13 @@ class Mascot extends CubismUserModel {
         premultipliedAlpha: true,
         antialias: true,
       })) as WebGLRenderingContext;
-    if (!this.gl) throw new ResourceError('webgl', '浏览器不支持 WebGL，无法显示看板娘', 'webgl');
+    if (!this.gl) throw new ResourceError('webgl', "This browser does not support WebGL; the mascot cannot be displayed.", 'webgl');
     if (
       options.webgl2 &&
       (typeof WebGL2RenderingContext === 'undefined' ||
         !(this.gl instanceof WebGL2RenderingContext))
     )
-      throw new ResourceError('webgl', '此角色需要 WebGL 2，请选择其他角色或更换浏览器', 'webgl');
+      throw new ResourceError('webgl', "This character requires WebGL 2. Choose another character or browser.", 'webgl');
   }
   async init() {
     const signal = this.abort.signal;
@@ -97,7 +97,7 @@ class Mascot extends CubismUserModel {
       !refs.Textures.length ||
       refs.Textures.some((file: any) => typeof file !== 'string' || !file)
     ) {
-      throw new ResourceError('invalid', '角色模型配置无效，请选择其他角色');
+      throw new ResourceError('invalid', "Character model configuration is invalid. Choose another character.");
     }
     this.settings = new CubismModelSettingJson(raw, raw.byteLength);
     this.phase('catalog');
@@ -113,11 +113,11 @@ class Mascot extends CubismUserModel {
           ),
       )
     ) {
-      throw new ResourceError('invalid', '角色动作目录无效，请选择其他角色');
+      throw new ResourceError('invalid', "Character motion catalog is invalid. Choose another character.");
     }
     this.phase('moc');
     this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
-    if (!this.getModel()) throw new Error('模型校验失败');
+    if (!this.getModel()) throw new Error("Model validation failed");
     for (const [key, fn] of [
       ['Physics', 'loadPhysics'],
       ['Pose', 'loadPose'],
@@ -143,7 +143,7 @@ class Mascot extends CubismUserModel {
         checkSignal(signal);
         const gl = this.gl,
           t = gl.createTexture();
-        if (!t) throw Error('纹理创建失败');
+        if (!t) throw Error("Texture creation failed");
         this.textures.push(t);
         gl.bindTexture(gl.TEXTURE_2D, t);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
@@ -186,7 +186,7 @@ class Mascot extends CubismUserModel {
     }, signal);
     checkSignal(signal);
     if (!shader._shaderSets[0]?.shaderProgram)
-      throw new ResourceError('invalid', '绘图程序无效，无法显示此角色');
+      throw new ResourceError('invalid', "The rendering program is invalid; this character cannot be displayed.");
     this.phase('motion');
     await this.asset('motion', this.idle);
     this.getModel().saveParameters();
@@ -196,7 +196,7 @@ class Mascot extends CubismUserModel {
   async asset(type: string, id: string) {
     const list = type === 'motion' ? this.catalog.motions : this.catalog.expressions,
       entry = list.find((x: any) => x.id === id);
-    if (!entry) throw Error('未知动作');
+    if (!entry) throw Error("Unknown motion");
     const map = type === 'motion' ? this.motions : this.expressions;
     const key = type + ':' + id;
     if (map.has(id)) return map.get(id);
@@ -211,7 +211,7 @@ class Mascot extends CubismUserModel {
             type === 'motion'
               ? this.loadMotion(b, b.byteLength, id)
               : this.loadExpression(b, b.byteLength, id);
-          if (!m) throw Error('动作文件不可用');
+          if (!m) throw Error("Motion file unavailable");
           if (type === 'motion') {
             m.setLoop(id === this.idle);
             m.setEffectIds(
@@ -232,7 +232,7 @@ class Mascot extends CubismUserModel {
               throw error;
             }
             if (error?.name === 'AbortError') throw error;
-            throw new ResourceError('invalid', '动作或表情资源无效，请重试', type);
+            throw new ResourceError('invalid', "Motion or expression resources are invalid. Try again.", type);
           })
           .finally(() => this.pending.delete(key)),
       );
@@ -340,7 +340,7 @@ class Mascot extends CubismUserModel {
     } catch (e) {
       console.error('Haru rendering', e);
       this.pause();
-      this.canvas.dispatchEvent(new CustomEvent('mascoterror', { detail: '角色绘制失败' }));
+      this.canvas.dispatchEvent(new CustomEvent('mascoterror', { detail: "Character rendering failed" }));
     }
   }
   state() {
@@ -394,7 +394,7 @@ class Mascot extends CubismUserModel {
     const timer = setTimeout(
       () =>
         instance.abort.abort(
-          new ResourceError('timeout', '角色初始化超时，请重试', instance.stage),
+          new ResourceError('timeout', "Character initialization timed out. Try again.", instance.stage),
         ),
       60000,
     );
@@ -413,7 +413,7 @@ class Mascot extends CubismUserModel {
       if ((error as any)?.name === 'AbortError') throw error;
       throw new ResourceError(
         'invalid',
-        '角色资源无效，无法显示此角色，请重试或选择其他角色',
+        "Character resources are invalid. Retry or choose another character.",
         instance.stage,
       );
     } finally {

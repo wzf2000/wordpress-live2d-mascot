@@ -17,6 +17,9 @@ __pycache__/
 /plugin/shaders/*
 !/plugin/shaders/*.vert
 !/plugin/shaders/*.frag
-!/plugin/haru-engine-296b56e2d33a.js
-!/plugin/haru-loader-e2f3146ba3b5.js
+!/plugin/haru-engine-d783a025e2d8.js
+!/plugin/haru-loader-c7b122ef4494.js
 !/plugin/haru-css-c2cae850d0c7.css
+
+!/plugin/admin.js
+!/plugin/languages/

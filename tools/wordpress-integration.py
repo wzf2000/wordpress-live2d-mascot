@@ -118,6 +118,13 @@ def main():
     wp('config', 'set', 'AUTOMATIC_UPDATER_DISABLED', 'true', '--raw')
     wp('config', 'set', 'WP_HTTP_BLOCK_EXTERNAL', 'true', '--raw')
     mu = site / 'wp-content/mu-plugins'; mu.mkdir(exist_ok=True)
+    # A valid empty core catalog enables WordPress's WPLANG allow-list without
+    # downloading a core language pack. Plugin strings use its actual bundled MO.
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from tools.translations import mo_bytes
+    languages = site / 'wp-content/languages'; languages.mkdir(exist_ok=True)
+    (languages / 'zh_CN.mo').write_bytes(mo_bytes({'': (None, ['Content-Type: text/plain; charset=UTF-8\nLanguage: zh_CN\nPlural-Forms: nplurals=1; plural=0;\n'])}))
     (mu / 'synthetic-no-mail.php').write_text("<?php add_filter('pre_wp_mail', '__return_true');\n")
     wp('db', 'create')
     origin = 'http://127.0.0.1:' + str(args.port)
@@ -139,7 +146,7 @@ def main():
     state = json.loads(wp('option', 'get', 'wzf_mascot_resources_v1', '--format=json'))
     assert state == {'characters': [], 'upgradeMarker': 'synthetic-retained'}
     router = lab / 'router.php'
-    router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
+    router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; if (is_dir($_SERVER['DOCUMENT_ROOT'].$p) && is_file(rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php')) { require rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php'; return; } require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
     logfile = (lab / 'http.log').open('w')
     server = subprocess.Popen(['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)], env=env, stdout=logfile, stderr=logfile)
     checks = []
@@ -189,7 +196,13 @@ def main():
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
             assert post(payload, opener=anonymous)[0] in (400, 403)
-        assert state() == before; record('real HTTP authorization and nonce failures preserve options')
+        inventory_url = '/wp-admin/options-general.php?page=wzf-mascot'
+        payload = {'mascot_inventory': '1', '_wpnonce': 'invalid'}
+        assert request(reader, inventory_url, payload)[0] == 403
+        assert request(admin, inventory_url, payload)[0] == 403
+        status, anonymous_html = request(anonymous, inventory_url, payload)
+        assert status in (200, 403) and 'Inventory complete.' not in anonymous_html
+        assert state() == before; record('real HTTP authorization and nonce failures preserve options, including disk inventory')
         z = lab / 'synthetic-model.zip'; model_zip(z)
         data = form('wzf_mascot_import', character=''); data.update(kind='model', id='fixture', name='Synthetic fixture', credit='Synthetic owner', rights='1')
         post(data, {'resource': (z.name, z.read_bytes())})
@@ -197,6 +210,25 @@ def main():
         fixture('seed'); original = state()['config']; snapshot = lab / 'snapshot.json'; snapshot.write_text(json.dumps(original)); env['MASCOT_CI_SNAPSHOT'] = str(snapshot)
         assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         assert front()['mobileEnabled'] is False; record('legacy IDs, maintained extra action, mobile default and server output')
+        def listed(html):
+            match = re.search(r'<table class="widefat striped">.*?<tbody>(.*?)</tbody>', html, re.S)
+            return set(re.findall(r'<code>(.*?)</code>', match[1]) + re.findall(r'<th scope="row">([^<]*)</th>', match[1])) if match else set()
+        before = state()
+        status, html = request(admin, inventory_url + '&mascot_search=LEGACY'); assert status == 200
+        assert listed(html) == {'legacy_character'}
+        assert not listed(request(admin, inventory_url + '&mascot_search=does-not-exist')[1])
+        assert listed(request(admin, inventory_url + '&mascot_search[]=invalid&mascot_status[]=invalid')[1]) == {'fixture', 'legacy_character', '23'}
+        assert state() == before; record('real HTTP administrator name/ID search, empty state and invalid query preserve data')
+        status, html = request(admin, inventory_url); assert status == 200 and 'Observed paths (admin only)' not in html
+        inventory = next(f for f in Forms(html).forms if f.get('mascot_inventory') == '1')
+        resource_before = {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        status, html = request(admin, inventory_url, inventory)
+        assert status == 200 and 'Inventory complete.' in html and 'Current model directory' in html and 'Shared Core' in html
+        assert 'extra.motion3.json' in html and 'not safe to delete' in html and str(site) not in html
+        assert state() == before
+        assert resource_before == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        assert 'Disk inventory' not in front()['i18n']
+        record('explicit real HTTP inventory is read-only, bounded-root metadata and admin-only')
         # A full synthetic baseline goes through the actual WordPress upgrader.
         # Browser localStorage remains a browser-layer contract, not server metadata.
         uid = wp('user', 'get', 'mascot-admin', '--field=ID')
@@ -226,6 +258,10 @@ def main():
         for operation, status in [('disable', 'disabled'), ('trash', 'trash'), ('restore', 'disabled'), ('enable', 'active')]:
             post(form('wzf_mascot_manage', operation)); assert state()['config']['characters']['legacy_character']['status'] == status
             assert ('legacy_character' in front()['characters']) == (status == 'active')
+            filter_html = request(admin, inventory_url + '&mascot_status=' + status)[1]
+            assert ('legacy_character' in listed(filter_html)) is True
+            other = 'trash' if status != 'trash' else 'active'
+            assert 'legacy_character' not in listed(request(admin, inventory_url + '&mascot_status=' + other)[1])
         record('real multipart replacement/reset, rollback, disable/trash/restore/enable')
         data = form('wzf_mascot_thumbnail', 'upload'); data['rights'] = '1'; post(data, {'thumbnail': ('synthetic.png', PNG + b'fixture-trailer')})
         thumbnail_state = state()['config']['characters']['legacy_character']
@@ -237,19 +273,37 @@ def main():
         assert front()['mobileEnabled'] is True and front()['mobilePauseOnInput'] is True
         record('real thumbnail upload/reencode/clear and explicit mobile settings')
         fixture('restore'); fixture('fault'); faulty = state(); assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
-        status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and '被隔离' in html
+        status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and 'Isolated' in html
         assert str(site) not in request(anonymous, '/')[1] and state() == faulty
         diagnosis = json.loads(fixture('diagnose')); assert not diagnosis['core']['ok']  # synthetic Core never passes full hash diagnosis
-        assert state() == faulty; record('bad roles isolated, valid roles continue; admin diagnosis read-only and synthetic Core fails full hash')
+        assert listed(request(admin, inventory_url + '&mascot_status=isolated')[1]) == {'bad-root','bad-file','missing','bad-name','bad-state','bad-greetings','not-array','linked'}
+        status, html = request(admin, inventory_url)
+        inventory = next(f for f in Forms(html).forms if f.get('mascot_inventory') == '1')
+        status, html = request(admin, inventory_url, inventory)
+        assert status == 200 and 'Unreferenced classification is withheld.' in html
+        assert state() == faulty; record('bad roles isolated, valid roles continue; admin diagnosis/inventory read-only and synthetic Core fails full hash')
         for mode in ['all-bad', 'bad-core', 'bad-terms', 'bad-structure']:
             fixture('restore'); fixture(mode); before = state(); assert front() is None and state() == before
         record('all-bad roles/shared Core/terms/base structure fail closed without option writes')
         fixture('restore'); before = state(); wp('plugin', 'deactivate', 'live2d-show'); assert front() is None
         wp('plugin', 'activate', 'live2d-show'); assert state() == before and front() is not None
         record('real plugin deactivation/reactivation retains resources and configuration')
+        for locale, title, show in [('en_US', 'Character management', 'Show mascot'), ('zh_CN', '角色管理', '显示看板娘')]:
+            wp('option', 'update', 'WPLANG', '' if locale == 'en_US' else locale)
+            wp('user', 'meta', 'update', uid, 'locale', locale)
+            before = state()
+            status, html = request(admin, inventory_url); assert status == 200 and title in html
+            assert 'Synthetic fixture' in html and 'Synthetic owner' in html
+            dictionary = front()['i18n']; assert dictionary['Show mascot'] == show
+            assert '%1$s' in dictionary['Using %1$s; this browser will remember your selection.']
+            status, html = request(admin, '/wp-admin/profile.php'); assert status == 200
+            assert ('Allow the mascot on the frontend' if locale == 'en_US' else '允许前台显示看板娘') in html
+            assert state() == before
+        wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
+        record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 11, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 14, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

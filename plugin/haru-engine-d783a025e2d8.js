@@ -15343,7 +15343,7 @@
       this.name = "ResourceError";
     }
   };
-  var cancelled = () => new DOMException("\u5DF2\u53D6\u6D88\u52A0\u8F7D", "AbortError");
+  var cancelled = () => new DOMException("Loading cancelled", "AbortError");
   function checkSignal(signal) {
     if (signal.aborted) throw signal.reason || cancelled();
   }
@@ -15366,7 +15366,7 @@
         finish(error);
       };
       const timer = setTimeout(() => {
-        const error = new ResourceError("timeout", "\u8D44\u6E90\u52A0\u8F7D\u8D85\u65F6\uFF0C\u8BF7\u91CD\u8BD5");
+        const error = new ResourceError("timeout", "Resource loading timed out. Try again.");
         controller.abort(error);
         finish(error);
       }, timeoutMs);
@@ -15387,12 +15387,12 @@
         response = await fetch(url, { signal: requestSignal, credentials: "omit" });
       } catch (error) {
         checkSignal(requestSignal);
-        throw new ResourceError("network", "\u7F51\u7EDC\u8FDE\u63A5\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u540E\u91CD\u8BD5");
+        throw new ResourceError("network", "Network connection failed. Check your connection and retry.");
       }
       if (!response.ok) {
         throw new ResourceError(
           "http",
-          response.status === 404 ? "\u89D2\u8272\u8D44\u6E90\u4E0D\u5B58\u5728\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272" : "\u8D44\u6E90\u6682\u65F6\u65E0\u6CD5\u4E0B\u8F7D\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5"
+          response.status === 404 ? "Character resources are missing. Retry or choose another character." : "Resources cannot be downloaded right now. Try again later."
         );
       }
       try {
@@ -15401,7 +15401,7 @@
         return value;
       } catch (error) {
         checkSignal(requestSignal);
-        throw new ResourceError("network", "\u8D44\u6E90\u4E0B\u8F7D\u4E2D\u65AD\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u540E\u91CD\u8BD5");
+        throw new ResourceError("network", "Resource download interrupted. Check your connection and retry.");
       }
     }, signal);
   }
@@ -15412,7 +15412,7 @@
     try {
       return JSON.parse(new TextDecoder().decode(raw));
     } catch {
-      throw new ResourceError("invalid", "\u89D2\u8272\u8D44\u6E90\u683C\u5F0F\u65E0\u6548\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
+      throw new ResourceError("invalid", "Character resource format is invalid. Retry or choose another character.");
     }
   }
   function decodeImage(blob, signal) {
@@ -15437,7 +15437,7 @@
         };
         img.onerror = () => {
           cleanup();
-          reject(new ResourceError("invalid", "\u89D2\u8272\u8D34\u56FE\u65E0\u6CD5\u89E3\u7801\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272"));
+          reject(new ResourceError("invalid", "The character texture cannot be decoded. Retry or choose another character."));
         };
         img.src = url;
       }),
@@ -15495,9 +15495,9 @@
         premultipliedAlpha: true,
         antialias: true
       });
-      if (!this.gl) throw new ResourceError("webgl", "\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 WebGL\uFF0C\u65E0\u6CD5\u663E\u793A\u770B\u677F\u5A18", "webgl");
+      if (!this.gl) throw new ResourceError("webgl", "This browser does not support WebGL; the mascot cannot be displayed.", "webgl");
       if (options.webgl2 && (typeof WebGL2RenderingContext === "undefined" || !(this.gl instanceof WebGL2RenderingContext)))
-        throw new ResourceError("webgl", "\u6B64\u89D2\u8272\u9700\u8981 WebGL 2\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272\u6216\u66F4\u6362\u6D4F\u89C8\u5668", "webgl");
+        throw new ResourceError("webgl", "This character requires WebGL 2. Choose another character or browser.", "webgl");
     }
     phase(stage) {
       this.stage = stage;
@@ -15510,7 +15510,7 @@
       const json = jsonResource(raw);
       const refs = json?.FileReferences;
       if (!refs || typeof refs.Moc !== "string" || !Array.isArray(refs.Textures) || !refs.Textures.length || refs.Textures.some((file) => typeof file !== "string" || !file)) {
-        throw new ResourceError("invalid", "\u89D2\u8272\u6A21\u578B\u914D\u7F6E\u65E0\u6548\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
+        throw new ResourceError("invalid", "Character model configuration is invalid. Choose another character.");
       }
       this.settings = new CubismModelSettingJson(raw, raw.byteLength);
       this.phase("catalog");
@@ -15521,11 +15521,11 @@
           (entry) => entry && typeof entry.id === "string" && typeof entry.file === "string"
         )
       )) {
-        throw new ResourceError("invalid", "\u89D2\u8272\u52A8\u4F5C\u76EE\u5F55\u65E0\u6548\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u89D2\u8272");
+        throw new ResourceError("invalid", "Character motion catalog is invalid. Choose another character.");
       }
       this.phase("moc");
       this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
-      if (!this.getModel()) throw new Error("\u6A21\u578B\u6821\u9A8C\u5931\u8D25");
+      if (!this.getModel()) throw new Error("Model validation failed");
       for (const [key, fn] of [
         ["Physics", "loadPhysics"],
         ["Pose", "loadPose"]
@@ -15550,7 +15550,7 @@
           const img = await decodeImage(blob, signal);
           checkSignal(signal);
           const gl = this.gl, t = gl.createTexture();
-          if (!t) throw Error("\u7EB9\u7406\u521B\u5EFA\u5931\u8D25");
+          if (!t) throw Error("Texture creation failed");
           this.textures.push(t);
           gl.bindTexture(gl.TEXTURE_2D, t);
           gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
@@ -15590,7 +15590,7 @@
       }, signal);
       checkSignal(signal);
       if (!shader._shaderSets[0]?.shaderProgram)
-        throw new ResourceError("invalid", "\u7ED8\u56FE\u7A0B\u5E8F\u65E0\u6548\uFF0C\u65E0\u6CD5\u663E\u793A\u6B64\u89D2\u8272");
+        throw new ResourceError("invalid", "The rendering program is invalid; this character cannot be displayed.");
       this.phase("motion");
       await this.asset("motion", this.idle);
       this.getModel().saveParameters();
@@ -15599,7 +15599,7 @@
     }
     async asset(type, id) {
       const list = type === "motion" ? this.catalog.motions : this.catalog.expressions, entry = list.find((x) => x.id === id);
-      if (!entry) throw Error("\u672A\u77E5\u52A8\u4F5C");
+      if (!entry) throw Error("Unknown motion");
       const map = type === "motion" ? this.motions : this.expressions;
       const key = type + ":" + id;
       if (map.has(id)) return map.get(id);
@@ -15611,7 +15611,7 @@
             checkSignal(this.abort.signal);
             jsonResource(b);
             const m = type === "motion" ? this.loadMotion(b, b.byteLength, id) : this.loadExpression(b, b.byteLength, id);
-            if (!m) throw Error("\u52A8\u4F5C\u6587\u4EF6\u4E0D\u53EF\u7528");
+            if (!m) throw Error("Motion file unavailable");
             if (type === "motion") {
               m.setLoop(id === this.idle);
               m.setEffectIds(
@@ -15632,7 +15632,7 @@
               throw error;
             }
             if (error?.name === "AbortError") throw error;
-            throw new ResourceError("invalid", "\u52A8\u4F5C\u6216\u8868\u60C5\u8D44\u6E90\u65E0\u6548\uFF0C\u8BF7\u91CD\u8BD5", type);
+            throw new ResourceError("invalid", "Motion or expression resources are invalid. Try again.", type);
           }).finally(() => this.pending.delete(key))
         );
       return this.pending.get(key);
@@ -15735,7 +15735,7 @@
       } catch (e) {
         console.error("Haru rendering", e);
         this.pause();
-        this.canvas.dispatchEvent(new CustomEvent("mascoterror", { detail: "\u89D2\u8272\u7ED8\u5236\u5931\u8D25" }));
+        this.canvas.dispatchEvent(new CustomEvent("mascoterror", { detail: "Character rendering failed" }));
       }
     }
     state() {
@@ -15780,7 +15780,7 @@
       signal.addEventListener("abort", abort, { once: true });
       const timer = setTimeout(
         () => instance.abort.abort(
-          new ResourceError("timeout", "\u89D2\u8272\u521D\u59CB\u5316\u8D85\u65F6\uFF0C\u8BF7\u91CD\u8BD5", instance.stage)
+          new ResourceError("timeout", "Character initialization timed out. Try again.", instance.stage)
         ),
         6e4
       );
@@ -15799,7 +15799,7 @@
         if (error?.name === "AbortError") throw error;
         throw new ResourceError(
           "invalid",
-          "\u89D2\u8272\u8D44\u6E90\u65E0\u6548\uFF0C\u65E0\u6CD5\u663E\u793A\u6B64\u89D2\u8272\uFF0C\u8BF7\u91CD\u8BD5\u6216\u9009\u62E9\u5176\u4ED6\u89D2\u8272",
+          "Character resources are invalid. Retry or choose another character.",
           instance.stage
         );
       } finally {

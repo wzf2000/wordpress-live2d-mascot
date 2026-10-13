@@ -8,9 +8,11 @@ const root = path.resolve(process.argv[2] || 'plugin');
 const fs = require('node:fs');
 const assets = JSON.parse(fs.readFileSync(path.join(root, 'haru-assets.json')));
 const loader = fs.readFileSync(path.join(root, assets.loader), 'utf8');
+const translate = (message, ...values) => message.replace(/%([1-9]\d*)\$s/g, (match, index) => String(values[Number(index) - 1] ?? match));
 const reader = loader.slice(loader.indexOf('const readFavorites ='), loader.indexOf('let favorites ='));
 const click = loader.slice(loader.indexOf('favoriteButton.onclick ='), loader.indexOf('clearSearch.onclick ='));
 const exerciseFavorites = new Function('localStorage', 'characters', `
+  const t = ${translate.toString()};
   const favoritesKey = 'wzf-mascot-favorites';
   ${reader}
   let favorites = readFavorites(), favoritesNotice = '', loading = false;
@@ -43,6 +45,7 @@ const thumbnailElement = (tag) => {
   thumbnailElements.push(element); return element;
 };
 const exerciseThumbnail = new Function('make', 'characters', 'characterSelect', 'panel', 'location', 'URL', 'assert', 'requests', `
+  const t = ${translate.toString()};
   let panelOpen = false;
   ${thumbnailCode}
   syncThumbnail();
@@ -60,7 +63,7 @@ const exerciseThumbnail = new Function('make', 'characters', 'characterSelect', 
   assert.equal(requests.length, 1);
   characterSelect.value = 'second'; syncThumbnail();
   assert.equal(requests.length, 2);
-  assert.equal(candidateImage.alt, 'Second 的缩略图');
+  assert.equal(candidateImage.alt, 'Thumbnail of Second');
   panelOpen = false; characterSelect.value = 'first'; syncThumbnail();
   assert.equal(requests.length, 2);
 `);
@@ -81,6 +84,7 @@ const testEngine = { gl: {
 }, state: () => ({ frames: frameCount, renderMsAvg: drawAverage, renderMsMax: 10, paused: false }) };
 const makeElement = () => ({ append() {}, setAttribute() {}, click() {}, remove() {} });
 const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed', 'performance', 'setTimeout', 'clearTimeout', 'config', 'active', 'reduce', 'innerWidth', 'innerHeight', 'devicePixelRatio', 'URL', 'fetch', 'assert', 'advance', 'gpuCount', 'runNextTimer', `
+  const t = ${translate.toString()};
   let loading = false;
   ${diagnosticCode}
   diagnosticUpdate();

@@ -46,6 +46,11 @@ class ImporterTests(unittest.TestCase):
     def php(self, body):
         preamble = '''define('ABSPATH', '/stub/');
         $options=[]; $allowed=true; $write_fail=false;
+        function __($s,$domain=null) {return $s;}
+        function _n($single,$plural,$count,$domain=null) {return $count===1?$single:$plural;}
+        function number_format_i18n($number,$decimals=0) {return number_format($number,$decimals);}
+        function esc_html__($s,$domain=null) {return htmlspecialchars($s,ENT_QUOTES);}
+        function esc_attr__($s,$domain=null) {return htmlspecialchars($s,ENT_QUOTES);}
         function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; }
         function current_user_can($x) { global $allowed; return $allowed; }
         function wp_upload_dir(...$x) { return ['basedir'=>getenv('TEST_UPLOADS'),'baseurl'=>'https://example.invalid/uploads','error'=>false]; }
@@ -201,7 +206,7 @@ class ImporterTests(unittest.TestCase):
         echo json_encode(['admin'=>$admin,'again'=>$again,'admin_meta'=>$admin_meta,'admin_unrelated'=>$admin_unrelated,'hooks'=>array_column($filters,0),'other'=>$other,'own'=>$own,'unrelated'=>$unrelated]);""")
         self.assertEqual(len(report['admin']),2)
         self.assertIn('https://example.invalid/wp-admin/options-general.php?page=wzf-mascot',report['admin']['settings'])
-        self.assertIn('设置',report['admin']['settings'])
+        self.assertIn('Settings',report['admin']['settings'])
         self.assertEqual(report['again'],report['admin'])
         self.assertEqual(report['admin_meta']['settings'],report['admin']['settings'])
         self.assertEqual(len(report['admin_meta']),4)
@@ -306,9 +311,9 @@ class ImporterTests(unittest.TestCase):
         self.assertTrue(report['catalog_unchanged']);self.assertFalse(report['lock'])
 
     def test_settings_conflict_shared_lock_and_failed_write_preserve_config(self):
-        for setup,expected in [("$options[WZF_MASCOT_OPTION]['changed']=true;",'刷新'),
-                               ("$options[WZF_MASCOT_LOCK]=['token'=>'other'];",'正在进行'),
-                               ('$write_fail=true;','保存失败')]:
+        for setup,expected in [("$options[WZF_MASCOT_OPTION]['changed']=true;",'Refresh'),
+                               ("$options[WZF_MASCOT_LOCK]=['token'=>'other'];",'in progress'),
+                               ('$write_fail=true;','Cannot save')]:
             with self.subTest(setup=setup):
                 report=self.php(self.settings_setup()+setup+"""
                 $snapshot=get_option(WZF_MASCOT_OPTION);$error='';
@@ -365,7 +370,7 @@ class ImporterTests(unittest.TestCase):
         report=self.php(self.settings_setup()+"""$allowed=false;
         $error='';try{wzf_mascot_save_character('legacy_character',$version,$fields);}catch(Throwable $e){$error=$e->getMessage();}
         echo json_encode(['error'=>$error,'unchanged'=>$before===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
-        self.assertIn('管理员',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+        self.assertIn('Administrator',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
 
     def test_admin_and_profile_render_are_scoped_escaped_and_readonly(self):
         report=self.php(self.settings_setup()+"""
@@ -439,7 +444,7 @@ class ImporterTests(unittest.TestCase):
         $unchanged=$before===get_option(WZF_MASCOT_OPTION);
         wzf_mascot_replace_resource("""+replacement+""",'legacy_character',$version,true);
         echo json_encode(['error'=>$error,'unchanged'=>$unchanged,'after'=>get_option(WZF_MASCOT_OPTION)['characters']['legacy_character']]);""")
-        self.assertIn('允许重置',report['error']);self.assertTrue(report['unchanged'])
+        self.assertIn('Allow incompatible motion reset',report['error']);self.assertTrue(report['unchanged'])
         self.assertEqual(report['after']['idle'],'motion-1');self.assertIsNone(report['after']['welcome'])
         self.assertEqual(report['after']['greetings'],[])
         self.assertEqual(len(list((self.root/'uploads/wzf-mascot').glob('model-*'))),2)
@@ -467,7 +472,7 @@ class ImporterTests(unittest.TestCase):
                 unlink($u['path'].'/'.$c['root'].'"""+missing+"""');
                 $error='';try {wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($snapshot),'rollback');}catch(Throwable $e){$error=$e->getMessage();}
                 echo json_encode(['error'=>$error,'unchanged'=>$snapshot===get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK)]);""")
-                self.assertIn('运行引用',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
+                self.assertIn('runtime reference',report['error']);self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
 
     def test_management_conflict_lock_write_failure_permission_and_nonce(self):
         for change,operation in [("$options[WZF_MASCOT_OPTION]['changed']=true;",'disable'),
@@ -535,7 +540,7 @@ class ImporterTests(unittest.TestCase):
         self.assertTrue(report['good']['characters'][0]['checks']['catalog']['ok'])
         self.assertFalse(report['missing']['characters'][0]['checks']['runtime']['ok'])
         self.assertTrue(report['missing']['characters'][0]['checks']['catalog']['ok'])
-        self.assertTrue(report['good']['presentation']['ok']);self.assertIn('管理员',report['error'])
+        self.assertTrue(report['good']['presentation']['ok']);self.assertIn('Administrator',report['error'])
         self.assertTrue(report['unchanged']);self.assertFalse(report['lock'])
         self.assertNotIn(str(self.root),json.dumps(report));self.assertNotIn('https://',json.dumps(report))
 

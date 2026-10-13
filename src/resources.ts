@@ -10,7 +10,7 @@ export class ResourceError extends Error {
     this.name = 'ResourceError';
   }
 }
-export const cancelled = () => new DOMException('已取消加载', 'AbortError');
+export const cancelled = () => new DOMException("Loading cancelled", 'AbortError');
 export function checkSignal(signal: AbortSignal) {
   if (signal.aborted) throw signal.reason || cancelled();
 }
@@ -37,7 +37,7 @@ export function bounded<T>(
       finish(error);
     };
     const timer = setTimeout(() => {
-      const error = new ResourceError('timeout', '资源加载超时，请重试');
+      const error = new ResourceError('timeout', "Resource loading timed out. Try again.");
       controller.abort(error);
       finish(error);
     }, timeoutMs);
@@ -64,14 +64,14 @@ export function resource(
       response = await fetch(url, { signal: requestSignal, credentials: 'omit' });
     } catch (error) {
       checkSignal(requestSignal);
-      throw new ResourceError('network', '网络连接失败，请检查网络后重试');
+      throw new ResourceError('network', "Network connection failed. Check your connection and retry.");
     }
     if (!response.ok) {
       throw new ResourceError(
         'http',
         response.status === 404
-          ? '角色资源不存在，请重试或选择其他角色'
-          : '资源暂时无法下载，请稍后重试',
+          ? "Character resources are missing. Retry or choose another character."
+          : "Resources cannot be downloaded right now. Try again later.",
       );
     }
     try {
@@ -84,7 +84,7 @@ export function resource(
       return value;
     } catch (error) {
       checkSignal(requestSignal);
-      throw new ResourceError('network', '资源下载中断，请检查网络后重试');
+      throw new ResourceError('network', "Resource download interrupted. Check your connection and retry.");
     }
   }, signal);
 }
@@ -95,7 +95,7 @@ export function jsonResource(raw: ArrayBuffer) {
   try {
     return JSON.parse(new TextDecoder().decode(raw));
   } catch {
-    throw new ResourceError('invalid', '角色资源格式无效，请重试或选择其他角色');
+    throw new ResourceError('invalid', "Character resource format is invalid. Retry or choose another character.");
   }
 }
 export function decodeImage(blob: Blob, signal: AbortSignal) {
@@ -121,7 +121,7 @@ export function decodeImage(blob: Blob, signal: AbortSignal) {
         };
         img.onerror = () => {
           cleanup();
-          reject(new ResourceError('invalid', '角色贴图无法解码，请重试或选择其他角色'));
+          reject(new ResourceError('invalid', "The character texture cannot be decoded. Retry or choose another character."));
         };
         img.src = url;
       }),

@@ -3,20 +3,21 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.6.1
+Version: 3.7.0-rc.1
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
 License URI: https://github.com/wzf2000/wordpress-live2d-mascot/blob/main/LICENSE
 Update URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Text Domain: live2d-show
+Domain Path: /languages
 Requires PHP: 8.2
 */
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/includes/admin-import.php';
 function wzf_mascot_action_links($links) {
     if (current_user_can('manage_options')) {
-        $links = ['settings'=>'<a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">设置</a>'] + $links;
+        $links = ['settings'=>'<a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . ('">' . esc_html__('Settings', 'live2d-show') . '</a>')] + $links;
     }
     return $links;
 }
@@ -25,8 +26,8 @@ add_filter('network_admin_plugin_action_links_' . plugin_basename(__FILE__), 'wz
 function wzf_mascot_row_meta($links, $plugin_file) {
     if ($plugin_file !== plugin_basename(__FILE__)) return $links;
     $links = wzf_mascot_action_links($links);
-    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot#readme') . '">文档</a>';
-    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot/issues') . '">反馈</a>';
+    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot#readme') . ('">' . esc_html__('Documentation', 'live2d-show') . '</a>');
+    $links[] = '<a href="' . esc_url('https://github.com/wzf2000/wordpress-live2d-mascot/issues') . ('">' . esc_html__('Feedback', 'live2d-show') . '</a>');
     return $links;
 }
 add_filter('plugin_row_meta', 'wzf_mascot_row_meta', 10, 2);
@@ -39,17 +40,17 @@ function wzf_mascot_presentation($resources, $uploads) {
     if (!array_key_exists('presentation', $resources)) return [];
     $value = $resources['presentation'];
     if (!is_array($value) || count($value) !== 3 || array_diff(array_keys($value), ['terms','termsVersion','consentText'])) {
-        throw new RuntimeException('站点条款配置无效。');
+        throw new RuntimeException(__('Site terms configuration is invalid.', 'live2d-show'));
     }
     $terms = wzf_mascot_path($value['terms'] ?? null);
     $path = wzf_mascot_no_links($uploads['path'] . '/' . $terms);
     if (!str_ends_with($terms, '.html') || !is_file($path) || !is_readable($path) || filesize($path) > 2 * 1024 * 1024) {
-        throw new RuntimeException('站点条款文件无效。');
+        throw new RuntimeException(__('Site terms file is invalid.', 'live2d-show'));
     }
     foreach (['termsVersion'=>200,'consentText'=>2000] as $key=>$limit) {
         $text = $value[$key] ?? null;
         if (!is_string($text) || trim($text) === '' || strlen($text) > $limit || strip_tags($text) !== $text || preg_match('/[\x00-\x1f\x7f]/', $text)) {
-            throw new RuntimeException('站点条款说明必须是有效纯文本。');
+            throw new RuntimeException(__('Site terms information must be valid plain text.', 'live2d-show'));
         }
     }
     return ['terms'=>$uploads['url'] . $terms, 'termsVersion'=>$value['termsVersion'], 'consentText'=>$value['consentText']];
@@ -89,18 +90,19 @@ function wzf_haru_output() {
     } catch (Throwable $e) { return; }
     $base=plugins_url('',__FILE__).'/';
     $first=reset($characters);
-    $config=['version'=>'3.6.1','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
+    $config=['version'=>'3.7.0-rc.1','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
     $config = array_merge($config, $presentation);
+    $config['i18n'] = wzf_mascot_frontend_translations();
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
     echo '<script defer src="'.esc_url($base.$assets['loader']).'"></script>';
 }
 add_action('wp_print_scripts','wzf_haru_output');
 function wzf_haru_profile($user) {
-    echo '<section class="wzf-mascot-profile" aria-labelledby="wzf-mascot-profile-title"><h3 id="wzf-mascot-profile-title">Live2D Mascot</h3><p>控制此账号是否允许前台显示看板娘。</p>';
+    echo ('<section class="wzf-mascot-profile" aria-labelledby="wzf-mascot-profile-title"><h3 id="wzf-mascot-profile-title">Live2D Mascot</h3><p>' . esc_html__('Control whether this account allows the mascot to appear on the frontend.', 'live2d-show') . '</p>');
     wp_nonce_field('wzf_haru_profile','wzf_haru_nonce');
-    echo '<label class="wzf-mascot-profile-choice"><input name="live2d_front" type="checkbox" value="1" ' . checked(wzf_haru_visible($user),true,false) . '> 允许前台显示看板娘</label><p>角色选择、收藏、大小和收起状态保存在当前浏览器。手机需管理员允许，并由当前浏览器单独开启；减少动画始终抑制显示。开启后仍需在前台自行同意条款并显示。</p>';
-    if (current_user_can('manage_options')) echo '<p><a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . '">管理 Core 与角色资源</a></p>';
+    echo '<label class="wzf-mascot-profile-choice"><input name="live2d_front" type="checkbox" value="1" ' . checked(wzf_haru_visible($user),true,false) . ('> ' . esc_html__('Allow the mascot on the frontend', 'live2d-show') . '</label><p>' . esc_html__('Character selection, favorites, size and visibility are stored in this browser. Mobile display requires administrator permission and separate browser opt-in. Reduced motion always prevents display. You must still accept the terms and show the mascot on the frontend.', 'live2d-show') . '</p>');
+    if (current_user_can('manage_options')) echo '<p><a href="' . esc_url(admin_url('options-general.php?page=wzf-mascot')) . ('">' . esc_html__('Manage Core and character resources', 'live2d-show') . '</a></p>');
     echo '</section>';
 }
 add_action('show_user_profile','wzf_haru_profile');add_action('edit_user_profile','wzf_haru_profile');

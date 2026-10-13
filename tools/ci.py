@@ -30,9 +30,11 @@ def main():
     if args.require_clean and subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip(): raise ValueError('CI requires a clean checkout')
     # Verify source and committed resource hashes before anything can rebuild them.
     collect(ROOT,version,commit)
+    run(sys.executable, 'tools/translations.py', '--check')
+    run('node', 'tests/admin-ui.cjs')
     run(sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py')
-    for name in ['plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','tests/wordpress-fixture.php']:run('php','-l',name)
-    for name in ['src/loader.js','tests/release-smoke.cjs']:run('node','--check',name)
+    for name in ['plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','plugin/includes/admin-inventory.php','plugin/includes/admin-listing.php','plugin/includes/admin-readiness.php','plugin/includes/i18n.php','tests/wordpress-fixture.php']:run('php','-l',name)
+    for name in ['src/loader.js','plugin/admin.js','tests/admin-ui.cjs','tests/release-smoke.cjs']:run('node','--check',name)
     run('node','tests/release-smoke.cjs','plugin')
     with tempfile.TemporaryDirectory(prefix='mascot-ci-') as temporary:
         temp=Path(temporary);rebuilt=temp/'rebuilt'
