@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("diagnostic_samples", ROOT / "tools/diagnostic_samples.py")
@@ -164,6 +165,143 @@ class DiagnosticSamplesTests(unittest.TestCase):
         result = self.run_samples(rows, [{"session": "same"}] * 2)
         self.assertEqual(result["acceptedWindows"], 1)
         self.assertEqual(result["groups"][0]["firstFrameMs"]["max"], 125)
+
+
+def batch(count=3):
+    rows = []
+    for index in range(count):
+        row = report()
+        row.update(batchId="a" * 32, windowId=index + 1, loadSessionId="b" * 32,
+                   characterId="fixture", phase="ready", environment=copy.deepcopy(row["sample"]["environment"]),
+                   engineStatsCharacterId="fixture")
+        row["load"].update(sessionId="b" * 32, stages=[])
+        row["loadAttempts"] = [copy.deepcopy(row["load"])]
+        row["sample"].update(reason="window-ended", engineLifetimeCpuDrawMsMax=4)
+        # The actual engine's untouched state contains these empty strings.
+        row["engineStats"] = {"frames": 180, "paused": False, "motion": "", "expression": "",
+            "activeMotion": "idle", "motionElapsed": 0, "completedMotion": "", "motionPlays": 0,
+            "renderMsAvg": 2, "renderMsMax": 4, "cachedMotions": 1, "cachedExpressions": 0}
+        rows.append(row)
+    return {"kind": SAMPLES.BATCH_KIND, "schema": 1, "batchId": "a" * 32,
+            "maxWindows": 20, "replacedWindows": 0, "windows": rows}
+
+
+class DiagnosticBatchTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name); self.input = self.root / "batch.json"; self.out = self.root / "unpacked"
+
+    def write(self, value): self.input.write_text(json.dumps(value))
+
+    def metadata(self, directory):
+        path = directory / "runs.json"; value = json.loads(path.read_text())
+        for run in value["runs"]:
+            run.update(platform="desktop", physicalDevice=True, device="test", os="test OS", browser="test browser",
+                       conditions="fixed", cache="cold", scenario="load", visualCheck="pass")
+        path.write_text(json.dumps(value)); return value
+
+    def test_unpack_real_state_shape_and_template_defaults_preserves_one_loading_session(self):
+        self.write(batch()); before = self.input.read_bytes()
+        self.assertEqual(SAMPLES.unpack_batch(self.input, self.out), 3)
+        template = json.loads((self.out / "runs.json").read_text())
+        self.assertEqual(len({row["session"] for row in template["runs"]}), 1)
+        self.assertEqual(len({row["id"] for row in template["runs"]}), 3)
+        self.assertTrue(all(row["physicalDevice"] is False and row["visualCheck"] == "not-run" and row["platform"] is None for row in template["runs"]))
+        self.assertEqual(set(path.name for path in self.out.iterdir()), {"runs.json", "window-01.json", "window-02.json", "window-03.json"})
+        self.metadata(self.out); result = SAMPLES.summarize(self.out / "runs.json")
+        self.assertEqual(result["acceptedWindows"], 3); self.assertEqual(result["groups"][0]["loadSessions"], 1)
+        self.assertEqual(self.input.read_bytes(), before)
+        self.assertEqual(json.loads((self.out / 'window-01.json').read_text())['engineStats']['expression'], '')
+
+    def test_interrupted_and_missing_first_frame_are_preserved_then_conservatively_summarized(self):
+        value = batch(); value["windows"][0]["sample"].update(interrupted=True, durationMs=500, frameDelta=30, reason="user-stopped-sampling")
+        for window in value["windows"]:
+            window["load"].update(firstFrameMs=None, firstFrameStatus="not-observed")
+            window["loadAttempts"] = [copy.deepcopy(window["load"])]
+        self.write(value); SAMPLES.unpack_batch(self.input, self.out)
+        self.assertTrue(json.loads((self.out / "window-01.json").read_text())["sample"]["interrupted"])
+        self.metadata(self.out); summary = SAMPLES.summarize(self.out / "runs.json")
+        self.assertEqual(summary["acceptedWindows"], 2); self.assertEqual(summary["groups"][0]["firstFrameMs"], {"n": 0})
+
+    def test_stable_window_ids_deduplicate_reexports_even_if_live_metadata_changes(self):
+        value = batch(2); value["windows"][1]["loadSessionId"] = 'c' * 32
+        value["windows"][1]["load"]["sessionId"] = 'c' * 32
+        self.write(value); SAMPLES.unpack_batch(self.input, self.out); first = self.metadata(self.out)
+        self.assertEqual(len({row["session"] for row in first["runs"]}), 2)
+        copied = copy.deepcopy(value["windows"][0]); copied["load"]["firstFrameMs"] += 10
+        (self.out / 'duplicate.json').write_text(json.dumps(copied))
+        duplicate = dict(first['runs'][0], id='duplicate', report='duplicate.json')
+        first['runs'].append(duplicate); (self.out/'runs.json').write_text(json.dumps(first))
+        self.assertEqual(SAMPLES.summarize(self.out/'runs.json')['acceptedWindows'], 2)
+        other = batch(1); other['batchId'] = 'd' * 32; other['windows'][0]['batchId'] = 'd' * 32
+        self.write(other); second_dir = self.root/'second'; SAMPLES.unpack_batch(self.input, second_dir)
+        second = json.loads((second_dir/'runs.json').read_text())
+        self.assertNotEqual(first['runs'][0]['session'], second['runs'][0]['session'])
+
+    def test_invalid_batches_are_prevalidated_without_partial_output(self):
+        mutations = [lambda v:v.update(kind='other'), lambda v:v.update(windows=v['windows']*8),
+            lambda v:v['windows'][1].update(windowId=1), lambda v:v['windows'][0].update(report='../private.json'),
+            lambda v:v['windows'][0].update(batchId='x'), lambda v:v['windows'][0]['sample'].update(frameDelta=True),
+            lambda v:v['windows'][0]['engineStats'].update(frames=''),
+            lambda v:v['windows'][0]['engineStats'].update(expression='bad\ninput')]
+        for change in mutations:
+            value=batch();change(value);self.write(value)
+            with self.assertRaises((ValueError,TypeError)): SAMPLES.unpack_batch(self.input,self.out)
+            self.assertFalse(self.out.exists())
+        self.input.write_bytes(b' '*(SAMPLES.MAX_REPORT_BYTES+1))
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,self.out)
+        self.assertFalse(self.out.exists())
+
+    def test_existing_output_symlinks_and_input_paths_are_refused(self):
+        self.write(batch()); self.out.mkdir()
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,self.out)
+        self.out.rmdir(); self.out.symlink_to(self.root,target_is_directory=True)
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,self.out)
+        self.out.unlink(); linked=self.root/'linked.json';linked.symlink_to(self.input)
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(linked,self.out)
+        self.assertFalse(self.out.exists())
+        parent=self.root/'parent';parent.symlink_to(self.root,target_is_directory=True)
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,parent/'new')
+        self.assertFalse((self.root/'new').exists())
+
+    def test_failed_write_cleanup_retains_replaced_files(self):
+        self.write(batch()); original=SAMPLES.os.open
+        def interrupted(name,*args,**kwargs):
+            if name=='window-02.json':
+                foreign=self.out/'foreign';foreign.write_text('foreign bytes')
+                foreign.replace(self.out/'window-01.json')
+                raise OSError('synthetic write failure')
+            return original(name,*args,**kwargs)
+        with mock.patch.object(SAMPLES.os,'open',side_effect=interrupted):
+            with self.assertRaises(OSError): SAMPLES.unpack_batch(self.input,self.out)
+        self.assertEqual((self.out/'window-01.json').read_text(),'foreign bytes')
+        self.assertFalse((self.out/'runs.json').exists())
+
+    def test_replaced_output_directory_is_not_written_or_removed(self):
+        self.write(batch()); original=SAMPLES.os.open
+        def replaced(name,*args,**kwargs):
+            if name==self.out.name and kwargs.get('dir_fd') is not None:
+                self.out.rename(self.root/'original-created-directory')
+                self.out.mkdir()  # Foreign directory must survive cleanup.
+            return original(name,*args,**kwargs)
+        with mock.patch.object(SAMPLES.os,'open',side_effect=replaced):
+            with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,self.out)
+        self.assertTrue(self.out.is_dir()); self.assertEqual(list(self.out.iterdir()),[])
+
+    def test_unsupported_unpack_platform_fails_cleanly_before_output(self):
+        self.write(batch())
+        with mock.patch.object(SAMPLES.os, 'name', 'nt'):
+            with self.assertRaises(ValueError): SAMPLES.unpack_batch(self.input,self.out)
+        self.assertFalse(self.out.exists())
+
+    def test_cli_batch_mode_and_duplicate_keys_do_not_expose_paths(self):
+        self.write(batch(1))
+        process=subprocess.run([sys.executable,str(ROOT/'tools/diagnostic_samples.py'),'--unpack-batch',str(self.input),'--out',str(self.out)],capture_output=True)
+        self.assertEqual(process.returncode,0,process.stderr)
+        self.assertNotIn(str(self.root).encode(),process.stdout)
+        invalid=self.root/'invalid.json';invalid.write_text('{"schema":1,"schema":2}')
+        with self.assertRaises(ValueError): SAMPLES.unpack_batch(invalid,self.root/'bad')
+        self.assertFalse((self.root/'bad').exists())
 
 
 if __name__ == "__main__":

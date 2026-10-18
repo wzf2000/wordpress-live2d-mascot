@@ -159,23 +159,41 @@
       loadStage = 'idle',
       lastDiagnosticError = null,
       sampleWindow = null,
-      firstFrameWatch = null;
+      firstFrameWatch = null,
+      diagnosticGeneration = 0,
+      diagnosticWindows = [],
+      replacedWindows = 0,
+      windowSequence = 0,
+      sampleSeries = null,
+      seriesMessage = '';
     const diagnostics = make('details', '', 'wzf-haru-diagnostics');
     diagnostics.append(make('summary', t("Local diagnostics")));
     const diagnosticBody = make('div', '', 'wzf-haru-diagnostic-body');
     const diagnosticEnable = make('button', t("Enable local diagnostics")),
       diagnosticSample = make('button', t("Sample for 3 seconds")),
+      diagnosticSeries = make('button', t("Sample 3 windows")),
+      diagnosticStopSample = make('button', t("Stop sampling")),
       diagnosticExport = make('button', t("Download diagnostic JSON")),
+      diagnosticExportBatch = make('button', t("Download all saved windows")),
+      diagnosticSaved = make('p'),
       diagnosticStatus = make('p', t("Diagnostics are not enabled."));
     diagnosticStatus.setAttribute('role', 'status');
+    diagnosticStatus.setAttribute('aria-live', 'polite');
+    diagnosticSaved.setAttribute('aria-live', 'polite');
     diagnosticBody.append(
       make(
         'p',
         t("After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."),
       ),
       diagnosticEnable,
+      make('p', t("Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced.")),
       diagnosticSample,
+      diagnosticSeries,
+      diagnosticStopSample,
+      make('p', t("Single report downloads the last saved window; before sampling, it downloads current diagnostic state.")),
       diagnosticExport,
+      diagnosticExportBatch,
+      diagnosticSaved,
       diagnosticStatus,
     );
     diagnostics.append(diagnosticBody);
@@ -184,11 +202,19 @@
       diagnosticEnable.textContent = diagnosticsEnabled ? t("Stop recording") : t("Enable local diagnostics");
       diagnosticSample.disabled =
         !diagnosticsEnabled || !!sampleWindow || !engine || !allowed() || loading;
+      diagnosticSeries.disabled = diagnosticSample.disabled || !!sampleSeries;
+      diagnosticStopSample.disabled = !sampleWindow && !sampleSeries;
       diagnosticExport.disabled = !diagnosticReport;
+      diagnosticExportBatch.disabled = !diagnosticWindows.length;
+      diagnosticSaved.textContent = t("Saved windows: %1$s of 20. Older windows replaced: %2$s.", diagnosticWindows.length, replacedWindows);
       diagnosticStatus.textContent = !diagnosticReport
         ? t("Diagnostics are not enabled.")
         : sampleWindow
-          ? t("Sampling; hiding, reading suspension or character switching will interrupt it.")
+          ? sampleSeries
+            ? t("Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence.", sampleSeries.completed + 1)
+            : t("Sampling; hiding, reading suspension or character switching will interrupt it.")
+          : seriesMessage
+            ? seriesMessage
           : diagnosticReport.sample
             ? diagnosticReport.sample.interrupted
               ? t("Sample interrupted.")
@@ -224,10 +250,20 @@
       }
       return result;
     };
+    const diagnosticId = () => [...crypto.getRandomValues(new Uint8Array(16))]
+      .map((value) => value.toString(16).padStart(2, '0')).join('');
+    const diagnosticSnapshot = (report) => {
+      const copy = JSON.parse(JSON.stringify(report));
+      if (copy.load) delete copy.load.started;
+      for (const load of copy.loadAttempts || []) delete load.started;
+      return copy;
+    };
     const diagnosticBegin = (id, fallback = false) => {
       if (!diagnosticsEnabled) return;
       if (!fallback) diagnosticReport.requestedCharacterId = id;
+      diagnosticReport.loadSessionId = diagnosticId();
       currentLoad = {
+        sessionId: diagnosticReport.loadSessionId,
         characterId: id,
         fallback,
         started: performance.now(),
@@ -317,6 +353,7 @@
       const end = sample.target.state(),
         elapsedMs = performance.now() - sample.started,
         frameDelta = Math.max(0, end.frames - sample.frames);
+      diagnosticReport.windowId = ++windowSequence;
       diagnosticReport.sample = {
         characterId: sample.characterId,
         environment: sample.environment,
@@ -332,6 +369,30 @@
       };
       diagnosticReport.engineStats = { ...end };
       diagnosticReport.engineStatsCharacterId = sample.characterId;
+      const frozen = sample.report;
+      if (frozen.loadSessionId === diagnosticReport.loadSessionId) {
+        const latest = diagnosticSnapshot(diagnosticReport);
+        for (const key of ['load', 'loadAttempts', 'phase', 'error']) frozen[key] = latest[key];
+      }
+      frozen.windowId = diagnosticReport.windowId;
+      frozen.characterId = sample.characterId;
+      frozen.environment = sample.environment;
+      frozen.sample = diagnosticSnapshot(diagnosticReport.sample);
+      frozen.engineStats = { ...end };
+      frozen.engineStatsCharacterId = sample.characterId;
+      diagnosticWindows.push(frozen);
+      if (diagnosticWindows.length > 20) { diagnosticWindows.shift(); replacedWindows++; }
+      if (sampleSeries) {
+        if (interrupted) {
+          seriesMessage = t("Continuous sampling stopped. No further windows will start automatically.");
+          sampleSeries = null;
+        } else {
+          sampleSeries.completed++;
+          if (sampleSeries.completed < 3) { startDiagnosticSample(); return; }
+          seriesMessage = t("Continuous sampling complete: 3 of 3 windows saved.");
+          sampleSeries = null;
+        }
+      }
       diagnosticUpdate();
     };
     const interruptDiagnostics = (reason) => {
@@ -375,10 +436,16 @@
         interruptDiagnostics('user-stopped');
         diagnosticsEnabled = false;
         currentLoad = null;
+        diagnosticGeneration++;
       } else {
+        diagnosticGeneration++;
+        diagnosticWindows = []; replacedWindows = 0; windowSequence = 0; sampleSeries = null; seriesMessage = '';
         diagnosticsEnabled = true;
         diagnosticReport = {
           schema: 1,
+          batchId: diagnosticId(),
+          loadSessionId: diagnosticId(),
+          windowId: null,
           pluginVersion: config.version || 'unknown',
           characterId: active,
           requestedCharacterId: null,
@@ -397,7 +464,7 @@
       }
       diagnosticUpdate();
     };
-    diagnosticSample.onclick = () => {
+    const startDiagnosticSample = () => {
       if (!diagnosticsEnabled || !engine || !allowed() || loading || sampleWindow) return;
       const snapshot = engine.state();
       diagnosticReport.characterId = active;
@@ -406,36 +473,57 @@
         target: engine,
         characterId: active,
         environment: diagnosticReport.environment,
+        report: diagnosticSnapshot(diagnosticReport),
         started: performance.now(),
         frames: snapshot.frames,
         drawTotal: snapshot.renderMsAvg * snapshot.frames,
         timer: null,
       };
-      sampleWindow.timer = setTimeout(
-        () =>
-          finishDiagnosticSample(
-            !allowed() || loading || sampleWindow?.target !== engine,
-            'window-ended',
-          ),
-        3000,
-      );
+      const sample = sampleWindow, epoch = diagnosticGeneration;
+      sampleWindow.timer = setTimeout(() => {
+        if (sampleWindow !== sample || epoch !== diagnosticGeneration) return;
+        finishDiagnosticSample(!allowed() || loading || sample.target !== engine, 'window-ended');
+      }, 3000);
       diagnosticUpdate();
     };
-    diagnosticExport.onclick = () => {
-      if (!diagnosticReport) return;
-      const data = JSON.parse(JSON.stringify(diagnosticReport));
-      if (data.load) delete data.load.started;
-      for (const load of data.loadAttempts || []) delete load.started;
-      const url = URL.createObjectURL(
-        new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
-      );
+    diagnosticSample.onclick = () => {
+      if (sampleSeries) return;
+      seriesMessage = '';
+      startDiagnosticSample();
+    };
+    diagnosticSeries.onclick = () => {
+      if (!diagnosticsEnabled || !engine || !allowed() || loading || sampleWindow || sampleSeries) return;
+      seriesMessage = '';
+      sampleSeries = { completed: 0 };
+      startDiagnosticSample();
+    };
+    diagnosticStopSample.onclick = () => {
+      interruptDiagnostics('user-stopped-sampling');
+      diagnosticUpdate();
+    };
+    const downloadDiagnostic = (data, filename) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      if (blob.size > 2 * 1024 * 1024) {
+        seriesMessage = t("The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports.");
+        diagnosticUpdate();
+        return;
+      }
+      const url = URL.createObjectURL(blob);
       const link = make('a');
       link.href = url;
-      link.download = 'mascot-diagnostics-' + (config.version || 'unknown') + '.json';
+      link.download = filename;
       document.body.append(link);
-      link.click();
-      link.remove();
+      link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    diagnosticExport.onclick = () => {
+      if (diagnosticReport) downloadDiagnostic(diagnosticWindows.at(-1) || diagnosticSnapshot(diagnosticReport), 'mascot-diagnostics-' + (config.version || 'unknown') + '.json');
+    };
+    diagnosticExportBatch.onclick = () => {
+      if (!diagnosticWindows.length) return;
+      downloadDiagnostic({ kind: 'wzf-mascot-diagnostic-batch', schema: 1,
+        batchId: diagnosticReport.batchId, maxWindows: 20, replacedWindows,
+        windows: diagnosticWindows }, 'mascot-diagnostic-batch-' + diagnosticReport.batchId + '.json');
     };
     let button = document.querySelector('.wzfl-mascot-toggle');
     if (!button) {

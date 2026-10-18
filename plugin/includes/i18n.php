@@ -17,12 +17,36 @@ function wzf_mascot_upload_error($code) {
     if ($code === UPLOAD_ERR_NO_FILE) return __('Choose a resource file before importing.', 'live2d-show');
     return __('The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry.', 'live2d-show');
 }
+// Oversized multipart requests may arrive with empty POST/FILES. This only
+// emits a diagnostic rejection; successful requests still require the nonce.
+function wzf_mascot_upload_referer($action) {
+    $limit = wp_convert_hr_to_bytes(ini_get('post_max_size'));
+    $length = $_SERVER['CONTENT_LENGTH'] ?? '';
+    if (!isset($_POST['_wpnonce']) && is_scalar($length) && is_numeric($length) && $limit > 0 && (float)$length > $limit) wp_die(esc_html(wzf_mascot_upload_error(UPLOAD_ERR_INI_SIZE)), '', ['response'=>413]);
+    check_admin_referer($action);
+}
+function wzf_mascot_resource_upload() {
+    $upload = $_FILES['resource'] ?? null;
+    if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException(wzf_mascot_upload_error(is_array($upload) ? ($upload['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE));
+    if (!is_string($upload['tmp_name'] ?? null) || !is_uploaded_file($upload['tmp_name'])) throw new RuntimeException(__('Upload failed.', 'live2d-show'));
+    return $upload;
+}
 function wzf_mascot_import_guidance($kind) {
     return $kind === 'core' ? __('Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained.', 'live2d-show') : __('Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup.', 'live2d-show');
 }
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Continuous sampling complete: 3 of 3 windows saved.'=>__('Continuous sampling complete: 3 of 3 windows saved.', 'live2d-show'),
+        'Continuous sampling stopped. No further windows will start automatically.'=>__('Continuous sampling stopped. No further windows will start automatically.', 'live2d-show'),
+        'Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence.'=>__('Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence.', 'live2d-show'),
+        'Download all saved windows'=>__('Download all saved windows', 'live2d-show'),
+        'Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page\'s memory; older windows are replaced.'=>__('Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page\'s memory; older windows are replaced.', 'live2d-show'),
+        'Sample 3 windows'=>__('Sample 3 windows', 'live2d-show'),
+        'Saved windows: %1$s of 20. Older windows replaced: %2$s.'=>__('Saved windows: %1$s of 20. Older windows replaced: %2$s.', 'live2d-show'),
+        'Single report downloads the last saved window; before sampling, it downloads current diagnostic state.'=>__('Single report downloads the last saved window; before sampling, it downloads current diagnostic state.', 'live2d-show'),
+        'Stop sampling'=>__('Stop sampling', 'live2d-show'),
+        'The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports.'=>__('The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports.', 'live2d-show'),
         '%1$s greeted you'=>__('%1$s greeted you', 'live2d-show'),
         '%1$s mascot'=>__('%1$s mascot', 'live2d-show'),
         '%1$s pixels'=>__('%1$s pixels', 'live2d-show'),

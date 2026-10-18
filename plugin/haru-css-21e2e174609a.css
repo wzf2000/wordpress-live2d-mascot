@@ -377,6 +377,9 @@
     min-height: 44px;
     font-size: 12px;
   }
+  .wzf-haru-diagnostic-body button {
+    min-height: 44px;
+  }
   .wzf-haru-diagnostic-body {
     max-height: calc(100dvh - 200px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }

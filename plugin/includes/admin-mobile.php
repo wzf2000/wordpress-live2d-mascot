@@ -4,18 +4,17 @@ if (!defined('ABSPATH')) exit;
 function wzf_mascot_save_mobile($version, $enabled, $pause_input) {
     if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
     if (!is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version) || !is_bool($enabled) || !is_bool($pause_input)) throw new RuntimeException(__('Mobile settings request is invalid.', 'live2d-show'));
-    $token = bin2hex(random_bytes(16));
-    if (!add_option(WZF_MASCOT_LOCK, ['token'=>$token,'started'=>time()], '', false)) throw new RuntimeException(__('A resource or settings task is in progress. Try again later.', 'live2d-show'));
+    $task = wzf_mascot_task_begin('mobile');
+    $token = $task['token'];
     try {
-        $config = get_option(WZF_MASCOT_OPTION, ['characters'=>[]]);
+        $config = $task['config'];
         if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before retrying.', 'live2d-show'));
         if (!is_array($config) || !is_array($config['characters'] ?? null)) throw new RuntimeException(__('Resource configuration is invalid.', 'live2d-show'));
         if (($config['mobileEnabled'] ?? false) === $enabled && ($config['mobilePauseOnInput'] ?? true) === $pause_input) return;
         $config['mobileEnabled'] = $enabled; $config['mobilePauseOnInput'] = $pause_input;
         if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save mobile settings.', 'live2d-show'));
     } finally {
-        $lock = get_option(WZF_MASCOT_LOCK);
-        if (is_array($lock) && ($lock['token'] ?? null) === $token) delete_option(WZF_MASCOT_LOCK);
+        wzf_mascot_task_end($task);
     }
 }
 function wzf_mascot_mobile_post() {

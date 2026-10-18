@@ -77,10 +77,10 @@ require_once __DIR__ . '/admin-readiness.php';
 function wzf_mascot_save_character($id, $version, $fields) {
     if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
     if (!is_string($id) || !is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version) || !is_array($fields) || array_diff(array_keys($fields), ['name','credit','size','offset','idle','welcome','greetings'])) throw new RuntimeException(__('Character settings request is invalid.', 'live2d-show'));
-    $token = bin2hex(random_bytes(16));
-    if (!add_option(WZF_MASCOT_LOCK, ['token'=>$token,'started'=>time()], '', false)) throw new RuntimeException(__('A resource or settings task is in progress. Try again later.', 'live2d-show'));
+    $task = wzf_mascot_task_begin('settings');
+    $token = $task['token'];
     try {
-        $config = get_option(WZF_MASCOT_OPTION, []);
+        $config = $task['config'];
         if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before editing again.', 'live2d-show'));
         if (!is_array($config) || !is_array($config['characters'] ?? null) || !array_key_exists($id, $config['characters']) || !is_array($config['characters'][$id])) throw new RuntimeException(__('The character does not exist or its configuration is invalid.', 'live2d-show'));
         $character = $config['characters'][$id];
@@ -116,8 +116,7 @@ function wzf_mascot_save_character($id, $version, $fields) {
         $config['characters'][$id] = $next;
         if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     } finally {
-        $lock = get_option(WZF_MASCOT_LOCK);
-        if (is_array($lock) && ($lock['token'] ?? null) === $token) delete_option(WZF_MASCOT_LOCK);
+        wzf_mascot_task_end($task);
     }
 }
 function wzf_mascot_settings_post() {
@@ -141,8 +140,8 @@ function wzf_mascot_settings_post() {
 }
 function wzf_mascot_admin_styles($hook) {
     if (!in_array($hook, ['settings_page_wzf-mascot','profile.php','user-edit.php'], true)) return;
-    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.7.0', true);
-    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.7.0');
+    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.8.0-rc.1', true);
+    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.8.0-rc.1');
 }
 function wzf_mascot_motion_select($key, $label, $motions, $value, $optional = false) {
     echo '<div class="wzf-mascot-field"><label for="mascot-' . esc_attr($key) . '">' . esc_html($label) . '</label><select id="mascot-' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
@@ -184,6 +183,7 @@ function wzf_mascot_admin_page() {
     echo '<div class="wrap wzf-mascot-admin" data-unsaved-message="' . esc_attr__('You have unsaved changes. Leave this page?', 'live2d-show') . ('"><h1>WordPress Live2D Mascot</h1><p class="wzf-mascot-intro">' . esc_html__('Manage resources and characters so readers can use the mascot on their own terms.', 'live2d-show') . '</p>');
     if (isset($_GET['mascot_notice']) && is_string($_GET['mascot_notice'])) echo '<div class="notice notice-info"><p>' . esc_html(wp_unslash($_GET['mascot_notice'])) . '</p></div>';
     echo '<div class="wzf-mascot-status"><div><span>' . esc_html__('Core resources', 'live2d-show') . '</span><strong>' . esc_html(!empty($config['core']) ? __('Configured · Web 5 R5', 'live2d-show') : __('Not imported', 'live2d-show')) . '</strong></div><div><span>' . esc_html__('Configured characters', 'live2d-show') . '</span><strong>' . esc_html(sprintf(_n('%s character', '%s characters', count($characters), 'live2d-show'), number_format_i18n(count($characters)))) . '</strong></div><div><span>' . esc_html__('Frontend display', 'live2d-show') . '</span><strong>' . esc_html__('Readers opt in', 'live2d-show') . '</strong></div></div>';
+    wzf_mascot_task_panel();
     echo ('<section class="wzf-mascot-card"><h2>' . esc_html__('Character management', 'live2d-show') . '</h2><p class="description">' . esc_html__('Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences.', 'live2d-show') . '</p>');
     wzf_mascot_readiness_panel($raw, $display_rows);
     wzf_mascot_character_search($listing);
@@ -213,7 +213,7 @@ function wzf_mascot_admin_page() {
     elseif ($selected !== '') echo ('<div class="notice notice-error inline"><p>' . esc_html__('The character does not exist. Select one from the list.', 'live2d-show') . '</p></div>');
     echo ('<section class="wzf-mascot-card"><h2>' . esc_html__('Resource preparation', 'live2d-show') . '</h2><p>' . esc_html__('The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights.', 'live2d-show') . '</p><p><a href="https://www.live2d.com/en/sdk/download/web/" target="_blank" rel="noopener">' . esc_html__('Official Cubism SDK for Web download', 'live2d-show') . '</a> · <a href="https://www.live2d.com/en/learn/sample/" target="_blank" rel="noopener">' . esc_html__('Official samples', 'live2d-show') . '</a></p><p class="description">' . esc_html__('Core must match the required Web 5 R5 SHA256. Model ZIPs are limited to 64 MiB and 1,000 entries: one model3 runtime with no sound, scripts or editor projects. Keep at least one motion; the first Idle-group motion is preferred as default idle. Adjust it in character settings after import.', 'live2d-show') . '</p></section><div class="wzf-mascot-imports">');
     foreach (['core'=>__('Import Core JS', 'live2d-show'), 'model'=>__('Import model ZIP', 'live2d-show')] as $kind=>$label) {
-        echo '<section class="wzf-mascot-card"><h2>' . esc_html($label) . '</h2><form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<section class="wzf-mascot-card"><h2>' . esc_html($label) . '</h2><form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php?action=wzf_mascot_import')) . '">';
         wp_nonce_field('wzf_mascot_import');
         echo '<input type="hidden" name="action" value="wzf_mascot_import"><input type="hidden" name="kind" value="' . esc_attr($kind) . '"><div class="wzf-mascot-field"><label for="mascot-upload-' . $kind . ('">' . esc_html__('Resource file', 'live2d-show') . '</label><input id="mascot-upload-') . $kind . '" type="file" name="resource" required accept="' . ($kind === 'core' ? '.js' : '.zip') . '"></div>';
         if ($kind === 'model') echo ('<div class="wzf-mascot-field"><label for="mascot-new-id">' . esc_html__('Character ID', 'live2d-show') . '</label><input id="mascot-new-id" name="id" required pattern="[a-z][a-z0-9-]{0,63}" maxlength="64"><p class="description">' . esc_html__('Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten.', 'live2d-show') . '</p></div><div class="wzf-mascot-field"><label for="mascot-new-name">' . esc_html__('Character name', 'live2d-show') . '</label><input id="mascot-new-name" name="name" required></div><div class="wzf-mascot-field"><label for="mascot-new-credit">' . esc_html__('Credit / source', 'live2d-show') . '</label><input id="mascot-new-credit" name="credit"></div>');

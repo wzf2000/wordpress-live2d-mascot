@@ -186,3 +186,7 @@
 .wzf-mascot-search { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:16px 0; }
 .wzf-mascot-search label { font-weight:600; }
 .wzf-mascot-admin code { overflow-wrap:anywhere; }
+
+.wzf-mascot-admin .wzf-mascot-capacity-table {
+  min-width: 820px;
+}

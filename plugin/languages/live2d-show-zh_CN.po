@@ -8,11 +8,11 @@ msgstr "%1$s（%2$s）"
 msgid "%1$s greeted you"
 msgstr "%1$s 向你打了个招呼"
 
-msgid "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
-msgstr "共 %2$s 个文件，逻辑大小 %1$s 字节；%3$s 条路径存在多个硬链接。这不是实际物理磁盘占用。"
-
 msgid "%1$s mascot"
 msgstr "%1$s 看板娘"
+
+msgid "%1$s observed logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage; incomplete scans are partial."
+msgstr "已观察到 %1$s 逻辑字节、%2$s 个文件，其中 %3$s 条路径存在多个硬链接。这不代表物理磁盘占用；扫描不完整时仅为部分观察值。"
 
 msgid "%1$s of %2$s character shown."
 msgid_plural "%1$s of %2$s characters shown."
@@ -36,6 +36,9 @@ msgstr "%1$s；已返回原角色，可重试"
 msgid "%s active character entry passed."
 msgid_plural "%s active character entries passed."
 msgstr[0] "%s 位启用角色通过入口检查。"
+
+msgid "%s bytes"
+msgstr "%s 字节"
 
 msgid "%s character"
 msgid_plural "%s characters"
@@ -86,8 +89,11 @@ msgstr "模型运行引用缺失、越界或大小无效。"
 msgid "A motion catalog entry is invalid."
 msgstr "动作目录条目无效。"
 
-msgid "A resource or settings task is in progress. Try again later."
-msgstr "已有资源或设置任务正在进行，请稍后重试。"
+msgid "A resource or settings task is in progress. Inspect task status before retrying."
+msgstr "资源或设置任务正在进行。请先检查任务状态，再重试。"
+
+msgid "A resource or settings task is in progress. Wait for it to finish, then refresh."
+msgstr "资源或设置任务正在进行，请等待完成后刷新。"
 
 msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
 msgstr "资源任务正在进行，或盘点期间配置发生变化；引用分类未知。"
@@ -124,9 +130,6 @@ msgstr "允许读者在手机浏览器单独开启看板娘"
 
 msgid "Allow the mascot on the frontend"
 msgstr "允许前台显示看板娘"
-
-msgid "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
-msgstr "已有导入正在进行，配置未改变。若异常中断，请管理员检查导入锁后重试。"
 
 msgid "Another request changed the resource configuration. Refresh before editing again."
 msgstr "资源配置已被其他请求修改，请刷新页面后重新编辑。"
@@ -166,6 +169,9 @@ msgstr "展臂闭眼笑"
 
 msgid "Arms slightly open"
 msgstr "双臂微张"
+
+msgid "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
+msgstr "自动恢复无法证实此任务已经结束。请管理员检查活动 PHP 任务、资源存储和旧版锁；不要仅凭锁的时间删除记录。"
 
 msgid "Available favorites:"
 msgstr "可用收藏"
@@ -230,6 +236,9 @@ msgstr "不能读取角色目录。"
 msgid "Cannot read the thumbnail."
 msgstr "不能读取缩略图。"
 
+msgid "Cannot remove the interrupted task record. Existing configuration is retained."
+msgstr "无法移除中断的任务记录。现有配置已保留。"
+
 msgid "Cannot save character management changes."
 msgstr "角色管理保存失败。"
 
@@ -251,6 +260,9 @@ msgstr "缩略图配置保存失败。"
 msgid "Cannot write the directory protection files."
 msgstr "不能写入目录保护文件。"
 
+msgid "Capacity is partial or references are unknown. Observed bytes are not a complete size; complete values are unavailable."
+msgstr "容量盘点不完整或引用未知。观察字节数不是完整占用，完整容量值暂不可用。"
+
 msgid "Catalog"
 msgstr "目录"
 
@@ -271,6 +283,9 @@ msgstr "角色 ID 或配置结构无效。"
 
 msgid "Character ID, name or credit is invalid."
 msgstr "角色 ID、名称或署名无效。"
+
+msgid "Character capacity summary"
+msgstr "角色容量摘要"
 
 msgid "Character configuration is invalid."
 msgstr "角色配置无效。"
@@ -425,11 +440,23 @@ msgstr "已配置角色"
 msgid "Configured · Web 5 R5"
 msgstr "已配置 · Web 5 R5"
 
+msgid "Confirm recovery of the interrupted task record."
+msgstr "请确认恢复中断的任务记录。"
+
 msgid "Confirm your right to use the thumbnail."
 msgstr "请确认有权使用缩略图。"
 
 msgid "Confirm your right to use the uploaded resources."
 msgstr "请确认有权使用上传资源。"
+
+msgid "Continuous sampling complete: 3 of 3 windows saved."
+msgstr "连续采样完成：已保存 3 / 3 组窗口。"
+
+msgid "Continuous sampling stopped. No further windows will start automatically."
+msgstr "连续采样已停止，不会自动开始后续窗口。"
+
+msgid "Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence."
+msgstr "连续采样：第 %1$s / 3 组。收起或切换会停止序列。"
 
 msgid "Control whether this account allows the mascot to appear on the frontend."
 msgstr "控制此账号是否允许前台显示看板娘。"
@@ -452,8 +479,14 @@ msgstr "Core 资源"
 msgid "Credit / source"
 msgstr "署名／来源"
 
+msgid "Current / previous overlap"
+msgstr "当前／上一版重叠"
+
 msgid "Current model directory"
 msgstr "当前模型目录"
+
+msgid "Current references"
+msgstr "当前引用"
 
 msgid "Current thumbnail"
 msgstr "当前缩略图"
@@ -500,8 +533,20 @@ msgstr "不自动播放欢迎动作"
 msgid "Documentation"
 msgstr "文档"
 
+msgid "Download all saved windows"
+msgstr "下载全部已保存窗口"
+
 msgid "Download diagnostic JSON"
 msgstr "下载诊断 JSON"
+
+msgid "Download fresh inventory JSON"
+msgstr "下载最新盘点 JSON"
+
+msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
+msgstr "下载会重新执行受限元数据扫描，仅将 JSON 保存到本机，可能与先前的盘点不同。服务器不会保存报告，也不会向其他服务发送数据。"
+
+msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
+msgstr "每个合计对同一相对文件路径只计算一次。当前、上一版、缩略图及不同角色之间可能共用路径，不能将各项直接相加。硬链接仍按路径计数；这些是逻辑大小，不代表物理磁盘占用。"
 
 msgid "Edit"
 msgstr "编辑"
@@ -620,6 +665,12 @@ msgstr "我有权在本站使用资源，并已阅读其来源许可与使用条
 msgid "I have the right to use this image on this site and have read its source license and terms."
 msgstr "我有权在本站使用这张图片，并已阅读来源许可与使用条件。"
 
+msgid "I understand that recovery only removes the interrupted task record."
+msgstr "我理解恢复操作仅移除中断的任务记录。"
+
+msgid "Idle"
+msgstr "空闲"
+
 msgid "Idle motion (loop)"
 msgstr "待机动作（循环）"
 
@@ -647,6 +698,12 @@ msgstr "盘点磁盘用量"
 msgid "Interact"
 msgstr "互动"
 
+msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
+msgstr "已移除中断的任务记录，资源和配置均已保留。重试原任务前请检查已安装资源。"
+
+msgid "Interrupted · Review required"
+msgstr "中断 · 待核查"
+
 msgid "Invalid JSON. Re-export valid model runtime JSON and check its references."
 msgstr "JSON 无效。请重新导出有效的模型运行 JSON，并检查引用。"
 
@@ -673,6 +730,9 @@ msgstr "被隔离角色保留原配置、文件与浏览器收藏／选择；其
 
 msgid "JSON must be an object."
 msgstr "JSON 必须是对象。"
+
+msgid "Legacy or unknown task state"
+msgstr "旧版或未知任务状态"
 
 msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
 msgstr "限制：20,000 项、3 秒、显示 500 条路径、1,000 条引用。统计可能不完整。资源使用权限未知；应保留所有被引用目录，包括停用与回收站角色。"
@@ -737,6 +797,9 @@ msgstr "模型贴图引用无效。"
 msgid "Model validation failed"
 msgstr "模型校验失败"
 
+msgid "Model: %s"
+msgstr "模型：%s"
+
 msgid "Motion"
 msgstr "动作"
 
@@ -776,6 +839,9 @@ msgstr "新单模型运行 ZIP"
 msgid "No candidate character"
 msgstr "暂无候选角色"
 
+msgid "No character capacity rows were available within the inspection limits."
+msgstr "在检查范围内未获得角色容量条目。"
+
 msgid "No characters match. Change the search or status filter."
 msgstr "没有匹配的角色。请更换搜索词或状态筛选。"
 
@@ -793,6 +859,9 @@ msgstr "收藏中没有匹配的角色，请更换关键词或清空搜索"
 
 msgid "No previous character resources are available for rollback."
 msgstr "没有可回退的上一版角色资源。"
+
+msgid "No resource or settings task is currently detected. Recovery removes only this interrupted task record; it does not repair, remove or roll back resources, staging directories or configuration. Inspect installed resources afterward."
+msgstr "未检测到进行中的资源或设置任务。恢复仅移除此条中断的任务记录，不会修复、删除或回退资源、暂存目录或配置。恢复后请检查已安装资源。"
 
 msgid "No selectable character"
 msgstr "当前没有可选角色"
@@ -827,6 +896,9 @@ msgstr "张嘴皱眉"
 msgid "Open palms · head tilt"
 msgstr "摊手侧头"
 
+msgid "Partial: %s observed bytes"
+msgstr "部分观察值：%s 字节"
+
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 msgstr "手机输入框聚焦时暂停（避免遮挡输入与软键盘）"
 
@@ -857,6 +929,9 @@ msgstr "正在预览：%1$s"
 msgid "Previous model directory"
 msgstr "上一版模型目录"
 
+msgid "Previous references"
+msgstr "上一版引用"
+
 msgid "Previous thumbnail"
 msgstr "上一版缩略图"
 
@@ -866,6 +941,9 @@ msgstr "抿嘴"
 msgid "Raise hand to greet"
 msgstr "举手招呼"
 
+msgid "Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced."
+msgstr "重新开启诊断会清空已保存窗口并建立新批次。当前页内存最多保留 20 个窗口，更早窗口将被替换。"
+
 msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 msgstr "请重新导出单个 model3 运行 ZIP。检查 model3 的相对引用，包含必需文件和至少一个动作，移除声音、脚本与编辑工程文件。保留原始文件与配置备份。"
 
@@ -874,6 +952,9 @@ msgstr "读者自行开启"
 
 msgid "Ready"
 msgstr "已就绪"
+
+msgid "Recover interrupted task"
+msgstr "恢复中断的任务"
 
 msgid "Reduced motion enabled"
 msgstr "已减少动画"
@@ -895,6 +976,9 @@ msgstr "恢复默认"
 
 msgid "Reset expression"
 msgstr "恢复默认表情"
+
+msgid "Resource and settings tasks"
+msgstr "资源和设置任务"
 
 msgid "Resource commit failed."
 msgstr "资源提交失败。"
@@ -971,6 +1055,9 @@ msgstr "回退到上一版资源与动作"
 msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
 msgstr "在限定范围内只读盘点 uploads/wzf-mascot 的文件元数据。未引用不代表可以安全删除。不会清理文件、计算哈希、读取贴图或修改配置。"
 
+msgid "Running"
+msgstr "运行中"
+
 msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
 msgstr "点击后只读检查 Core 哈希、角色运行引用、目录、布局和条款配置。不会写入配置或加载模型画面；运行文件总大小不含目录中的额外维护动作。"
 
@@ -991,6 +1078,9 @@ msgstr "运行引用：%1$s 个文件，%2$s KiB。"
 
 msgid "Runtime startup timed out. Refresh and retry."
 msgstr "运行组件启动超时，请刷新页面后重试"
+
+msgid "Sample 3 windows"
+msgstr "连续采样 3 组"
 
 msgid "Sample complete:"
 msgstr "采样完成："
@@ -1016,6 +1106,9 @@ msgstr "保存移动端设置"
 msgid "Save thumbnail"
 msgstr "保存缩略图"
 
+msgid "Saved windows: %1$s of 20. Older windows replaced: %2$s."
+msgstr "已保存窗口：%1$s / 20。已替换更早窗口：%2$s。"
+
 msgid "Search"
 msgstr "搜索"
 
@@ -1037,6 +1130,12 @@ msgstr "着色器"
 msgid "Shared Core"
 msgstr "共享 Core"
 
+msgid "Shared paths"
+msgstr "共享路径"
+
+msgid "Shared reference paths; preserve"
+msgstr "共享引用路径，请保留"
+
 msgid "Shared terms"
 msgstr "共享条款"
 
@@ -1048,6 +1147,9 @@ msgstr "显示"
 
 msgid "Showing %1$s of %2$s characters"
 msgstr "显示 %1$s / %2$s 个角色"
+
+msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
+msgstr "单份报告下载最后保存的窗口；尚未采样时下载当前诊断状态。"
 
 msgid "Site terms configuration is invalid."
 msgstr "站点条款配置无效。"
@@ -1091,6 +1193,9 @@ msgstr "停止动作，恢复待机"
 msgid "Stop recording"
 msgstr "停止采集"
 
+msgid "Stop sampling"
+msgstr "停止采样"
+
 msgid "Surprised"
 msgstr "惊讶"
 
@@ -1102,6 +1207,18 @@ msgstr "轻点 %1$s 打招呼"
 
 msgid "Tap to greet"
 msgstr "轻点打招呼"
+
+msgid "Task age: %s seconds. Age alone does not permit recovery."
+msgstr "任务已开始 %s 秒。仅凭经过时间不能恢复任务。"
+
+msgid "Task request is invalid."
+msgstr "任务请求无效。"
+
+msgid "Task state is unavailable. Ask an administrator to inspect server storage and the database."
+msgstr "无法读取任务状态。请管理员检查服务器存储和数据库。"
+
+msgid "Task state or configuration changed. Refresh before retrying recovery."
+msgstr "任务状态或配置已变更。请刷新页面后再尝试恢复。"
 
 msgid "Terms"
 msgstr "条款"
@@ -1175,6 +1292,9 @@ msgstr "角色贴图无法解码，请重试或选择其他角色"
 msgid "The current reference is invalid; choose again"
 msgstr "当前引用无效，请重新选择"
 
+msgid "The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports."
+msgstr "诊断下载超过 2 MiB。请保存可用报告后停止记录，再开启新批次。"
+
 msgid "The expression catalog contains duplicate, missing or invalid references."
 msgstr "表情目录含重复、缺失或无效引用。"
 
@@ -1195,6 +1315,9 @@ msgstr "待机动作引用无效。"
 
 msgid "The idle or welcome motion is not in the current character catalog."
 msgstr "待机或欢迎动作不在当前角色目录中。"
+
+msgid "The inventory report could not be encoded. No report was saved."
+msgstr "无法编码盘点报告，未保存报告。"
 
 msgid "The lightweight entry check passed."
 msgstr "轻量入口检查通过。"
@@ -1243,6 +1366,15 @@ msgstr "服务器无法接收上传。请让管理员检查临时上传目录的
 
 msgid "The server requires PHP ZipArchive."
 msgstr "服务器需要 PHP ZipArchive。"
+
+msgid "The task guard changed. Ask an administrator to inspect resource storage before recovery."
+msgstr "任务守卫已变更。恢复前请管理员检查资源存储。"
+
+msgid "The task guard is unavailable or unsafe. Ask an administrator to inspect resource storage."
+msgstr "任务守卫不可用或不安全。请管理员检查资源存储。"
+
+msgid "The task is still running. Recovery is unavailable."
+msgstr "任务仍在运行，无法恢复。"
 
 msgid "The thumbnail must be a local image file no larger than 4 MiB."
 msgstr "缩略图须为不超过 4 MiB 的本地图片文件。"
@@ -1307,6 +1439,9 @@ msgstr "缩略图已上传并重新编码。"
 msgid "Thumbnail write verification failed."
 msgstr "缩略图写入校验失败。"
 
+msgid "Thumbnail: %s"
+msgstr "缩略图：%s"
+
 msgid "Trash"
 msgstr "回收站"
 
@@ -1321,6 +1456,15 @@ msgstr "取消选中收藏"
 
 msgid "Unfavorite selected character:"
 msgstr "取消收藏选中角色："
+
+msgid "Unique character total"
+msgstr "角色路径去重合计"
+
+msgid "Unique paths referenced by characters: %1$s. Shared reference paths: %2$s."
+msgstr "全部角色引用路径去重合计：%1$s。共享引用路径：%2$s。"
+
+msgid "Unique subtotal: %s"
+msgstr "路径去重小计：%s"
 
 msgid "Unknown / protected"
 msgstr "未知／保护"

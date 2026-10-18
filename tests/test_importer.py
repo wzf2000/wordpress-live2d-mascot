@@ -58,7 +58,25 @@ class ImporterTests(unittest.TestCase):
         function add_option($k,$v,...$x) { global $options; if (isset($options[$k])) return false; $options[$k]=$v; return true; }
         function get_option($k,$d=false) { global $options; return $options[$k] ?? $d; }
         function update_option($k,$v,...$x) { global $options,$write_fail; if ($write_fail) return false; $options[$k]=$v; return true; }
-        function delete_option($k) { global $options; unset($options[$k]); }
+        function delete_option($k) { global $options; if (!array_key_exists($k,$options)) return false; unset($options[$k]); return true; }
+        function wp_salt($scheme) {return 'synthetic-test-salt';}
+        function wp_cache_delete(...$args) {}
+        function wp_convert_hr_to_bytes($value) {return (int)$value * 1024 * 1024;}
+        function maybe_unserialize($value) {return unserialize($value);}
+        define('ARRAY_A', 'ARRAY_A');
+        class TaskDatabase {
+            public $options='stub_options'; public $last_error=''; public $reads=0;
+            function prepare($sql,...$args) {return $sql;}
+            function get_results(...$args) {
+                global $options,$database_before_read;
+                $this->reads++;
+                if (isset($database_before_read)) $database_before_read($this->reads);
+                $rows=[];
+                foreach (['wzf_mascot_resources_v1','wzf_mascot_import_lock_v1'] as $key) if (array_key_exists($key,$options)) $rows[]=['option_name'=>$key,'option_value'=>serialize($options[$key])];
+                return $rows;
+            }
+        }
+        $wpdb=new TaskDatabase();
         function wp_die(...$x) { throw new RuntimeException('forbidden'); }
         function check_admin_referer($x) { throw new RuntimeException('nonce rejected'); }
         require getenv('TEST_MODULE');

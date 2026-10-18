@@ -63,7 +63,7 @@ function wzf_mascot_save_thumbnail($id, $version, $file = null) {
             if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save thumbnail configuration.', 'live2d-show'));
             $saved = true;
         } finally { if ($owned && !$saved) wzf_mascot_cleanup($stage ?? $final); }
-    });
+    }, 'thumbnail');
 }
 function wzf_mascot_thumbnail_post() {
     if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);

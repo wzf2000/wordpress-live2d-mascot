@@ -4,6 +4,8 @@
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
 <p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.7.0">下载 3.7.0</a> · <a href="#许可与资源来源">许可</a></p>
 
+**本分支候选：3.8.0-rc.1，尚未发布或部署。** 包含受控任务恢复、真实浏览器控制器 CI、角色容量与只读导出，以及连续采样与批次解包。下方现有下载仍指向已发布的 3.7.0。
+
 **当前发行版：3.7.0。** 新增后台搜索与状态筛选、中英文界面、只读资源盘点和离线采样汇总。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
 | 你需要准备 | 当前要求与验收范围                                                                              |
@@ -119,7 +121,9 @@ Core 单文件最多 8 MiB，必须匹配以下 SHA256：
 
 **支持音频、招呼和自动欢迎吗？** 当前不支持音频。导入器生成动作／表情目录，但默认不设置招呼或自动欢迎动作，管理员可在“角色管理 → 编辑”中从真实动作目录配置待机、招呼和首次显示欢迎动作，也可在互动面板手动播放动作。
 
-**导入提示已有任务正在进行，怎么办？** 配置锁不会自动抢占。若先前请求异常中断，需管理员检查导入状态和锁后再处理，避免并发覆盖。
+**导入提示已有任务正在进行，怎么办？** 查看后台“资源和设置任务”：空闲、运行中、中断待核查或旧版／未知。任务不会按时间自动抢锁；运行中请等待并刷新。只有守卫确认无活动任务的新协议遗留记录，才提供需明确确认的“恢复中断的任务”。恢复仅删除该条锁记录，模型、配置和候选目录均保留；随后请检查已安装资源，再重试原操作。旧版、非法记录或守卫缺失／被替换等情况须管理员人工核查，不能仅凭时间删除锁。正常打开后台不会创建守卫或改写旧锁。
+
+首次导入与同 ID 更新均区分服务器上传大小限制、上传中断、未选文件和临时存储失败。请求超过 `post_max_size` 而丢失表单字段时会拒绝并说明限制；诊断不会跳过权限或 nonce 执行写入。
 
 ## 许可与资源来源
 
@@ -158,7 +162,7 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 
 ### GitHub Actions
 
-[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2 与 esbuild 0.25.12；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
+[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2、esbuild 0.25.12 与 Playwright 1.55.1；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
 
 检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。真实 WordPress integration job 必须通过，发布所复用的 CI 完成前会等待该 job 的 PHP 8.2／8.5 两项。隔离 MySQL 服务、新建 WordPress 7.1.3 和 WP-CLI 2.12.0 下载均固定版本，下载核对 SHA256；测试禁用邮件与 cron。升级测试以合成旧插件入口起步，再将完整合成资源、配置和账号显示偏好经真实 WordPress 覆写升级，逐项核对 option、user meta 和资源文件摘要；它不是历史真实素材或旧版渲染验收。以 Python 标准库 cookiejar 完成真实 HTTP 登录、nonce／权限失败、设置保存与过期版本冲突、multipart 导入／更新／缩略图，以及回退、停用恢复、移动设置和角色隔离。测试用独立 option 配置合成非执行 Core 占位文件及固定哈希元数据，仅验证服务端输出；生产常量和 Core 上传校验保持完整，占位文件也无法通过完整哈希诊断。只上传不含凭据的测试摘要，合成素材不作为 artifact 或发行附件。**不代替真实 SDK、模型画面、GPU、手机或许可验收。**
 
@@ -171,6 +175,22 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 每次运行固定触发时的 `github.sha`，附件携带该 SHA、版本和文件摘要。发布任务仅验证本次运行的 artifact，具有写权限的任务不 checkout 或执行仓库代码；原子创建对应 tag，先建立草稿、上传并核对所有附件摘要，确认 tag 仍指向核验的提交后才公开。失败会保留已创建的草稿/tag 供检查，不自动覆盖或删除。
 
 检查入口还覆盖翻译目录完整性与占位符、PO/MO 编译重现、未保存提醒、离线采样输入边界，以及真实后台的搜索／状态筛选、盘点权限与只读行为、英文／中文页面。资源仍全部使用合成样例；GitHub 流水线运行结果以对应提交为准。
+
+### 本地前台浏览器回归
+
+```sh
+npm ci --ignore-scripts
+npx --no-install playwright install chromium
+npm run test:browser
+# 可选：仅保存合成结果 JSON 和选定关键截图，不记录 trace、cookie 或 storage state。
+npm run test:browser -- --out /tmp/mascot-browser-review
+```
+
+独立 `browser` CI job 使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
+
+整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
+
+Local whole-page browser tests use only shipped loader/CSS and public synthetic contract fixtures. Run `npm run test:browser` after installing the pinned development dependencies and matching Chromium. Optional `MASCOT_PLAYWRIGHT` (module directory) and `MASCOT_CHROMIUM` (browser executable) reuse local tools; neither is a required installation path or bundled dependency. An explicitly overridden browser version is recorded in the result and is distinct from CI's Playwright-matched revision. Output contains only a synthetic summary and selected screenshots; no trace, cookies, storage state or automatic upload is produced locally.
 
 ### 本地运行真实 WordPress 集成
 
@@ -222,6 +242,12 @@ document.dispatchEvent(
 
 修改 `plugin/languages/live2d-show-*.po` 后执行 `python3 tools/translations.py` 生成 POT/MO；`--check` 只读核对 PHP 嵌套包含文件、自有前台错误与控件的完整覆盖、插值参数及逐字节可重现性。只使用 Python 标准库，无在线翻译或额外依赖。
 
+### Task status and controlled recovery
+
+The administrator task panel distinguishes idle, running, interrupted and legacy/unknown states. All resource and settings writers share a non-blocking OS file guard for the entire write task. The permanent small guard file is retained in resource storage; never replace or remove it during maintenance. The option record identifies the guard protocol and inode, task kind and start time. Age never permits takeover.
+
+Only a new-protocol record whose original guard is safe and unlocked offers recovery. Recovery requires `manage_options`, its own nonce, explicit confirmation, the original record fingerprint and unchanged configuration version, then rechecks under the same OS guard. It removes only that option record. Resources, configuration, candidate directories and user preferences remain; inspect installed resources before retrying. Legacy, malformed, missing or replaced guards require manual server investigation. Opening the settings page creates no guard and migrates no old record. Import and same-ID replacement share upload-error categories; oversized POST rejection never authorizes a write without a nonce.
+
 ### 只读磁盘盘点
 
 管理员主动点击 **盘点磁盘用量 / Inspect disk usage** 后，使用权限与 nonce 校验的 POST 在当前站点 `uploads/wzf-mascot` 精确根内盘点文件元数据。打开设置页不会自动遍历磁盘。报告只向管理员显示相对路径、文件数、逻辑字节数、当前／上一版模型、缩略图、共享 Core 与条款引用；不把盘点数据加入前台配置。
@@ -229,6 +255,14 @@ document.dispatchEvent(
 整个被引用模型目录都受保护，包括 model3 未引用但 catalog 使用的维护动作；停用与回收站角色、上一版历史、嵌套／迁移目录均计入引用。目录保护文件与候选目录也标为保留。**未引用不代表安全可删**，来源使用权限未知；此功能没有删除、清理、定时任务、配置写入或新增锁，也不读贴图内容或计算哈希。
 
 扫描上限为 20,000 项／3 秒；显示最多 500 条路径、保护引用最多 1,000 条。显示截断与扫描不完整分别标注。缺失／不可读／非法引用、软链接、特殊文件、达到扫描上限、正在进行的资源任务或盘点期间配置变化，都会保守标为不完整／未知并停止“未引用”判断。不会跟随软链接或访问根外目录。硬链接逐路径计入逻辑大小并另列数量，报告不代表物理磁盘占用；盘点不是恢复演练或模型视觉验收。
+
+同一次受限扫描还提供逐角色的当前模型、上一版模型、缩略图、各版去重小计、当前／上一版交集和角色路径去重合计，位于路径明细之前。角色共用或嵌套同一目录、缩略图处于模型目录内、当前／上一版复用路径时，联合统计仅计该相对文件路径一次；共享引用明确标注保留。不同角色／版本行不可相加当作全站总量；全局 `bytes` 完整值仍为扫描根下所有唯一相对文件路径的逻辑字节，硬链接继续逐路径计数。
+
+路径显示到 500 行后，容量仍由同一完整受限扫描汇总。扫描不完整、引用未知、任务锁存在或配置并发变化时，完整容量字段为 `null`，保留明确标为部分观察值的 `observedBytes`；不能把部分数值或零解释为完整占用。
+
+点击 **下载最新盘点 JSON / Download fresh inventory JSON** 会以独立权限和 nonce 校验的 POST 重新扫描，直接下载到管理员本机；它可能与先前页面盘点不同。schema 2 报告保留 `complete`、`referencesComplete`、`displayTruncated`、`limits`、相对路径和角色容量指标，不含绝对路径、账号、凭据、配置正文或模型内容。报告不保存在服务器文件、option 或 transient，也不提供给普通账号或前台。
+
+Character capacity is aggregated during the same bounded metadata scan, independently of the displayed-path limit. Each version subtotal, character union and global character union counts a relative file path once; overlapping model/history/thumbnail references and shared paths are explicitly marked. Do not add character/version rows together. Incomplete scans or unknown references expose `observedBytes` while complete capacity `bytes` values are `null`. The separate administrator-only JSON download starts a fresh scan, returns an attachment directly and persists nothing on the server. This remains an inventory, with no cleanup or deletion feature.
 
 ### 本地诊断
 
@@ -240,7 +274,9 @@ document.dispatchEvent(
 
 **采样 3 秒** 使用采样期间实际新增帧数和经过时间计算 FPS；收起、阅读暂停、后台标签或切换角色会中断并标记窗口。`cpuDrawMsAvg` 是此窗口 CPU 侧绘制调用耗时，`engineLifetimeCpuDrawMsMax` 与 `engineStats.renderMsAvg/Max` 为引擎累计 CPU 侧统计，均不是 GPU 执行时间。每个采样窗口记录自己的角色 ID 和环境；切换后保留的旧窗口不会重新归属到新角色。预览失败与恢复原角色分别记录为加载 attempt，包含请求／实际显示角色、失败角色和 fallback 标记。软件 renderer 标识只是字符串启发式判断；未提供 renderer 时为 `null`。这些数据不能代替真实硬件或不同模型的画面测试。
 
-点击 **下载诊断 JSON** 才生成本地文件；没有网络上传，也不保存到浏览器持久存储。报告含插件版本、角色 ID、加载阶段与错误类别、窗口统计及明确授权采集的环境信息，不包含页面 URL／query、Cookie、账号或用户资料。停止采集后仍可下载本页已生成报告；重新开启会重置报告。
+点击 **连续采样 3 组 / Sample 3 windows** 会依次采集 3 个 3 秒窗口，显示进度；**停止采样** 中断当前窗口并停止后续连采，**停止记录** 另外停止诊断采集。收起、切换角色、阅读暂停或隐藏标签会中断并停止序列，恢复后不会自动补采。当前页内存仅保留最近 20 个已完成或中断窗口，并显示被替换数量；重新开启诊断会清空窗口并建立新批次。每个窗口冻结角色、环境、加载与首帧记录及统计，带批次、加载 session 和窗口 ID。
+
+**下载全部已保存窗口** 输出最多 20 窗口的 `wzf-mascot-diagnostic-batch` schema 1 批次，停止记录后仍可下载。**下载诊断 JSON** 保持单报告 schema 1：已有窗口时下载最后冻结窗口，尚未采样时下载当前状态；它不代表切换后新角色的当前状态。点击下载才生成本地文件；没有网络上传，也不保存到浏览器持久存储。报告含插件版本、角色 ID、加载阶段与错误类别、窗口统计及明确授权采集的环境信息，不包含页面 URL／query、Cookie、账号或用户资料。停止采集后仍可下载本页已生成报告；重新开启会重置报告。
 
 ### 可选移动端
 
@@ -256,11 +292,15 @@ document.dispatchEvent(
 
 1. 分别准备真实桌面 GPU、Android、iOS。记录插件版本、浏览器及版本、系统、设备／GPU、角色 ID；选定同一页面、视口、缩放和网络条件，每个角色保持一致。手机记录竖屏／横屏实际视口、安全区和软键盘状态。
 2. 每轮先收起角色，再重新打开页面，避免加载早于诊断授权；打开 **本地诊断 → 开启本地诊断** 后再点击显示并加载角色。开启前不会采集 GPU 信息；仅当前页面内存保存。先做冷加载 3 次（清除此隔离站相关浏览器资源缓存，再重新开启诊断），再做暖加载 3 次（保留缓存），分别下载诊断 JSON 并标记轮次。避免把清缓存造成的网络差异混为渲染差异。
-3. 每次就绪后重复 **采样 3 秒** 至少 3 个完整窗口，**每个窗口结束后立即下载一个 JSON**，避免被下一窗口覆盖。记录 `readyMs`、实际首帧 `firstFrameMs`、FPS、CPU 绘制统计、renderer 及是否软件 renderer；被切换／暂停／后台中断的窗口单列，未观察到首帧的字段保持空值。
+3. 每次就绪后点击 **连续采样 3 组**，等待 3/3 完成，再 **下载全部已保存窗口**。也可保留原单次 **采样 3 秒** 操作；最多保留最近 20 窗口，刷新或重新开启诊断前先下载。记录 `readyMs`、实际首帧 `firstFrameMs`、FPS、CPU 绘制统计、renderer 及是否软件 renderer；被切换／暂停／后台中断的窗口单列，未观察到首帧的字段保持空值。
 4. 连续切换／预览角色、播放动作／表情、收起再显示；打开阅读面板后关闭，切到后台再返回。检查原选择、收藏、暂停原因和恢复画面。桌面用键盘完成控件操作；手机打开外部输入框和软键盘，检查暂停及结束后的恢复，再测试旋转、安全区和面板滚动。
 5. 在固定角色和条件下长驻至少 15 分钟，在开始、中段和结束各做 3 秒采样，检查画面、响应及异常日志。记录长驻期间发生的后台、网络变化和操作；用相同条件重现异常，报告当前角色与设备，不推断未测机型。
 
 JSON 只在点击下载时保存在本机，无自动采集、自动上传或远程汇总。`cpuDrawMsAvg` 是 CPU 侧耗时，不能解释为 GPU 执行时间；诊断仍须配合肉眼画面检查。资源、条款或前台入口异常先修复，再继续该角色的采样。
+
+可直接保留批次 JSON 交给维护者离线整理，无需先手写 manifest。自行处理时运行 `python3 tools/diagnostic_samples.py --unpack-batch batch.json --out new-directory`，先校验再生成固定文件名的 schema 1 窗口和 `runs.json`。模板默认 `physicalDevice=false`、`visualCheck=not-run`，设备、系统／浏览器版本、平台、缓存、场景与视觉结果须实际观察后填写；解包成功不代表验收。安全解包需 Linux/macOS，输入最多 2 MiB／20 窗口，拒绝软链接和已有输出目录；Windows 浏览器可正常采样并交回 JSON。原 manifest 汇总命令继续可用。详见设备文档。
+
+For physical sampling, enable diagnostics explicitly before showing a character, then choose **Sample 3 windows** and download all saved windows after the sequence completes. Stop sampling, hiding, switching, reading suspension or backgrounding interrupts the active window and stops the sequence; returning never resumes it automatically. The page retains the latest 20 frozen windows and shows replacement counts. **Stop recording** preserves downloads; enabling again starts a new random batch and clears saved windows. Single-report JSON stays schema 1 and downloads the last saved snapshot, or current state before any window exists. Batch files can be handed directly to a maintainer, or unpacked locally with `--unpack-batch ... --out NEW_DIRECTORY`. Fill real device/OS/browser versions and conditions manually; defaults declare no physical-device or visual pass. Check both orientations, keyboards, background/resume and at least 15 minutes of residence. CPU timings and synthetic browser tests establish no GPU improvement or physical-device acceptance.
 
 ### 本地联动 API v1
 

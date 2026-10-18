@@ -28,6 +28,28 @@ if ($mode === 'seed') {
     update_option(WZF_MASCOT_OPTION, $c, false);
 } elseif ($mode === 'state') {
     echo wp_json_encode(['config'=>get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK), 'version'=>wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION))]);
+} elseif ($mode === 'task-abandon') {
+    wp_set_current_user(get_user_by('login', 'mascot-admin')->ID);
+    wzf_mascot_task_begin('settings'); // Process exit releases flock, leaves record.
+} elseif ($mode === 'task-legacy') {
+    add_option(WZF_MASCOT_LOCK, ['token'=>'synthetic-legacy', 'started'=>1], '', false);
+} elseif ($mode === 'task-change') {
+    $record = get_option(WZF_MASCOT_LOCK); $record['token'] = bin2hex(random_bytes(16));
+    update_option(WZF_MASCOT_LOCK, $record, false);
+} elseif ($mode === 'task-clear') {
+    delete_option(WZF_MASCOT_LOCK); // Explicit synthetic fixture cleanup only.
+} elseif ($mode === 'task-cache-check') {
+    wp_set_current_user(get_user_by('login', 'mascot-admin')->ID);
+    get_option(WZF_MASCOT_OPTION); get_option(WZF_MASCOT_LOCK);
+    // Prewarm stale request caches, then emulate a previously finished writer.
+    $old = get_option(WZF_MASCOT_OPTION); $next = $old; $next['syntheticConcurrent'] = true;
+    update_option(WZF_MASCOT_OPTION, $next, false);
+    wp_cache_set(WZF_MASCOT_OPTION, $old, 'options');
+    $rejected = false;
+    try { wzf_mascot_save_mobile(wzf_mascot_config_version($old), true, true); }
+    catch (RuntimeException $e) { $rejected = str_contains($e->getMessage(), 'changed'); }
+    $fresh = wzf_mascot_task_snapshot();
+    echo wp_json_encode(['rejected'=>$rejected, 'retained'=>$fresh['config']===$next, 'lock'=>$fresh['exists']]);
 } elseif ($mode === 'restore') {
     update_option(WZF_MASCOT_OPTION, json_decode(file_get_contents(getenv('MASCOT_CI_SNAPSHOT')), true), false);
 } elseif ($mode === 'fault') {

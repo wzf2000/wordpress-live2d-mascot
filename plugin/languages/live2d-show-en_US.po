@@ -8,11 +8,11 @@ msgstr "%1$s (%2$s)"
 msgid "%1$s greeted you"
 msgstr "%1$s greeted you"
 
-msgid "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
-msgstr "%1$s logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage."
-
 msgid "%1$s mascot"
 msgstr "%1$s mascot"
+
+msgid "%1$s observed logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage; incomplete scans are partial."
+msgstr "%1$s observed logical bytes across %2$s files; %3$s paths have multiple hard links. This is not physical disk usage; incomplete scans are partial."
 
 msgid "%1$s of %2$s character shown."
 msgid_plural "%1$s of %2$s characters shown."
@@ -38,6 +38,9 @@ msgid "%s active character entry passed."
 msgid_plural "%s active character entries passed."
 msgstr[0] "%s active character entry passed."
 msgstr[1] "%s active character entries passed."
+
+msgid "%s bytes"
+msgstr "%s bytes"
 
 msgid "%s character"
 msgid_plural "%s characters"
@@ -89,8 +92,11 @@ msgstr "A model runtime reference is missing, outside the allowed directory or h
 msgid "A motion catalog entry is invalid."
 msgstr "A motion catalog entry is invalid."
 
-msgid "A resource or settings task is in progress. Try again later."
-msgstr "A resource or settings task is in progress. Try again later."
+msgid "A resource or settings task is in progress. Inspect task status before retrying."
+msgstr "A resource or settings task is in progress. Inspect task status before retrying."
+
+msgid "A resource or settings task is in progress. Wait for it to finish, then refresh."
+msgstr "A resource or settings task is in progress. Wait for it to finish, then refresh."
 
 msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
 msgstr "A resource task is in progress or configuration changed during inventory; classification is unknown."
@@ -127,9 +133,6 @@ msgstr "Allow readers to opt in to the mascot in mobile browsers"
 
 msgid "Allow the mascot on the frontend"
 msgstr "Allow the mascot on the frontend"
-
-msgid "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
-msgstr "An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying."
 
 msgid "Another request changed the resource configuration. Refresh before editing again."
 msgstr "Another request changed the resource configuration. Refresh before editing again."
@@ -169,6 +172,9 @@ msgstr "Arms open · smile with eyes closed"
 
 msgid "Arms slightly open"
 msgstr "Arms slightly open"
+
+msgid "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
+msgstr "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
 
 msgid "Available favorites:"
 msgstr "Available favorites:"
@@ -233,6 +239,9 @@ msgstr "Cannot read the character catalog."
 msgid "Cannot read the thumbnail."
 msgstr "Cannot read the thumbnail."
 
+msgid "Cannot remove the interrupted task record. Existing configuration is retained."
+msgstr "Cannot remove the interrupted task record. Existing configuration is retained."
+
 msgid "Cannot save character management changes."
 msgstr "Cannot save character management changes."
 
@@ -254,6 +263,9 @@ msgstr "Cannot save thumbnail configuration."
 msgid "Cannot write the directory protection files."
 msgstr "Cannot write the directory protection files."
 
+msgid "Capacity is partial or references are unknown. Observed bytes are not a complete size; complete values are unavailable."
+msgstr "Capacity is partial or references are unknown. Observed bytes are not a complete size; complete values are unavailable."
+
 msgid "Catalog"
 msgstr "Catalog"
 
@@ -274,6 +286,9 @@ msgstr "Character ID or configuration structure is invalid."
 
 msgid "Character ID, name or credit is invalid."
 msgstr "Character ID, name or credit is invalid."
+
+msgid "Character capacity summary"
+msgstr "Character capacity summary"
 
 msgid "Character configuration is invalid."
 msgstr "Character configuration is invalid."
@@ -428,11 +443,23 @@ msgstr "Configured characters"
 msgid "Configured · Web 5 R5"
 msgstr "Configured · Web 5 R5"
 
+msgid "Confirm recovery of the interrupted task record."
+msgstr "Confirm recovery of the interrupted task record."
+
 msgid "Confirm your right to use the thumbnail."
 msgstr "Confirm your right to use the thumbnail."
 
 msgid "Confirm your right to use the uploaded resources."
 msgstr "Confirm your right to use the uploaded resources."
+
+msgid "Continuous sampling complete: 3 of 3 windows saved."
+msgstr "Continuous sampling complete: 3 of 3 windows saved."
+
+msgid "Continuous sampling stopped. No further windows will start automatically."
+msgstr "Continuous sampling stopped. No further windows will start automatically."
+
+msgid "Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence."
+msgstr "Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence."
 
 msgid "Control whether this account allows the mascot to appear on the frontend."
 msgstr "Control whether this account allows the mascot to appear on the frontend."
@@ -455,8 +482,14 @@ msgstr "Core resources"
 msgid "Credit / source"
 msgstr "Credit / source"
 
+msgid "Current / previous overlap"
+msgstr "Current / previous overlap"
+
 msgid "Current model directory"
 msgstr "Current model directory"
+
+msgid "Current references"
+msgstr "Current references"
 
 msgid "Current thumbnail"
 msgstr "Current thumbnail"
@@ -503,8 +536,20 @@ msgstr "Do not automatically play a welcome motion"
 msgid "Documentation"
 msgstr "Documentation"
 
+msgid "Download all saved windows"
+msgstr "Download all saved windows"
+
 msgid "Download diagnostic JSON"
 msgstr "Download diagnostic JSON"
+
+msgid "Download fresh inventory JSON"
+msgstr "Download fresh inventory JSON"
+
+msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
+msgstr "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
+
+msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
+msgstr "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 
 msgid "Edit"
 msgstr "Edit"
@@ -623,6 +668,12 @@ msgstr "I have the right to use these resources on this site and have read their
 msgid "I have the right to use this image on this site and have read its source license and terms."
 msgstr "I have the right to use this image on this site and have read its source license and terms."
 
+msgid "I understand that recovery only removes the interrupted task record."
+msgstr "I understand that recovery only removes the interrupted task record."
+
+msgid "Idle"
+msgstr "Idle"
+
 msgid "Idle motion (loop)"
 msgstr "Idle motion (loop)"
 
@@ -650,6 +701,12 @@ msgstr "Inspect disk usage"
 msgid "Interact"
 msgstr "Interact"
 
+msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
+msgstr "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
+
+msgid "Interrupted · Review required"
+msgstr "Interrupted · Review required"
+
 msgid "Invalid JSON. Re-export valid model runtime JSON and check its references."
 msgstr "Invalid JSON. Re-export valid model runtime JSON and check its references."
 
@@ -676,6 +733,9 @@ msgstr "Isolated characters retain their configuration, files and browser favori
 
 msgid "JSON must be an object."
 msgstr "JSON must be an object."
+
+msgid "Legacy or unknown task state"
+msgstr "Legacy or unknown task state"
 
 msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
 msgstr "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
@@ -740,6 +800,9 @@ msgstr "Model texture references are invalid."
 msgid "Model validation failed"
 msgstr "Model validation failed"
 
+msgid "Model: %s"
+msgstr "Model: %s"
+
 msgid "Motion"
 msgstr "Motion"
 
@@ -779,6 +842,9 @@ msgstr "New single-model runtime ZIP"
 msgid "No candidate character"
 msgstr "No candidate character"
 
+msgid "No character capacity rows were available within the inspection limits."
+msgstr "No character capacity rows were available within the inspection limits."
+
 msgid "No characters match. Change the search or status filter."
 msgstr "No characters match. Change the search or status filter."
 
@@ -796,6 +862,9 @@ msgstr "No matching favorites. Change the search or clear it."
 
 msgid "No previous character resources are available for rollback."
 msgstr "No previous character resources are available for rollback."
+
+msgid "No resource or settings task is currently detected. Recovery removes only this interrupted task record; it does not repair, remove or roll back resources, staging directories or configuration. Inspect installed resources afterward."
+msgstr "No resource or settings task is currently detected. Recovery removes only this interrupted task record; it does not repair, remove or roll back resources, staging directories or configuration. Inspect installed resources afterward."
 
 msgid "No selectable character"
 msgstr "No selectable character"
@@ -830,6 +899,9 @@ msgstr "Open mouth · frown"
 msgid "Open palms · head tilt"
 msgstr "Open palms · head tilt"
 
+msgid "Partial: %s observed bytes"
+msgstr "Partial: %s observed bytes"
+
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 msgstr "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 
@@ -860,6 +932,9 @@ msgstr "Previewing: %1$s"
 msgid "Previous model directory"
 msgstr "Previous model directory"
 
+msgid "Previous references"
+msgstr "Previous references"
+
 msgid "Previous thumbnail"
 msgstr "Previous thumbnail"
 
@@ -869,6 +944,9 @@ msgstr "Pursed lips"
 msgid "Raise hand to greet"
 msgstr "Raise hand to greet"
 
+msgid "Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced."
+msgstr "Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced."
+
 msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 msgstr "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 
@@ -877,6 +955,9 @@ msgstr "Readers opt in"
 
 msgid "Ready"
 msgstr "Ready"
+
+msgid "Recover interrupted task"
+msgstr "Recover interrupted task"
 
 msgid "Reduced motion enabled"
 msgstr "Reduced motion enabled"
@@ -898,6 +979,9 @@ msgstr "Reset defaults"
 
 msgid "Reset expression"
 msgstr "Reset expression"
+
+msgid "Resource and settings tasks"
+msgstr "Resource and settings tasks"
 
 msgid "Resource commit failed."
 msgstr "Resource commit failed."
@@ -974,6 +1058,9 @@ msgstr "Roll back to previous resources and motions"
 msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
 msgstr "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
 
+msgid "Running"
+msgstr "Running"
+
 msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
 msgstr "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
 
@@ -994,6 +1081,9 @@ msgstr "Runtime references: %1$s files, %2$s KiB."
 
 msgid "Runtime startup timed out. Refresh and retry."
 msgstr "Runtime startup timed out. Refresh and retry."
+
+msgid "Sample 3 windows"
+msgstr "Sample 3 windows"
 
 msgid "Sample complete:"
 msgstr "Sample complete:"
@@ -1019,6 +1109,9 @@ msgstr "Save mobile settings"
 msgid "Save thumbnail"
 msgstr "Save thumbnail"
 
+msgid "Saved windows: %1$s of 20. Older windows replaced: %2$s."
+msgstr "Saved windows: %1$s of 20. Older windows replaced: %2$s."
+
 msgid "Search"
 msgstr "Search"
 
@@ -1040,6 +1133,12 @@ msgstr "Shader"
 msgid "Shared Core"
 msgstr "Shared Core"
 
+msgid "Shared paths"
+msgstr "Shared paths"
+
+msgid "Shared reference paths; preserve"
+msgstr "Shared reference paths; preserve"
+
 msgid "Shared terms"
 msgstr "Shared terms"
 
@@ -1051,6 +1150,9 @@ msgstr "Showing"
 
 msgid "Showing %1$s of %2$s characters"
 msgstr "Showing %1$s of %2$s characters"
+
+msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
+msgstr "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
 
 msgid "Site terms configuration is invalid."
 msgstr "Site terms configuration is invalid."
@@ -1094,6 +1196,9 @@ msgstr "Stop motion and return to idle"
 msgid "Stop recording"
 msgstr "Stop recording"
 
+msgid "Stop sampling"
+msgstr "Stop sampling"
+
 msgid "Surprised"
 msgstr "Surprised"
 
@@ -1105,6 +1210,18 @@ msgstr "Tap %1$s to greet"
 
 msgid "Tap to greet"
 msgstr "Tap to greet"
+
+msgid "Task age: %s seconds. Age alone does not permit recovery."
+msgstr "Task age: %s seconds. Age alone does not permit recovery."
+
+msgid "Task request is invalid."
+msgstr "Task request is invalid."
+
+msgid "Task state is unavailable. Ask an administrator to inspect server storage and the database."
+msgstr "Task state is unavailable. Ask an administrator to inspect server storage and the database."
+
+msgid "Task state or configuration changed. Refresh before retrying recovery."
+msgstr "Task state or configuration changed. Refresh before retrying recovery."
 
 msgid "Terms"
 msgstr "Terms"
@@ -1178,6 +1295,9 @@ msgstr "The character texture cannot be decoded. Retry or choose another charact
 msgid "The current reference is invalid; choose again"
 msgstr "The current reference is invalid; choose again"
 
+msgid "The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports."
+msgstr "The diagnostic download exceeds 2 MiB. Stop recording and start a new batch after saving available reports."
+
 msgid "The expression catalog contains duplicate, missing or invalid references."
 msgstr "The expression catalog contains duplicate, missing or invalid references."
 
@@ -1198,6 +1318,9 @@ msgstr "The idle motion reference is invalid."
 
 msgid "The idle or welcome motion is not in the current character catalog."
 msgstr "The idle or welcome motion is not in the current character catalog."
+
+msgid "The inventory report could not be encoded. No report was saved."
+msgstr "The inventory report could not be encoded. No report was saved."
 
 msgid "The lightweight entry check passed."
 msgstr "The lightweight entry check passed."
@@ -1246,6 +1369,15 @@ msgstr "The server could not accept the upload. Ask an administrator to check te
 
 msgid "The server requires PHP ZipArchive."
 msgstr "The server requires PHP ZipArchive."
+
+msgid "The task guard changed. Ask an administrator to inspect resource storage before recovery."
+msgstr "The task guard changed. Ask an administrator to inspect resource storage before recovery."
+
+msgid "The task guard is unavailable or unsafe. Ask an administrator to inspect resource storage."
+msgstr "The task guard is unavailable or unsafe. Ask an administrator to inspect resource storage."
+
+msgid "The task is still running. Recovery is unavailable."
+msgstr "The task is still running. Recovery is unavailable."
 
 msgid "The thumbnail must be a local image file no larger than 4 MiB."
 msgstr "The thumbnail must be a local image file no larger than 4 MiB."
@@ -1310,6 +1442,9 @@ msgstr "Thumbnail uploaded and re-encoded."
 msgid "Thumbnail write verification failed."
 msgstr "Thumbnail write verification failed."
 
+msgid "Thumbnail: %s"
+msgstr "Thumbnail: %s"
+
 msgid "Trash"
 msgstr "Trash"
 
@@ -1324,6 +1459,15 @@ msgstr "Unfavorite selected character"
 
 msgid "Unfavorite selected character:"
 msgstr "Unfavorite selected character:"
+
+msgid "Unique character total"
+msgstr "Unique character total"
+
+msgid "Unique paths referenced by characters: %1$s. Shared reference paths: %2$s."
+msgstr "Unique paths referenced by characters: %1$s. Shared reference paths: %2$s."
+
+msgid "Unique subtotal: %s"
+msgstr "Unique subtotal: %s"
 
 msgid "Unknown / protected"
 msgstr "Unknown / protected"

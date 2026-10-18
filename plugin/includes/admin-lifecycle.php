@@ -8,19 +8,18 @@ function wzf_mascot_status_label($status) {
     $labels = ['active'=>__('Active', 'live2d-show'), 'disabled'=>__('Disabled', 'live2d-show'), 'trash'=>__('Trash', 'live2d-show')];
     return is_string($status) ? ($labels[$status] ?? __('Invalid status', 'live2d-show')) : __('Invalid status', 'live2d-show');
 }
-function wzf_mascot_locked_character($id, $version, $callback) {
+function wzf_mascot_locked_character($id, $version, $callback, $kind = 'lifecycle') {
     if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
     if (!is_string($id) || !is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version)) throw new RuntimeException(__('Character management request is invalid.', 'live2d-show'));
-    $token = bin2hex(random_bytes(16));
-    if (!add_option(WZF_MASCOT_LOCK, ['token'=>$token,'started'=>time()], '', false)) throw new RuntimeException(__('A resource or settings task is in progress. Try again later.', 'live2d-show'));
+    $task = wzf_mascot_task_begin($kind);
+    $token = $task['token'];
     try {
-        $config = get_option(WZF_MASCOT_OPTION, []);
+        $config = $task['config'];
         if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before trying again.', 'live2d-show'));
         if (!is_array($config) || !is_array($config['characters'] ?? null) || !is_array($config['characters'][$id] ?? null)) throw new RuntimeException(__('The character does not exist or its configuration is invalid.', 'live2d-show'));
         return $callback($config, $token);
     } finally {
-        $lock = get_option(WZF_MASCOT_LOCK);
-        if (is_array($lock) && ($lock['token'] ?? null) === $token) delete_option(WZF_MASCOT_LOCK);
+        wzf_mascot_task_end($task);
     }
 }
 function wzf_mascot_manage_character($id, $version, $operation) {
@@ -103,19 +102,18 @@ function wzf_mascot_replace_resource($file, $id, $version, $reset = false) {
         } finally {
             if ($owned && !$saved) wzf_mascot_cleanup($stage ?? $final);
         }
-    });
+    }, 'replace');
 }
 function wzf_mascot_manage_post() {
     if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);
-    check_admin_referer('wzf_mascot_manage');
+    wzf_mascot_upload_referer('wzf_mascot_manage');
     $id = isset($_POST['character']) && is_string($_POST['character']) ? wp_unslash($_POST['character']) : '';
     try {
         $version = isset($_POST['version']) && is_string($_POST['version']) ? wp_unslash($_POST['version']) : '';
         $operation = isset($_POST['operation']) && is_string($_POST['operation']) ? wp_unslash($_POST['operation']) : '';
         if ($operation === 'replace') {
             if (($_POST['rights'] ?? '') !== '1') throw new RuntimeException(__('Confirm your right to use the uploaded resources.', 'live2d-show'));
-            $upload = $_FILES['resource'] ?? null;
-            if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_string($upload['tmp_name'] ?? null) || !is_uploaded_file($upload['tmp_name'])) throw new RuntimeException(__('Upload failed.', 'live2d-show'));
+            $upload = wzf_mascot_resource_upload();
             if (isset($_POST['reset_motions']) && $_POST['reset_motions'] !== '1') throw new RuntimeException(__('Update confirmation is invalid.', 'live2d-show'));
             wzf_mascot_replace_resource($upload['tmp_name'], $id, $version, ($_POST['reset_motions'] ?? '') === '1');
             $notice = __('Character resources updated. The previous version is available for rollback.', 'live2d-show');
@@ -139,13 +137,13 @@ function wzf_mascot_character_management($config, $id) {
     $buttons = $status === 'trash' ? ['restore'=>__('Restore from trash', 'live2d-show')] : ($status === 'disabled' ? ['enable'=>__('Enable character', 'live2d-show'),'trash'=>__('Move to trash', 'live2d-show')] : ['disable'=>__('Disable character', 'live2d-show'),'trash'=>__('Move to trash', 'live2d-show')]);
     if (is_array($config['history'][$id] ?? null)) $buttons['rollback'] = __('Roll back to previous resources and motions', 'live2d-show');
     foreach ($buttons as $operation=>$label) {
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php?action=wzf_mascot_manage')) . '">';
         wzf_mascot_management_fields($config, $id);
         echo '<button class="button" name="operation" value="' . esc_attr($operation) . '">' . esc_html($label) . '</button></form>';
     }
     echo '</div>';
     if ($status !== 'trash') {
-        echo ('<details class="wzf-mascot-replace"><summary>' . esc_html__('Update this character’s model ZIP', 'live2d-show') . '</summary><p>' . esc_html__('Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default.', 'live2d-show') . '</p><form method="post" enctype="multipart/form-data" action="') . esc_url(admin_url('admin-post.php')) . '">';
+        echo ('<details class="wzf-mascot-replace"><summary>' . esc_html__('Update this character’s model ZIP', 'live2d-show') . '</summary><p>' . esc_html__('Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default.', 'live2d-show') . '</p><form method="post" enctype="multipart/form-data" action="') . esc_url(admin_url('admin-post.php?action=wzf_mascot_manage')) . '">';
         wzf_mascot_management_fields($config, $id);
         echo ('<input type="hidden" name="operation" value="replace"><div class="wzf-mascot-field"><label for="mascot-replacement">' . esc_html__('New single-model runtime ZIP', 'live2d-show') . '</label><input id="mascot-replacement" type="file" name="resource" required accept=".zip"></div><p><label><input type="checkbox" name="reset_motions" value="1"> ' . esc_html__('Allow incompatible motion reset: use the new default idle if unmappable and remove unmappable welcome/greetings. Preserve compatible motions and greeting order.', 'live2d-show') . '</label></p><p><label><input type="checkbox" name="rights" value="1" required> ' . esc_html__('I have the right to use the new resources on this site and have read their source licenses and terms.', 'live2d-show') . '</label></p>');
         submit_button(__('Update character resources', 'live2d-show')); echo '</form></details>';

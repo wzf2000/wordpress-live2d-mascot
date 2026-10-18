@@ -5,6 +5,7 @@ require_once __DIR__ . '/i18n.php';
 const WZF_MASCOT_CORE_SHA = '8741f739779b5d5210872bd3d7d99f0f1e56e6c87409e7d26d6bb4b80aa1ef47';
 const WZF_MASCOT_OPTION = 'wzf_mascot_resources_v1';
 const WZF_MASCOT_LOCK = 'wzf_mascot_import_lock_v1';
+require_once __DIR__ . '/admin-task.php';
 function wzf_mascot_path($name) {
     if (!is_string($name) || !preg_match('~\A[A-Za-z0-9_.\-/]+\z~D', $name) || $name[0] === '/' || strpos($name, '//') !== false) throw new RuntimeException(__('Resource path is invalid.', 'live2d-show'));
     foreach (explode('/', $name) as $part) if ($part === '' || $part === '.' || $part === '..' || preg_match('/(?:^|\.)(?:php[0-9]*|phtml|phar|cgi|pl|py|sh|asp|aspx)(?:\.|$)/i', $part)) throw new RuntimeException(__('Resource path escapes the allowed directory.', 'live2d-show'));
@@ -141,8 +142,8 @@ function wzf_mascot_save_resource($kind, $file, $fields = []) {
         if ($core_bytes === false || !hash_equals(WZF_MASCOT_CORE_SHA, hash('sha256',$core_bytes))) throw new RuntimeException(__('Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match.', 'live2d-show'));
         $payload = ['core.js'=>$core_bytes];
     } else { $model = wzf_mascot_model_zip($file); $payload = $model['files']; }
-    $token = bin2hex(random_bytes(16));
-    if (!add_option(WZF_MASCOT_LOCK, ['token'=>$token,'started'=>time()], '', false)) throw new RuntimeException(__('An import is already in progress; configuration is unchanged. If it was interrupted, ask an administrator to inspect the import lock before retrying.', 'live2d-show'));
+    $task = wzf_mascot_task_begin('import-' . $kind);
+    $token = $task['token'];
     $stage = null; $final = null; $saved = false; $owned_final = false;
     try {
         $u = wzf_mascot_uploads(true);
@@ -156,7 +157,7 @@ function wzf_mascot_save_resource($kind, $file, $fields = []) {
         }
         if (!rename($stage,$final)) throw new RuntimeException(__('Resource commit failed.', 'live2d-show'));
         $stage = null; $owned_final = true;
-        $config = get_option(WZF_MASCOT_OPTION, ['characters'=>[]]);
+        $config = $task['config'];
         if (!is_array($config) || !is_array($config['characters'] ?? null)) throw new RuntimeException(__('Existing resource configuration is invalid.', 'live2d-show'));
         if ($kind === 'core') $config['core'] = ['path'=>$dirname . '/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
         else {
@@ -166,22 +167,19 @@ function wzf_mascot_save_resource($kind, $file, $fields = []) {
         if (!update_option(WZF_MASCOT_OPTION,$config,false)) throw new RuntimeException(__('Cannot save configuration.', 'live2d-show'));
         $saved = true;
     } finally {
-        if ($stage) wzf_mascot_cleanup($stage);
-        if (!$saved && $owned_final) wzf_mascot_cleanup($final);
-        $lock = get_option(WZF_MASCOT_LOCK);
-        if (is_array($lock) && ($lock['token'] ?? null) === $token) delete_option(WZF_MASCOT_LOCK);
+        try {
+            if ($stage) wzf_mascot_cleanup($stage);
+            if (!$saved && $owned_final) wzf_mascot_cleanup($final);
+        } finally { wzf_mascot_task_end($task); }
     }
 }
 function wzf_mascot_import_post() {
     if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);
-    check_admin_referer('wzf_mascot_import');
+    wzf_mascot_upload_referer('wzf_mascot_import');
     $kind = isset($_POST['kind']) && is_string($_POST['kind']) ? wp_unslash($_POST['kind']) : '';
     try {
         if (($_POST['rights'] ?? '') !== '1') throw new RuntimeException(__('Confirm your right to use the uploaded resources.', 'live2d-show'));
-        $upload = $_FILES['resource'] ?? null;
-        if (!is_array($upload)) throw new RuntimeException(wzf_mascot_upload_error(UPLOAD_ERR_NO_FILE));
-        if (($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException(wzf_mascot_upload_error($upload['error'] ?? UPLOAD_ERR_NO_FILE));
-        if (!is_string($upload['tmp_name'] ?? null) || !is_uploaded_file($upload['tmp_name'])) throw new RuntimeException(__('Upload failed.', 'live2d-show'));
+        $upload = wzf_mascot_resource_upload();
         $fields = [];
         foreach (['id','name','credit'] as $key) $fields[$key] = isset($_POST[$key]) && is_string($_POST[$key]) ? wp_unslash($_POST[$key]) : '';
         wzf_mascot_save_resource($kind,$upload['tmp_name'],$fields);

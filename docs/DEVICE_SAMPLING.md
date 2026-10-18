@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | 冷加载 | 清除隔离站资源缓存，保留同样网络；独立刷新三轮 | 每轮 readyMs、实际首帧 firstFrameMs；肉眼确认人物完整、比例与裁剪正常 |
 | 暖加载 | 保留缓存，独立刷新三轮 | 与冷加载分组，不把重复导出同一页面算成新加载 |
-| 稳定绘制 | 每轮角色就绪后连续做三个“采样 3 秒”窗口 | 每次采样后立即下载一个 JSON；下一窗口会覆盖面板中的上一窗口 |
+| 稳定绘制 | 每轮角色就绪后连续做三个“采样 3 秒”窗口 | 点击“连续采样 3 组”，等待 3/3 后下载全部已保存窗口；最多保留最近 20 窗口 |
 | 连续切换 | 固定同一组角色和顺序，反复预览、取消、确认、收起和显示 | 无旧模型残留、无多次欢迎、已保存选择和收藏不意外改变；失败与恢复分别记录 |
 | 阅读与后台 | 打开受支持阅读面板，关闭；切后台再返回 | 暂停期间不绘制，返回后正确恢复；中断采样不与稳定窗口混算 |
 | 桌面键盘 | Tab/Shift+Tab、Enter、Escape；搜索中切输入法 | 焦点可见、控件有名称、无键盘陷阱；输入法确认不误关闭面板 |
@@ -35,12 +35,44 @@
 加载。`cpuDrawMsAvg` 是 CPU 调用耗时，**不是 GPU 执行时间**。长驻测试的稳定性、
 画面、触屏及键盘结论由操作员记录，JSON 不能替代这些观察。
 
+## 连采与下载
+
+只有明确点击“开启本地诊断”才采集 GPU 信息。点击“连续采样 3 组”启动 3×3 秒，
+状态区显示进度；“停止采样”中断当前窗口并停止后续，“停止记录”停止全部诊断采集。
+收起、切角色、阅读暂停、标签隐藏同样停止连采，恢复后不会补采。每个保存窗口冻结
+当时的角色、环境、加载／attempt、首帧及统计；之后切换或错误不会改写旧窗口。
+
+当前页保留最近 20 个窗口并显示被替换数量，不写浏览器持久存储、不上传、不设后台
+任务。停止后仍可下载；重新开启会清空并创建新批次。单份 JSON 保持 schema 1，取
+最后保存窗口；尚未采样才取当前诊断状态。批次带明确 kind/schema、随机批次与加载
+session、稳定窗口 ID。下载文件不含 URL、query、Cookie、账号或输入内容。
+
 ## 本地汇总
 
 `tools/diagnostic_samples.py` 只读取明确指定的本地文件，不连接站点、不访问网络、不扫描
 其他目录、不读取 Core 或模型。输入保持原样；输出必须是不存在的新路径。
 
-在诊断文件旁创建自己的 `runs.json`。下面是一条示例，复制条目时给每个导出文件独立
+可直接把批次 JSON 交给维护者处理，无需先编写清单。若自行离线整理，先解包：
+
+```sh
+python3 tools/diagnostic_samples.py --unpack-batch /path/to/batch.json \
+  --out /path/to/new-sampling-directory
+```
+
+安全解包需要 Linux/macOS 的目录描述符接口；Windows 浏览器仍可正常采样并把批次交给维护者。
+原 manifest 汇总用法不变。不支持的系统会友好退出 `2`。解包只接受明确本地输入，
+最多 2 MiB／20 窗口；在全部验证后才新建目录，使用固定的
+`window-01.json` 等文件名和 `runs.json`。拒绝软链接、输入提供的路径字段和已有输出，
+保留合法中断窗口、缺首帧和 schema 1 事实。模板默认 `physicalDevice=false`、
+`visualCheck=not-run`，平台／缓存／场景留空，设备及系统／浏览器版本等待填写。
+退出 `0` 仅表示解包完成，不表示硬件、画面或性能验收。
+
+窗口的稳定 ID 使重复导出不会增加样本数。同批次同一次加载共享 session；不同批次或
+加载有独立随机命名空间。保持模板 ID 与 session；补充元数据后再运行原汇总命令。
+改换横竖屏、缓存、场景或长驻检查点时，先保存批次，再停止／重新开启诊断建立新批次，
+不同条件独立汇总；已经加载后重新开启不会补出冷加载或首帧时间。
+
+也可使用原单报告流程，在诊断文件旁手工创建自己的 `runs.json`。下面是一条示例，复制条目时给每个导出文件独立
 `id`；同一次加载的多个窗口使用相同 `session`，刷新后改用新 session。`conditions`
 使用自己的非隐私标签，对应另行记录的资源版本、页面、网络、电源模式及长驻阶段。
 不填写私人 URL、账号、Cookie 或设备序列号。
@@ -107,8 +139,9 @@ and software Chromium are not physical-device evidence. Keep production settings
 
 Record device, OS, browser, plugin and model versions, viewport, zoom, network, power mode and
 refresh rate. Enable local diagnostics **before** showing the character. Run three independent
-cold loads and three warm loads, with three explicit three-second windows per load. Download
-each window immediately: the next sample replaces the previous window in the panel. Missing
+cold loads and three warm loads. For each load, click **Sample 3 windows** for three consecutive
+three-second windows, then **Download all saved windows**. The latest 20 windows stay in memory;
+download before refresh or enabling a new diagnostic batch. Missing
 first-frame observations remain missing; exclude interrupted windows and unsuccessful/fallback
 loads from successful startup timings. CPU draw duration is not GPU execution duration.
 
@@ -131,3 +164,19 @@ Exit `0` means all requested windows could be summarized, `1` means some were ex
 renderers separately. Repeated windows do not increase the independent load count. Hardware,
 cache and visual information remain operator declarations; `hardwareVerified` is always false.
 Compare repeatable baselines before considering frame caps, resolution changes or power modes.
+
+Batch unpacking is optional: users may hand the original batch JSON directly to a maintainer.
+Safe batch unpacking requires Linux/macOS directory-descriptor support and exits cleanly with code 2 on unsupported systems. Windows browsers can still sample and hand JSON to a maintainer; the original manifest summary mode remains available.
+`--unpack-batch INPUT --out NEW_DIRECTORY` validates at most 2 MiB/20 windows before creating
+fixed-name schema-1 reports and a runs.json template. It rejects symlinks, input filename/path
+fields and existing output. Interrupted windows and missing first-frame facts are preserved;
+the existing summarizer still excludes interrupted windows. Templates default to
+`physicalDevice=false` and `visualCheck=not-run`; fill platform, cache, scenario, real device,
+OS/browser versions and observations manually. Successful unpacking is not acceptance.
+
+Stop recording retains downloads. Enabling again clears windows and starts a random batch.
+The single-report download selects the last frozen window, or current state before any sample;
+it must not be interpreted as a newer character's live state. Start a new batch and separate
+conditions for a new orientation or soak checkpoint; do not fabricate startup timings for an
+already-loaded character. No automatic upload, persistent browser storage or performance tuning
+is introduced. Actual physical-device sampling remains an operator task.

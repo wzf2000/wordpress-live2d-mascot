@@ -154,7 +154,7 @@ def main():
     def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     anonymous, admin, reader = client(), client(), client()
 
-    def request(opener, path, data=None, files=None):
+    def request(opener, path, data=None, files=None, with_headers=False):
         url = origin + path
         headers = {}
         if files:
@@ -166,8 +166,12 @@ def main():
             payload = b''.join(parts) + f'--{boundary}--\r\n'.encode(); headers['Content-Type'] = 'multipart/form-data; boundary=' + boundary
         else: payload = urllib.parse.urlencode(data, doseq=True).encode() if data is not None else None
         try:
-            with opener.open(urllib.request.Request(url, payload, headers), timeout=15) as response: return response.status, response.read().decode()
-        except urllib.error.HTTPError as error: return error.code, error.read().decode()
+            with opener.open(urllib.request.Request(url, payload, headers), timeout=15) as response:
+                result = (response.status, response.read().decode())
+                return (*result, dict(response.headers.items())) if with_headers else result
+        except urllib.error.HTTPError as error:
+            result = (error.code, error.read().decode())
+            return (*result, dict(error.headers.items())) if with_headers else result
 
     def state(): return json.loads(wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode='state'))
     def fixture(mode): return wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode=mode)
@@ -191,7 +195,7 @@ def main():
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -202,7 +206,12 @@ def main():
         assert request(admin, inventory_url, payload)[0] == 403
         status, anonymous_html = request(anonymous, inventory_url, payload)
         assert status in (200, 403) and 'Inventory complete.' not in anonymous_html
-        assert state() == before; record('real HTTP authorization and nonce failures preserve options, including disk inventory')
+        payload = {'mascot_inventory_export': '1', '_wpnonce': 'invalid'}
+        assert request(reader, inventory_url, payload)[0] == 403
+        assert request(admin, inventory_url, payload)[0] == 403
+        status, anonymous_html = request(anonymous, inventory_url, payload)
+        assert status in (200, 403) and 'characterSummary' not in anonymous_html
+        assert state() == before; record('real HTTP authorization and nonce failures preserve options, including disk inventory/export')
         z = lab / 'synthetic-model.zip'; model_zip(z)
         data = form('wzf_mascot_import', character=''); data.update(kind='model', id='fixture', name='Synthetic fixture', credit='Synthetic owner', rights='1')
         post(data, {'resource': (z.name, z.read_bytes())})
@@ -229,6 +238,43 @@ def main():
         assert resource_before == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
         assert 'Disk inventory' not in front()['i18n']
         record('explicit real HTTP inventory is read-only, bounded-root metadata and admin-only')
+        assert 'Character capacity summary' in html and 'Unique character total' in html
+        assert html.index('Character capacity summary') < html.index('Observed paths (admin only)')
+        export_form = next(f for f in Forms(html).forms if f.get('mascot_inventory_export') == '1')
+        status, exported, headers = request(admin, inventory_url, export_form, with_headers=True)
+        assert status == 200 and headers['Content-Type'].startswith('application/json')
+        assert 'attachment;' in headers['Content-Disposition'] and 'mascot-resource-inventory.json' in headers['Content-Disposition']
+        report = json.loads(exported); summary = report['characterSummary']
+        assert report['schema'] == 2 and report['complete'] and report['referencesComplete'] and summary['complete']
+        assert summary['total']['bytes'] == summary['characters'][0]['total']['bytes']
+        assert sum(row['total']['bytes'] for row in summary['characters']) > summary['total']['bytes']
+        assert summary['shared']['bytes'] == summary['total']['bytes']
+        assert report['bytes'] == report['observedBytes'] and report['limits']['entries'] == 20000
+        assert str(site) not in exported and 'Synthetic owner' not in exported and 'MOC3synthetic' not in exported
+        assert 'characterSummary' not in front() and state() == before
+        assert resource_before == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        record('real administrator character capacity unions and fresh metadata-only JSON attachment preserve options/files')
+        # Recovery uses the same real WordPress option APIs and fresh reads.
+        before = state(); fixture('task-abandon'); abandoned = state()
+        status, html = request(admin, inventory_url)
+        assert status == 200 and 'Interrupted · Review required' in html
+        recovery = next(f for f in Forms(html).forms if f.get('action') == 'wzf_mascot_task_recover')
+        assert abandoned['lock']['token'] not in html and str(site) not in html
+        post(recovery); assert state() == abandoned  # Explicit confirmation is required.
+        recovery['confirm'] = '1'
+        post(dict(recovery, _wpnonce='invalid')); assert state() == abandoned
+        post(recovery, opener=reader); assert state() == abandoned
+        fixture('task-change'); replaced = state(); post(recovery); assert state() == replaced
+        recovery = form('wzf_mascot_task_recover', character=''); recovery['confirm'] = '1'
+        protected = {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        post(recovery); assert state() == before
+        assert protected == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        fixture('task-legacy'); legacy = state(); html = request(admin, inventory_url)[1]
+        assert 'Legacy or unknown task state' in html and not any(f.get('action') == 'wzf_mascot_task_recover' for f in Forms(html).forms)
+        post(recovery); assert state() == legacy; fixture('task-clear')
+        assert json.loads(fixture('task-cache-check')) == {'rejected': True, 'retained': True, 'lock': False}
+        fixture('restore'); assert state()['config'] == original
+        record('real HTTP guarded recovery, confirmation/nonce/permission/replacement/legacy rejection and stale option cache conflict')
         # A full synthetic baseline goes through the actual WordPress upgrader.
         # Browser localStorage remains a browser-layer contract, not server metadata.
         uid = wp('user', 'get', 'mascot-admin', '--field=ID')
@@ -281,6 +327,10 @@ def main():
         inventory = next(f for f in Forms(html).forms if f.get('mascot_inventory') == '1')
         status, html = request(admin, inventory_url, inventory)
         assert status == 200 and 'Unreferenced classification is withheld.' in html
+        export_form = next(f for f in Forms(html).forms if f.get('mascot_inventory_export') == '1')
+        partial = json.loads(request(admin, inventory_url, export_form)[1])
+        assert not partial['referencesComplete'] and partial['bytes'] is None and not partial['characterSummary']['complete']
+        assert all(row['total']['bytes'] is None for row in partial['characterSummary']['characters'])
         assert state() == faulty; record('bad roles isolated, valid roles continue; admin diagnosis/inventory read-only and synthetic Core fails full hash')
         for mode in ['all-bad', 'bad-core', 'bad-terms', 'bad-structure']:
             fixture('restore'); fixture(mode); before = state(); assert front() is None and state() == before
@@ -303,7 +353,7 @@ def main():
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 14, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 16, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

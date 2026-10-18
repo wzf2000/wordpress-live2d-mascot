@@ -83,7 +83,7 @@ const testEngine = { gl: {
   getParameter: () => { gpuQueries++; return 'Synthetic SwiftShader'; },
 }, state: () => ({ frames: frameCount, renderMsAvg: drawAverage, renderMsMax: 10, paused: false }) };
 const makeElement = () => ({ append() {}, setAttribute() {}, click() {}, remove() {} });
-const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed', 'performance', 'setTimeout', 'clearTimeout', 'config', 'active', 'reduce', 'innerWidth', 'innerHeight', 'devicePixelRatio', 'URL', 'fetch', 'assert', 'advance', 'gpuCount', 'runNextTimer', `
+const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed', 'performance', 'setTimeout', 'clearTimeout', 'config', 'active', 'reduce', 'innerWidth', 'innerHeight', 'devicePixelRatio', 'URL', 'fetch', 'crypto', 'assert', 'advance', 'gpuCount', 'runNextTimer', `
   const t = ${translate.toString()};
   let loading = false;
   ${diagnosticCode}
@@ -105,6 +105,7 @@ const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed'
   interruptDiagnostics('reading-suspension');
   assert.equal(diagnosticReport.sample.interrupted, true);
   assert.equal(diagnosticReport.sample.reason, 'reading-suspension');
+  const savedFirstWindow = JSON.stringify(diagnosticWindows[0]);
   advance(5000, 0, 0);
   diagnosticBegin('failed-preview');
   diagnosticError({ code: 'http', category: 'texture', message: 'https://private.invalid/secret?cookie=never-export' });
@@ -123,22 +124,32 @@ const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed'
   assert.equal(diagnosticReport.loadAttempts[1].fallback, true);
   assert.equal(diagnosticReport.renderedCharacterId, 'fallback-character');
   assert.equal(diagnosticReport.sample.characterId, 'synthetic-character');
+  assert.equal(JSON.stringify(diagnosticWindows[0]), savedFirstWindow);
   diagnosticExport.onclick();
+  for (let i = 0; i < 25; i++) {
+    diagnosticSample.onclick(); advance(10000 + i * 3001, 10 + i, 1); finishDiagnosticSample();
+  }
+  assert.equal(diagnosticWindows.length, 20);
+  assert.equal(replacedWindows, 7);
   diagnosticEnable.onclick();
+  assert.equal(diagnosticExportBatch.disabled, false);
   return diagnosticReport;
 `);
 const diagnosticResult = exerciseDiagnostics(makeElement, { body: { append() {} } }, testEngine, () => true,
   { now: () => clock }, (fn) => { timers.set(++timerId, fn); return timerId; }, (id) => timers.delete(id),
   { version: '3.6.0' }, 'synthetic-character', { matches: false }, 1200, 800, 1,
   { createObjectURL: (blob) => { exportedBlob = blob; return 'blob:local'; }, revokeObjectURL() {} },
-  () => { throw Error('Diagnostics must not make network requests'); }, assert,
+  () => { throw Error('Diagnostics must not make network requests'); }, require('node:crypto').webcrypto, assert,
   (time, frames, average) => { clock = time; frameCount = frames; drawAverage = average; }, () => gpuQueries, () => { const [id, fn] = timers.entries().next().value; timers.delete(id); fn(); });
 assert.equal(diagnosticResult.environment.softwareRenderer, true);
 exportedBlob.text().then((text) => {
   const report = JSON.parse(text);
-  assert.deepEqual(report.error, { code: 'http', category: 'texture', phase: 'idle', characterId: 'failed-preview' });
-  assert.equal('started' in report.load, false);
-  assert.equal('started' in report.loadAttempts[0], false);
+  assert.equal(report.error, null);
+  assert.equal(report.load, null);
+  assert.equal(report.sample.characterId, 'synthetic-character');
+  assert.equal(report.sample.interrupted, true);
+  assert.equal(report.windowId, 2);
+  assert.equal(report.loadAttempts.length, 0);
   assert.equal(text.includes('private.invalid'), false);
   assert.equal(text.includes('secret'), false);
 });
