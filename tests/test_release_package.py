@@ -19,7 +19,7 @@ class ReleasePackageTests(unittest.TestCase):
         self.repo=Path(self.temp.name)/'repo'
         self.repo.mkdir()
         self.out=Path(self.temp.name)/'package'
-        names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md',
+        names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md','docs/INTERACTIONS.md',
                'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
                'tools/ci.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/account-browser.cjs','tests/selection-browser.cjs','tests/capture-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
                'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',

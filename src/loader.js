@@ -2220,22 +2220,21 @@
     document.addEventListener('pointerleave',()=>engine?.resetGaze?.());
     window.addEventListener('blur',()=>engine?.resetGaze?.());
     reduce.addEventListener('change', apply);
+    const markAway=()=>{if(awayAt===null)awayAt=performance.now();clearDialogue();};
+    const returned=()=>{
+      if(document.hidden||pageHidden)return;
+      const absent=awayAt===null?0:performance.now()-awayAt;awayAt=null;
+      if(absent>=60000)speak('return',true);
+    };
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { awayAt = performance.now(); clearDialogue(); }
-      apply();
-      if (!document.hidden) {
-        const absent = awayAt === null ? 0 : performance.now() - awayAt;
-        awayAt = null;
-        if (absent >= 60000) speak('return', true);
-      }
+      if(document.hidden)markAway();
+      apply();if(!document.hidden)returned();
     });
     window.addEventListener('pagehide', () => {
-      pageHidden = true;
-      apply();
+      pageHidden = true;markAway();apply();
     });
     window.addEventListener('pageshow', () => {
-      pageHidden = false;
-      apply();
+      pageHidden = false;apply();returned();
     });
     window.WZFHaruStatus = () => ({
       ready: !!engine,

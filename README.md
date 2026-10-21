@@ -4,7 +4,7 @@
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
 <p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.7.0">下载 3.7.0</a> · <a href="#许可与资源来源">许可</a></p>
 
-**本分支候选：3.8.0-rc.1，尚未发布或部署。** 包含受控任务恢复、真实浏览器控制器 CI、角色容量与只读导出，以及连续采样与批次解包。候选新增逐角色本地台词规则和访客台词偏好：欢迎／点击／上午／下午／晚间／返回可配置备选纯文本、启用与冷却；默认无周期闲聊，不连接第三方。台词在阅读暂停、隐藏和切换时清除，访客可选自动、仅主动或静默。管理员可设置最多 8 个命名快捷互动，将可选动作／表情／台词并行组合；资源更新按文件路径映射，失效预设局部跳过并提示，回退恢复对应资源版本的预设。角色可通过专用移动柄拖动并吸附到左右边，支持方向键移动与 Escape 复位，位置保存在本浏览器，窗口变化只重算安全位置。支持的角色可由访客自愿开启轻柔鼠标视线；管理员可将模型实际声明的点击区域绑定快捷预设，无区域或无绑定时使用普通招呼。下方现有下载仍指向已发布的 3.7.0。
+**本分支候选：3.9.0-rc.1，尚未发布或部署。** 新增角色台词、快捷互动、拖动停靠、视线与模型区域互动、站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG，并包含 3.8 候选维护改进。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。下方稳定下载仍为 3.7.0。
 
 **当前发行版：3.7.0。** 新增后台搜索与状态筛选、中英文界面、只读资源盘点和离线采样汇总。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
@@ -183,6 +183,12 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 npm ci --ignore-scripts
 npx --no-install playwright install chromium
 npm run test:browser
+# 专项：台词／语义事件、移动／视线、账号、候选选择、PNG
+npm run test:dialogue-browser
+npm run test:movement-browser
+npm run test:account-browser
+npm run test:selection-browser
+npm run test:capture-browser
 # 可选：仅保存合成结果 JSON 和选定关键截图，不记录 trace、cookie 或 storage state。
 npm run test:browser -- --out /tmp/mascot-browser-review
 ```
@@ -322,22 +328,7 @@ window.WZFMascot.cancel(); // 取消本接口尚未完成的命令
 
 返回 Promise，成功为 `{ok:true, code:'played'|'reset'|'stopped', characterId}`；拒绝为 `{ok:false, code}`，包括 `invalid-request`（参数）、`unknown-id`（目录无此 ID）、`unavailable`（未显示／就绪或已暂停）、`busy`、`rate-limited`、`cancelled`、`resource-error`。取消／资源失败结果可带 characterId。`cancel()` 返回 `{ok:true, code:'cancelled'|'idle'}`，阻止尚未完成命令产生动作或字幕；已开始播放的动作可另发 stop，已经发出的同源资源请求可能继续填入引擎缓存。收起、暂停、角色切换或新的手动操作也会取消未完成联动。接口不提供网络地址、任意参数写入或强制恢复入口。
 
-候选新增固定语义通知 `notify({event, caption?, presetId?})` 和同名数据的 DOM 事件 `wzf-mascot-event`，event 仅接受 `help`、`tool-complete`、`action-complete`。由工具的**用户操作完成回调主动接入**，不扫描页面文本，不监听全站任意点击或复制；当前未宣称其他工具都已联动。
-
-```js
-// 放在你自己的按钮操作成功回调中。
-await window.WZFMascot?.notify({
-  event: 'tool-complete', caption: '结果已准备好',
-  // presetId: 'preset-1', // 可选，当前角色管理员配置的预设 ID
-});
-document.dispatchEvent(new CustomEvent('wzf-mascot-event', {
-  detail: { event: 'action-complete', caption: '保存完成' },
-}));
-```
-
-caption 为最多 300 字节的纯文本；通知不改变显示、移动端或条款同意，不在预览角色、暂停或加载期间运行。成功通知至少间隔 15 秒，同角色同事件至少 30 秒；无效配置、忙碌或冷却返回明确 code。语义通知对应站点显式操作，台词遵循静默选择；预设动作／表情同时开始，不等待彼此。`cancel()` 同时取消待完成预设并清除气泡。互动面板的“互动帮助”始终可展开阅读；可选气泡反馈使用同一 help 路径，静默或冷却不影响帮助正文。
-
-候选中的账号偏好默认不请求服务端。访客在“账号偏好”中主动读取，登录后得到当前账号的私有偏好与版本；再明确使用账号、保留本机或保存本机到账号。只同步角色 ID、收藏与布局，合法但暂不可用的 ID 会保留；显示、条款、手机开启与视线开关不随账号同步。可用角色需成功加载后才提交本机选择；存储拒绝会提示恢复结果。账号保存使用版本冲突检测与短物理锁，超时不会自动重发，需主动重新读取。偏好按站点保存；未声称多站点实际部署验收。
+候选的固定站点操作通知、自愿账号偏好、模型区域与 PNG 的具体步骤和示例见[互动与偏好指南](docs/INTERACTIONS.md)。
 
 ### 服务器与资源边界
 

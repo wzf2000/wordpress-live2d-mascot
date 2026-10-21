@@ -578,6 +578,9 @@ msgstr "Diagnostics are not enabled."
 msgid "Dialogue cooldown must be 15–3600 seconds."
 msgstr "Dialogue cooldown must be 15–3600 seconds."
 
+msgid "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
+msgstr "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
+
 msgid "Dialogue mode"
 msgstr "Dialogue mode"
 
@@ -1117,6 +1120,9 @@ msgstr "Preparing PNG…"
 
 msgid "Preset expression"
 msgstr "Preset expression"
+
+msgid "Preset fields must be plain text within the stated limits."
+msgstr "Preset fields must be plain text within the stated limits."
 
 msgid "Preset line"
 msgstr "Preset line"

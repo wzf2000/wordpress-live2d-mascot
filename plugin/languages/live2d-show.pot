@@ -578,6 +578,9 @@ msgstr ""
 msgid "Dialogue cooldown must be 15–3600 seconds."
 msgstr ""
 
+msgid "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
+msgstr ""
+
 msgid "Dialogue mode"
 msgstr ""
 
@@ -1116,6 +1119,9 @@ msgid "Preparing PNG…"
 msgstr ""
 
 msgid "Preset expression"
+msgstr ""
+
+msgid "Preset fields must be plain text within the stated limits."
 msgstr ""
 
 msgid "Preset line"

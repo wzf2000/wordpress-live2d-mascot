@@ -2,6 +2,10 @@
 // GPL-2.0-or-later with the additional permission in LICENSE.
 if (!defined('ABSPATH')) exit;
 
+function wzf_mascot_interaction_text($value, $limit, $message) {
+    try { return wzf_mascot_plain_text($value, $limit); }
+    catch (Throwable $e) { throw new RuntimeException($message); }
+}
 function wzf_mascot_line_events() {
     return ['welcome'=>__('Welcome', 'live2d-show'), 'click'=>__('Click', 'live2d-show'), 'morning'=>__('Morning', 'live2d-show'), 'afternoon'=>__('Afternoon', 'live2d-show'), 'evening'=>__('Evening', 'live2d-show'), 'return'=>__('Return after absence', 'live2d-show')];
 }
@@ -19,7 +23,7 @@ function wzf_mascot_dialogue($value, $strict = false) {
             if (count($lines) > 8) throw new RuntimeException(__('Use up to 8 plain-text lines per event, each at most 300 bytes.', 'live2d-show'));
             $valid = [];
             foreach ($lines as $line) {
-                $line = trim(wzf_mascot_plain_text($line, 300));
+                $line = trim(wzf_mascot_interaction_text($line, 300, __('Dialogue lines must be plain text without markup or control characters, within 300 bytes.', 'live2d-show')));
                 if ($line !== '') $valid[] = $line;
             }
             $result[$event] = ['enabled'=>$enabled && !!$valid, 'cooldown'=>$cooldown, 'lines'=>array_values(array_unique($valid))];
@@ -99,7 +103,7 @@ function wzf_mascot_presets($value, $motions, $expressions, $strict = false) {
         try {
             if (!is_array($row) || array_diff(array_keys($row), ['id','name','motion','expression','line'])) throw new RuntimeException(__('Interaction preset is invalid.', 'live2d-show'));
             $preset = [];
-            foreach (['id'=>64,'name'=>80,'motion'=>200,'expression'=>200,'line'=>300] as $key=>$limit) $preset[$key] = trim(wzf_mascot_plain_text($row[$key] ?? '', $limit));
+            foreach (['id'=>64,'name'=>80,'motion'=>200,'expression'=>200,'line'=>300] as $key=>$limit) $preset[$key] = trim(wzf_mascot_interaction_text($row[$key] ?? '', $limit, __('Preset fields must be plain text within the stated limits.', 'live2d-show')));
             if ($preset['name'] === '' && $preset['motion'] === '' && $preset['expression'] === '' && $preset['line'] === '') continue;
             if (!preg_match('/\A[a-z][a-z0-9-]{0,63}\z/D', $preset['id']) || isset($ids[$preset['id']]) || $preset['name'] === '' || ($preset['motion'] === '' && $preset['expression'] === '' && $preset['line'] === '')) throw new RuntimeException(__('A preset needs a name and at least one motion, expression or line.', 'live2d-show'));
             if (($motions !== null && $preset['motion'] !== '' && !isset($motions[$preset['motion']])) || ($expressions !== null && $preset['expression'] !== '' && !isset($expressions[$preset['expression']]))) throw new RuntimeException(__('Preset motion or expression is not in the current catalog.', 'live2d-show'));

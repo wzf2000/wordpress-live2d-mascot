@@ -575,6 +575,9 @@ msgstr "诊断尚未开启。"
 msgid "Dialogue cooldown must be 15–3600 seconds."
 msgstr "台词冷却时间须为 15–3600 秒。"
 
+msgid "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
+msgstr "台词须为 300 字节以内的纯文本，不含标记或控制字符。"
+
 msgid "Dialogue mode"
 msgstr "台词模式"
 
@@ -1114,6 +1117,9 @@ msgstr "正在生成 PNG…"
 
 msgid "Preset expression"
 msgstr "预设表情"
+
+msgid "Preset fields must be plain text within the stated limits."
+msgstr "预设字段须为规定长度内的纯文本。"
 
 msgid "Preset line"
 msgstr "预设台词"
