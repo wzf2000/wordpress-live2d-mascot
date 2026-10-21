@@ -1,5 +1,6 @@
 """Release identity, tamper, version and whitelist failure regressions."""
 import json
+import importlib.util
 from pathlib import Path
 import re
 import shutil
@@ -14,6 +15,28 @@ sys.path.insert(0,str(ROOT))
 from tools.package_release import digest, encoded, package, plugin_version
 from tools.verify_release import verify
 import test_release_package as fixtures
+
+
+class WordPressDiagnosticsTests(unittest.TestCase):
+    def test_http_summary_keeps_locations_without_messages_or_credentials(self):
+        spec = importlib.util.spec_from_file_location('wordpress_integration', ROOT / 'tools/wordpress-integration.py')
+        integration = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(integration)
+        with tempfile.TemporaryDirectory(prefix='mascot-http-summary-') as directory:
+            site = Path(directory) / 'site'
+            log = Path(directory) / 'http.log'
+            log.write_text(
+                '[date] Accepted /wp-login.php?password=never-publish\n'
+                f'[date] PHP Fatal error: Uncaught Error: secret-cookie in {site}/wp-includes/example.php:17\n'
+                f'[date] PHP Warning: nonce=never-publish in {site}/wp-content/plugins/live2d-show/example.php on line 23\n'
+                '[date] PHP Warning: password=never-publish in /private/credentials.php:9\n')
+            summary = integration.server_diagnostics(log, site)
+            self.assertEqual(summary['counts'], {'Fatal error': 1, 'Warning': 2})
+            self.assertEqual(summary['locations'], [
+                {'severity': 'Fatal error', 'file': 'wp-includes/example.php', 'line': 17},
+                {'severity': 'Warning', 'file': 'wp-content/plugins/live2d-show/example.php', 'line': 23}])
+            for private in ('secret-cookie', 'never-publish', str(directory), '/private', 'password', 'nonce'):
+                self.assertNotIn(private, json.dumps(summary))
 
 
 class PipelineTests(unittest.TestCase):
