@@ -292,19 +292,28 @@ def main():
         assert resource_hashes == {p.relative_to(uploads).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in uploads.rglob('*') if p.is_file()}
         assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         record('real overwrite upgrade preserves full synthetic resources/options and user profile preference')
-        data = form('wzf_mascot_interaction'); stale_dialogue = dict(data)
-        for event in ['welcome','click','morning','afternoon','evening','return']:
-            data['dialogue[' + event + '][lines]'] = 'Hello local reader\nAnother local line' if event == 'welcome' else ''
-            data['dialogue[' + event + '][cooldown]'] = '15'
+        data = form('wzf_mascot_interaction')
+        # Forms extracts inputs only, so explicitly submit every textarea rule.
+        for event in ['welcome','click','morning','afternoon','evening','return','idle']:
+            data['dialogue[' + event + '][lines]'] = 'Hello local reader\nAnother local line' if event == 'welcome' else 'A quiet local pause\nAnother idle line' if event == 'idle' else ''
+            data['dialogue[' + event + '][cooldown]'] = '120' if event == 'idle' else '15'
         data['dialogue[welcome][enabled]'] = '1'
+        data['dialogue[idle][enabled]'] = '1'
+        stale_dialogue = dict(data)
         post(data); dialogue_state = state()['config']
         assert dialogue_state['characters']['legacy_character']['dialogue']['welcome']['lines'] == ['Hello local reader','Another local line']
+        idle_rule = {'enabled':True, 'cooldown':120, 'lines':['A quiet local pause','Another idle line']}
+        assert dialogue_state['characters']['legacy_character']['dialogue']['idle'] == idle_rule
+        assert front()['characters']['legacy_character']['dialogue']['idle'] == idle_rule
         assert front()['characters']['legacy_character']['dialogue']['welcome']['enabled']
         post(stale_dialogue); assert state()['config'] == dialogue_state
         bad = form('wzf_mascot_interaction'); bad.update(data); bad['version'] = state()['version']; bad['dialogue[welcome][lines]'] = '<script>bad</script>'
         post(bad); assert state()['config'] == dialogue_state
+        bad = dict(data); bad['version'] = state()['version']; bad['dialogue[idle][cooldown]'] = '89'
+        post(bad); assert state()['config'] == dialogue_state
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == dialogue_state
-        record('real dialogue save, stale version, invalid text and upgrade preservation')
+        assert front()['characters']['legacy_character']['dialogue']['idle'] == idle_rule
+        record('real dialogue/idle save, stale version, invalid text/cooldown and upgrade preservation')
         data = form('wzf_mascot_presets'); stale_presets = dict(data)
         data.update({'presets[0][id]':'hello','presets[0][name]':'Hello local','presets[0][motion]':'01_extra','presets[0][expression]':'','presets[0][line]':'Local greeting'})
         for index in range(1,8):
