@@ -12,6 +12,9 @@ if ($mode === 'seed') {
     $c['core'] = ['path'=>'core-synthetic/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
     $original = $c['characters']['fixture'];
     $root = $u['path'] . '/' . $original['root'];
+    $hit_model = json_decode(file_get_contents($root . $original['file']), true);
+    $hit_model['HitAreas'] = [['Name'=>'Head [synthetic]', 'Id'=>'synthetic-head']];
+    file_put_contents($root . $original['file'], json_encode($hit_model));
     file_put_contents($root . 'motion/extra.motion3.json', '{"Version":3}');
     $catalog = json_decode(file_get_contents($root . 'catalog.json'), true);
     $catalog['motions'][] = ['id'=>'01_extra','file'=>'motion/extra.motion3.json','label'=>'Extra maintained action'];

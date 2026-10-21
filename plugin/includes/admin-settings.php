@@ -72,6 +72,7 @@ require_once __DIR__ . '/admin-diagnostics.php';
 require_once __DIR__ . '/admin-thumbnail.php';
 require_once __DIR__ . '/admin-mobile.php';
 require_once __DIR__ . '/interaction-settings.php';
+require_once __DIR__ . '/hit-settings.php';
 require_once __DIR__ . '/admin-inventory.php';
 require_once __DIR__ . '/admin-listing.php';
 require_once __DIR__ . '/admin-readiness.php';
@@ -209,7 +210,7 @@ function wzf_mascot_admin_page() {
     if ($selected !== '' && isset($characters[$selected]) && is_array($characters[$selected])) {
         wzf_mascot_character_management($config, $selected);
         wzf_mascot_thumbnail_panel($config, $selected);
-        if (wzf_mascot_character_status($characters[$selected]) !== 'trash') { wzf_mascot_character_editor($config, $selected); wzf_mascot_interaction_panel($config, $selected); wzf_mascot_presets_panel($config, $selected); }
+        if (wzf_mascot_character_status($characters[$selected]) !== 'trash') { wzf_mascot_character_editor($config, $selected); wzf_mascot_interaction_panel($config, $selected); wzf_mascot_presets_panel($config, $selected); wzf_mascot_hits_panel($config, $selected); }
     }
     elseif ($selected !== '') echo ('<div class="notice notice-error inline"><p>' . esc_html__('The character does not exist. Select one from the list.', 'live2d-show') . '</p></div>');
     echo ('<section class="wzf-mascot-card"><h2>' . esc_html__('Resource preparation', 'live2d-show') . '</h2><p>' . esc_html__('The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights.', 'live2d-show') . '</p><p><a href="https://www.live2d.com/en/sdk/download/web/" target="_blank" rel="noopener">' . esc_html__('Official Cubism SDK for Web download', 'live2d-show') . '</a> · <a href="https://www.live2d.com/en/learn/sample/" target="_blank" rel="noopener">' . esc_html__('Official samples', 'live2d-show') . '</a></p><p class="description">' . esc_html__('Core must match the required Web 5 R5 SHA256. Model ZIPs are limited to 64 MiB and 1,000 entries: one model3 runtime with no sound, scripts or editor projects. Keep at least one motion; the first Idle-group motion is preferred as default idle. Adjust it in character settings after import.', 'live2d-show') . '</p></section><div class="wzf-mascot-imports">');

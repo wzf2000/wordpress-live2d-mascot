@@ -81,7 +81,7 @@ def collect(repo, expected_version=None, source_sha=None):
     if assets['shaders'] != 'shaders/' or assets['terms'] != 'usage-imported-resources.html':
         raise ValueError('Unexpected shader/terms entry')
     files = {name: read(plugin, name) for name in (
-        'live2d-show.php', 'includes/admin-import.php','includes/admin-task.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','includes/admin-inventory.php','includes/admin-listing.php','includes/admin-readiness.php','includes/interaction-settings.php','includes/i18n.php','admin.js','languages/live2d-show.pot','languages/live2d-show-en_US.po','languages/live2d-show-en_US.mo','languages/live2d-show-zh_CN.po','languages/live2d-show-zh_CN.mo','admin.css', 'characters.json', 'haru-assets.json',
+        'live2d-show.php', 'includes/admin-import.php','includes/admin-task.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','includes/admin-inventory.php','includes/admin-listing.php','includes/admin-readiness.php','includes/interaction-settings.php','includes/hit-settings.php','includes/i18n.php','admin.js','languages/live2d-show.pot','languages/live2d-show-en_US.po','languages/live2d-show-en_US.mo','languages/live2d-show-zh_CN.po','languages/live2d-show-zh_CN.mo','admin.css', 'characters.json', 'haru-assets.json',
         'usage-imported-resources.html', 'licenses/Framework-LICENSE.md')}
     if json.loads(files['characters.json']) != {}:
         raise ValueError('Shipped registry must be empty')

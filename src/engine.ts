@@ -58,6 +58,36 @@ class Mascot extends CubismUserModel {
   textures: WebGLTexture[] = [];
   abort = new AbortController();
   sequences = { motion: 0, expression: 0 };
+  gazeParameters = new Map<string, number>();
+  hitAreas: { name: string; drawable: any }[] = [];
+  gazeTarget = { x: 0, y: 0 };
+  gazeCurrent = { x: 0, y: 0 };
+  capabilities() {
+    return { gazeParameters: [...this.gazeParameters.keys()], hitAreas: this.hitAreas.map((area) => area.name) };
+  }
+  setGaze(x: number, y: number) {
+    if (this.disposed || this.stopped || !Number.isFinite(x) || !Number.isFinite(y)) return this.resetGaze();
+    this.gazeTarget = { x: Math.max(-1, Math.min(1,x)), y: Math.max(-1, Math.min(1,y)) };
+  }
+  resetGaze() {
+    this.gazeTarget = {x:0,y:0}; this.gazeCurrent = {x:0,y:0};
+  }
+  hitAreaAt(clientX: number, clientY: number) {
+    if (this.disposed || this.stopped || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return null;
+    const box=this.canvas.getBoundingClientRect();
+    if (!box.width || !box.height || clientX<box.left || clientX>box.right || clientY<box.top || clientY>box.bottom) return null;
+    const x=((clientX-box.left)/box.width*2-1)/((this.canvas.height/this.canvas.width)*0.92);
+    const y=(1-(clientY-box.top)/box.height*2)/0.92;
+    return this.hitAreas.find((area) => this.isHit(area.drawable,x,y))?.name || null;
+  }
+  applyGaze(dt: number) {
+    const factor=1-Math.exp(-dt*7);
+    this.gazeCurrent.x += (this.gazeTarget.x-this.gazeCurrent.x)*factor;
+    this.gazeCurrent.y += (this.gazeTarget.y-this.gazeCurrent.y)*factor;
+    const x=this.gazeCurrent.x,y=this.gazeCurrent.y;
+    const values: Record<string,number>={ParamAngleX:x*6,ParamAngleY:y*5,ParamAngleZ:x*y*2,ParamBodyAngleX:x*2,ParamEyeBallX:x*0.18,ParamEyeBallY:y*0.18};
+    for (const [name,index] of this.gazeParameters) this.getModel().addParameterValueByIndex(index,values[name]);
+  }
   constructor(canvas: HTMLCanvasElement, root: string, shaderRoot: string, options: any = {}) {
     super();
     this.options = options;
@@ -118,6 +148,18 @@ class Mascot extends CubismUserModel {
     this.phase('moc');
     this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
     if (!this.getModel()) throw new Error("Model validation failed");
+    const model=this.getModel();
+    const gazeIds=new Set(['ParamAngleX','ParamAngleY','ParamAngleZ','ParamBodyAngleX','ParamEyeBallX','ParamEyeBallY']);
+    // getParameterIndex can manufacture virtual indices. Enumerate actual parameters only.
+    for (let index=0; index<model.getParameterCount(); index++) {
+      const name=model.getParameterId(index).getString();
+      if (gazeIds.has(name)) this.gazeParameters.set(name,index);
+    }
+    for (let index=0; index<this.settings.getHitAreasCount(); index++) {
+      const name=this.settings.getHitAreaName(index),drawable=this.settings.getHitAreaId(index);
+      const drawableIndex=model.getDrawableIndex(drawable);
+      if (typeof name==='string' && name && drawableIndex>=0 && model.getDrawableVertexCount(drawableIndex)>0 && !this.hitAreas.some((area)=>area.name===name)) this.hitAreas.push({name,drawable});
+    }
     for (const [key, fn] of [
       ['Physics', 'loadPhysics'],
       ['Pose', 'loadPose'],
@@ -283,6 +325,7 @@ class Mascot extends CubismUserModel {
     if (type === 'motion' || type === 'expression') this.sequences[type]++;
   }
   pause() {
+    this.resetGaze();
     this.stopped = true;
     this.sequences.motion++;
     this.sequences.expression++;
@@ -319,6 +362,7 @@ class Mascot extends CubismUserModel {
       model.saveParameters();
       if (!updated) this._eyeBlink.updateParameters(model, dt);
       this._expressionManager.updateMotion(model, dt);
+      this.applyGaze(dt);
       this._physics?.evaluate(model, dt);
       this._pose?.updateParameters(model, dt);
       model.update();

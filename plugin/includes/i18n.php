@@ -37,6 +37,10 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Follow pointer gently'=>__('Follow pointer gently', 'live2d-show'),
+        'Pointer interactions'=>__('Pointer interactions', 'live2d-show'),
+        'Model hit areas available: %1$s'=>__('Model hit areas available: %1$s', 'live2d-show'),
+        'No model hit areas; normal greeting is used.'=>__('No model hit areas; normal greeting is used.', 'live2d-show'),
         'Character dialogue'=>__('Character dialogue', 'live2d-show'),
         'Move mascot: drag, use arrow keys, or Escape to reset'=>__('Move mascot: drag, use arrow keys, or Escape to reset', 'live2d-show'),
         'Move mascot'=>__('Move mascot', 'live2d-show'),

@@ -195,7 +195,7 @@ def main():
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -312,6 +312,12 @@ def main():
         post(bad); assert state()['config'] == preset_state
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == preset_state
         record('real preset save, invalid catalog, stale version and upgrade preservation')
+        data = form('wzf_mascot_hits'); data.update({'hitBindings[0][area]':'Head [synthetic]','hitBindings[0][preset]':'hello'})
+        post(data); hit_state = state()['config']; assert hit_state['characters']['legacy_character']['hitBindings'] == [{'area':'Head [synthetic]','preset':'hello'}]
+        bad = dict(data); bad['version'] = state()['version']; bad['hitBindings[0][area]']='Missing'
+        post(bad); assert state()['config'] == hit_state
+        wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == hit_state
+        record('real model-declared area binding, special-name value, unknown-area rejection and upgrade preservation')
         data = form('wzf_mascot_settings'); stale = dict(data)
         data.update(name='Updated synthetic', credit='Synthetic credit', size='200', offset='6.5', idle='motion-1', welcome='01_extra', **{'greetings[]': '01_extra'})
         post(data); updated = state()['config']; c = updated['characters']['legacy_character']; old = original['characters']['legacy_character']
@@ -324,10 +330,12 @@ def main():
         replaced = state()['config']; assert replaced['characters']['legacy_character']['root'] != c['root']
         assert replaced['characters']['legacy_character']['welcome'] is None
         assert replaced['characters']['legacy_character']['presets'] == [] and replaced['characters']['legacy_character']['presetWarnings'] == 1
+        assert replaced['characters']['legacy_character']['hitBindings'] == [] and replaced['characters']['legacy_character']['hitWarnings'] == 1
         assert 'Some presets are invalid' in request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=legacy_character')[1]
         post(form('wzf_mascot_manage', 'rollback')); rolled = state()['config']['characters']['legacy_character']
         assert rolled['root'] == c['root'] and rolled['welcome'] == '01_extra' and rolled['name'] == c['name']
         assert rolled['presets'][0]['motion'] == '01_extra' and rolled['dialogue'] == c['dialogue']
+        assert rolled['hitBindings'] == c['hitBindings']
         for operation, status in [('disable', 'disabled'), ('trash', 'trash'), ('restore', 'disabled'), ('enable', 'active')]:
             post(form('wzf_mascot_manage', operation)); assert state()['config']['characters']['legacy_character']['status'] == status
             assert ('legacy_character' in front()['characters']) == (status == 'active')
@@ -380,7 +388,7 @@ def main():
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 18, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 19, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

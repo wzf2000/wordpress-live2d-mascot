@@ -194,6 +194,9 @@ msgstr "可用收藏 %1$s 个角色"
 msgid "Between 1 and 16 textures are required."
 msgstr "需要 1–16 张贴图。"
 
+msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+msgstr "将模型声明的区域绑定到已有快捷互动。浏览器还会检查实际可用的绘制区域。未绑定、缺失或无效区域使用普通招呼。"
+
 msgid "Blush"
 msgstr "脸红"
 
@@ -412,6 +415,9 @@ msgstr "托腮摊手"
 
 msgid "Choose a resource file before importing."
 msgstr "请先选择要导入的资源文件。"
+
+msgid "Choose an existing hit area and a valid interaction preset."
+msgstr "请选择模型已有区域和有效互动预设。"
 
 msgid "Choose an image"
 msgstr "选择图片"
@@ -650,6 +656,9 @@ msgstr "反馈"
 msgid "First-use readiness"
 msgstr "首次使用准备"
 
+msgid "Follow pointer gently"
+msgstr "轻柔跟随鼠标"
+
 msgid "Frontend display"
 msgstr "前台显示"
 
@@ -703,6 +712,12 @@ msgstr "低头倾听"
 
 msgid "Hide mascot"
 msgstr "收起看板娘"
+
+msgid "Hit area bindings are invalid."
+msgstr "命中区域绑定无效。"
+
+msgid "Hit area bindings saved."
+msgstr "命中区域绑定已保存。"
 
 msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
 msgstr "我有权在本站使用新资源，并已阅读来源许可与使用条件。"
@@ -839,6 +854,12 @@ msgstr "移动端设置已保存。每个浏览器仍需单独同意并开启。
 msgid "Model"
 msgstr "模型"
 
+msgid "Model hit areas"
+msgstr "模型命中区域"
+
+msgid "Model hit areas available: %1$s"
+msgstr "可用模型区域：%1$s"
+
 msgid "Model motion references are invalid."
 msgstr "模型动作引用无效。"
 
@@ -923,6 +944,9 @@ msgstr "没有匹配的角色，请更换关键词或清空搜索"
 msgid "No matching favorites. Change the search or clear it."
 msgstr "收藏中没有匹配的角色，请更换关键词或清空搜索"
 
+msgid "No model hit areas; normal greeting is used."
+msgstr "模型无命中区域，使用普通招呼。"
+
 msgid "No previous character resources are available for rollback."
 msgstr "没有可回退的上一版角色资源。"
 
@@ -934,6 +958,9 @@ msgstr "当前没有可选角色"
 
 msgid "None"
 msgstr "无"
+
+msgid "Normal greeting"
+msgstr "普通招呼"
 
 msgid "Not imported"
 msgstr "尚未导入"
@@ -982,6 +1009,9 @@ msgstr "物理"
 
 msgid "Play motion"
 msgstr "播放动作"
+
+msgid "Pointer interactions"
+msgstr "指针互动"
 
 msgid "Pose"
 msgstr "姿态"
@@ -1193,6 +1223,9 @@ msgstr "采样已中断。"
 msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
 msgstr "正在采样；收起、阅读暂停或切换角色会中断。"
 
+msgid "Save area bindings"
+msgstr "保存区域绑定"
+
 msgid "Save character settings"
 msgstr "保存角色设置"
 
@@ -1276,6 +1309,9 @@ msgstr "微笑"
 
 msgid "Smile with eyes closed"
 msgstr "闭眼笑"
+
+msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
+msgstr "部分区域绑定已失效并跳过，请检查并保存当前绑定。"
 
 msgid "Some interactions could not load. Try again."
 msgstr "部分互动暂时无法加载，请重试。"
@@ -1522,6 +1558,9 @@ msgstr "此角色需要 WebGL 2，请选择其他角色或更换浏览器"
 
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "此入口检查不渲染模型。移动端仍默认关闭；减少动画与账号显示偏好仍然有效。"
+
+msgid "This model declares no hit areas. Normal greeting remains available."
+msgstr "此模型未声明命中区域，仍可使用普通招呼。"
 
 msgid "Thumbnail commit failed."
 msgstr "缩略图提交失败。"

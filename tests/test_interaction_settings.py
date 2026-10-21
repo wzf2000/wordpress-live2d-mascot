@@ -102,3 +102,26 @@ class InteractionTests(unittest.TestCase):
         wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),'rollback');
         echo json_encode(['mapped'=>$mapped,'rolled'=>$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['presets']]);""")
         self.assertEqual(result['mapped'][0]['expression'],'expression-2');self.assertEqual(result['rolled'][0]['expression'],'expression-1')
+
+    def test_hit_bindings_use_values_not_field_keys_and_filter_local_failures(self):
+        result=self.php("""$rows=[['area'=>'Head [special]','preset'=>'hello'],['area'=>'__proto__','preset'=>'hello'],['area'=>'Missing','preset'=>'hello'],['area'=>'Body','preset'=>'missing']];
+        $safe=wzf_mascot_hit_bindings($rows,['Head [special]','Body'],[['id'=>'hello']]);$rejected=false;
+        try {wzf_mascot_hit_bindings($rows,['Head [special]','Body'],[['id'=>'hello']],true);}catch(Throwable $e){$rejected=true;}
+        echo json_encode(['safe'=>$safe,'rejected'=>$rejected]);""")
+        self.assertEqual(result['safe'],[{'area':'Head [special]','preset':'hello'}]);self.assertTrue(result['rejected'])
+
+    def test_hit_save_validates_current_model_and_preset_removal_drops_binding(self):
+        result=self.php(self.helper.settings_setup()+"""
+        $root=$u['path'].'/'.$c['root'];$model=json_decode(file_get_contents($root.$c['file']),true);$model['HitAreas']=[['Name'=>'Head','Id'=>'head-drawable']];file_put_contents($root.$c['file'],json_encode($model));
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['presets']=[['id'=>'hello','name'=>'Hello','motion'=>'','expression'=>'','line'=>'Hello']];
+        wzf_mascot_save_hits('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),[['area'=>'Head','preset'=>'hello']]);
+        $saved=$options[WZF_MASCOT_OPTION];$bad=false;
+        try {wzf_mascot_save_hits('legacy_character',wzf_mascot_config_version($saved),[['area'=>'Body','preset'=>'hello']]);}catch(Throwable $e){$bad=true;}
+        wzf_mascot_save_presets('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),[]);
+        echo json_encode(['saved'=>$saved,'bad'=>$bad,'after'=>$options[WZF_MASCOT_OPTION]['characters']['legacy_character']]);""")
+        self.assertEqual(result['saved']['characters']['legacy_character']['hitBindings'],[{'area':'Head','preset':'hello'}]);self.assertTrue(result['bad'])
+        self.assertEqual(result['after']['hitBindings'],[]);self.assertEqual(result['after']['hitWarnings'],1)
+
+    def test_hit_nonce_and_permissions(self):
+        self.assertFalse(self.php('wzf_mascot_hits_post();')['ok'])
+        self.assertFalse(self.php("$allowed=false;wzf_mascot_save_hits('x',str_repeat('0',64),[]);")['ok'])

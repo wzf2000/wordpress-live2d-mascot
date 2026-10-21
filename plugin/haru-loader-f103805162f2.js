@@ -739,6 +739,10 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const livePresets = new Map();
+    let nextHit = 0, gazeEnabled = false;
+    try { gazeEnabled = localStorage.getItem('wzf-mascot-gaze-v1') === 'enabled'; } catch {}
+    const capabilities = () => engine?.capabilities?.() || {gazeParameters:[],hitAreas:[]};
     const presetControls = make('div', '', 'wzf-haru-presets');
     presetControls.setAttribute('aria-label', t("Quick interactions"));
     const dialogueChoice = make('select');
@@ -762,6 +766,12 @@
     searchRow.append(characterSearch, clearSearch);
     const dialogueSettings = make('details', '', 'wzf-haru-layout');
     dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice);
+    const pointerSettings = make('details', '', 'wzf-haru-layout');
+    const gazeChoice = make('input'), gazeLabel = make('label', '', 'wzf-haru-favorites-filter'), pointerStatus = make('p');
+    gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
+    gazeLabel.append(gazeChoice,document.createTextNode(t("Follow pointer gently")));
+    pointerSettings.append(make('summary',t("Pointer interactions")),gazeLabel,pointerStatus);
+    gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();try{localStorage.setItem('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');}catch{}};
     panel.append(
       label,
       searchRow,
@@ -782,6 +792,7 @@
       face,
       resetFace,
       dialogueSettings,
+      pointerSettings,
       credit,
       state,
     );
@@ -947,7 +958,7 @@
       if (event.button !== 0 || !allowed() || !engine || loading) return;
       const box=host.getBoundingClientRect();
       dragState={pointer:event.pointerId,dx:event.clientX-box.x,dy:event.clientY-box.y,anchor:anchor?{...anchor}:null,position};
-      clearDialogue(); cancelWelcome(); cancelPreset();
+      clearDialogue(); cancelWelcome(); cancelPreset(); engine?.resetGaze?.();
       dragHandle.setPointerCapture(event.pointerId);
       event.preventDefault();
     };
@@ -963,7 +974,7 @@
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); endDrag(); reset.click(); return; }
       if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
       event.preventDefault(); event.stopPropagation();
-      clearDialogue(); cancelWelcome(); cancelPreset();
+      clearDialogue(); cancelWelcome(); cancelPreset(); engine?.resetGaze?.();
       const box=host.getBoundingClientRect(), bounds=movementBounds();
       const step=event.shiftKey ? 40 : 16;
       moveAnchor(event.key==='ArrowLeft'?bounds.left:event.key==='ArrowRight'?bounds.maxX:box.x,box.y+(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0));
@@ -1032,10 +1043,16 @@
       panelToggle.textContent = panelOpen ? t("Close interaction") : t("Interact");
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
       layoutDock();
+      const supported=capabilities();
+      gazeChoice.disabled=!supported.gazeParameters.length;
+      pointerStatus.textContent=supported.hitAreas.length?t("Model hit areas available: %1$s",supported.hitAreas.join(', ')):t("No model hit areas; normal greeting is used.");
+      if (!run || loading || dragState || !gazeEnabled) engine?.resetGaze?.();
       if (host) {
         host.hidden = !(run && engine && !loading);
         const touch = host.querySelector('button');
-        const hasGreetings = !!characters[active].greetings?.length || (dialogueMode !== 'silent' && characters[active].dialogue?.click?.enabled === true);
+        const hasBindings=Array.isArray(characters[active].hitBindings)&&characters[active].hitBindings.some((binding)=>supported.hitAreas.includes(binding?.area)&&livePresets.has(binding?.preset));
+        touch.classList.toggle('wzf-haru-hit-enabled',hasBindings);
+        const hasGreetings = hasBindings || !!characters[active].greetings?.length || (dialogueMode !== 'silent' && characters[active].dialogue?.click?.enabled === true);
         touch.hidden = !hasGreetings;
         touch.disabled = !hasGreetings || !run || !engine || loading;
       }
@@ -1350,6 +1367,7 @@
       engine = null;
     };
     const populatePresets = () => {
+      livePresets.clear(); nextHit=0;
       presetControls.replaceChildren();
       const rows = characters[active].presets;
       if (!Array.isArray(rows)) { presetControls.hidden = true; return; }
@@ -1360,6 +1378,7 @@
             (row.motion && !engine.catalog.motions.some((item) => item.id === row.motion)) ||
             (row.expression && !engine.catalog.expressions.some((item) => item.id === row.expression)) ||
             new TextEncoder().encode(row.line).length > 300) continue;
+        livePresets.set(row.id,row);
         const button = make('button', row.name);
         button.dataset.presetId = row.id;
         button.onclick = () => performPreset(row);
@@ -1650,8 +1669,14 @@
     face.onclick = () => perform('expression', expression.value);
     stopMotion.onclick = () => restore('motion');
     resetFace.onclick = () => restore('expression');
-    const greet = async () => {
+    const greet = async (event) => {
       if (!allowed() || !engine || loading || dragState) return;
+      if (event?.detail > 0 && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+        const area=engine.hitAreaAt?.(event.clientX,event.clientY);
+        const binding=Array.isArray(characters[active].hitBindings)?characters[active].hitBindings.find((item)=>item?.area===area&&capabilities().hitAreas.includes(area)):null;
+        const preset=binding&&livePresets.get(binding.preset);
+        if(preset){if(performance.now()<nextHit)return;nextHit=performance.now()+1000;void performPreset(preset);return;}
+      }
       welcomeConsumed = true;
       dialogueWelcomeConsumed = true;
       cancelWelcome();
@@ -1975,6 +2000,13 @@
       syncMobileInput();
       apply();
     });
+    document.addEventListener('pointermove',(event)=>{
+      if(!gazeEnabled || event.pointerType!=='mouse' || !matchMedia('(pointer: fine)').matches || !allowed() || loading || dragState || !engine || !capabilities().gazeParameters.length)return;
+      const box=canvas.getBoundingClientRect();
+      if(box.width&&box.height)engine.setGaze?.((event.clientX-(box.left+box.width/2))/(box.width/2),((box.top+box.height/2)-event.clientY)/(box.height/2));
+    },{passive:true});
+    document.addEventListener('pointerleave',()=>engine?.resetGaze?.());
+    window.addEventListener('blur',()=>engine?.resetGaze?.());
     reduce.addEventListener('change', apply);
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) { awayAt = performance.now(); clearDialogue(); }
@@ -2009,6 +2041,8 @@
       welcomeConsumed,
       dialogueMode,
       dialogueWelcomeConsumed,
+      engineCapabilities: capabilities(),
+      gazeEnabled,
       character: active,
       committed,
       preview,

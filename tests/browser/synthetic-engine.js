@@ -32,6 +32,9 @@
       };
       const candidate = {
         catalog, disposed: false,
+        capabilities:()=>({gazeParameters:['ParamAngleX','ParamEyeBallX'],hitAreas:root.includes('/alpha/')?['Head','Body']:[]}),
+        setGaze(x,y){record({type:'gaze',id,x,y});},resetGaze(){record({type:'gaze-reset',id});},
+        hitAreaAt(x,y){const box=canvas.getBoundingClientRect();return root.includes('/alpha/')?(y<box.y+box.height/2?'Head':'Body'):null;},
         gl: { getExtension: () => ({ UNMASKED_RENDERER_WEBGL: 1 }),
           getParameter: () => { fixture.gpuQueries++; return 'Synthetic SwiftShader'; } },
         state: () => ({ paused, disposed, activeMotion, activeExpression, frames,

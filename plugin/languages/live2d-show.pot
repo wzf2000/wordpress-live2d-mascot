@@ -197,6 +197,9 @@ msgstr ""
 msgid "Between 1 and 16 textures are required."
 msgstr ""
 
+msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+msgstr ""
+
 msgid "Blush"
 msgstr ""
 
@@ -414,6 +417,9 @@ msgid "Chin in hand · open palm"
 msgstr ""
 
 msgid "Choose a resource file before importing."
+msgstr ""
+
+msgid "Choose an existing hit area and a valid interaction preset."
 msgstr ""
 
 msgid "Choose an image"
@@ -653,6 +659,9 @@ msgstr ""
 msgid "First-use readiness"
 msgstr ""
 
+msgid "Follow pointer gently"
+msgstr ""
+
 msgid "Frontend display"
 msgstr ""
 
@@ -705,6 +714,12 @@ msgid "Head lowered · listening"
 msgstr ""
 
 msgid "Hide mascot"
+msgstr ""
+
+msgid "Hit area bindings are invalid."
+msgstr ""
+
+msgid "Hit area bindings saved."
 msgstr ""
 
 msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
@@ -842,6 +857,12 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
+msgid "Model hit areas"
+msgstr ""
+
+msgid "Model hit areas available: %1$s"
+msgstr ""
+
 msgid "Model motion references are invalid."
 msgstr ""
 
@@ -926,6 +947,9 @@ msgstr ""
 msgid "No matching favorites. Change the search or clear it."
 msgstr ""
 
+msgid "No model hit areas; normal greeting is used."
+msgstr ""
+
 msgid "No previous character resources are available for rollback."
 msgstr ""
 
@@ -936,6 +960,9 @@ msgid "No selectable character"
 msgstr ""
 
 msgid "None"
+msgstr ""
+
+msgid "Normal greeting"
 msgstr ""
 
 msgid "Not imported"
@@ -984,6 +1011,9 @@ msgid "Physics"
 msgstr ""
 
 msgid "Play motion"
+msgstr ""
+
+msgid "Pointer interactions"
 msgstr ""
 
 msgid "Pose"
@@ -1196,6 +1226,9 @@ msgstr ""
 msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
 msgstr ""
 
+msgid "Save area bindings"
+msgstr ""
+
 msgid "Save character settings"
 msgstr ""
 
@@ -1278,6 +1311,9 @@ msgid "Smile"
 msgstr ""
 
 msgid "Smile with eyes closed"
+msgstr ""
+
+msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
 msgstr ""
 
 msgid "Some interactions could not load. Try again."
@@ -1524,6 +1560,9 @@ msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr ""
 
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
+msgstr ""
+
+msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr ""
 
 msgid "Thumbnail commit failed."

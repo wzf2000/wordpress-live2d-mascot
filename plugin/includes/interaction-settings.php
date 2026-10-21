@@ -121,6 +121,11 @@ function wzf_mascot_save_presets($id, $version, $presets) {
         if (($c['presets'] ?? []) === $next && empty($c['presetWarnings'])) return;
         $config['characters'][$id]['presets'] = $next;
         unset($config['characters'][$id]['presetWarnings']);
+        if (isset($c['hitBindings'])) {
+            $filtered = wzf_mascot_hit_bindings($c['hitBindings'], null, $next);
+            $config['characters'][$id]['hitBindings'] = $filtered;
+            $config['characters'][$id]['hitWarnings'] = is_array($c['hitBindings']) ? max(0,count($c['hitBindings'])-count($filtered)) : 1;
+        }
         if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }

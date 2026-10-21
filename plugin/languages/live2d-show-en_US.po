@@ -197,6 +197,9 @@ msgstr "Available favorites: %1$s characters"
 msgid "Between 1 and 16 textures are required."
 msgstr "Between 1 and 16 textures are required."
 
+msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+msgstr "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+
 msgid "Blush"
 msgstr "Blush"
 
@@ -415,6 +418,9 @@ msgstr "Chin in hand · open palm"
 
 msgid "Choose a resource file before importing."
 msgstr "Choose a resource file before importing."
+
+msgid "Choose an existing hit area and a valid interaction preset."
+msgstr "Choose an existing hit area and a valid interaction preset."
 
 msgid "Choose an image"
 msgstr "Choose an image"
@@ -653,6 +659,9 @@ msgstr "Feedback"
 msgid "First-use readiness"
 msgstr "First-use readiness"
 
+msgid "Follow pointer gently"
+msgstr "Follow pointer gently"
+
 msgid "Frontend display"
 msgstr "Frontend display"
 
@@ -706,6 +715,12 @@ msgstr "Head lowered · listening"
 
 msgid "Hide mascot"
 msgstr "Hide mascot"
+
+msgid "Hit area bindings are invalid."
+msgstr "Hit area bindings are invalid."
+
+msgid "Hit area bindings saved."
+msgstr "Hit area bindings saved."
 
 msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
 msgstr "I have the right to use the new resources on this site and have read their source licenses and terms."
@@ -842,6 +857,12 @@ msgstr "Mobile settings saved. Each browser still requires separate consent and 
 msgid "Model"
 msgstr "Model"
 
+msgid "Model hit areas"
+msgstr "Model hit areas"
+
+msgid "Model hit areas available: %1$s"
+msgstr "Model hit areas available: %1$s"
+
 msgid "Model motion references are invalid."
 msgstr "Model motion references are invalid."
 
@@ -926,6 +947,9 @@ msgstr "No matching characters. Change the search or clear it."
 msgid "No matching favorites. Change the search or clear it."
 msgstr "No matching favorites. Change the search or clear it."
 
+msgid "No model hit areas; normal greeting is used."
+msgstr "No model hit areas; normal greeting is used."
+
 msgid "No previous character resources are available for rollback."
 msgstr "No previous character resources are available for rollback."
 
@@ -937,6 +961,9 @@ msgstr "No selectable character"
 
 msgid "None"
 msgstr "None"
+
+msgid "Normal greeting"
+msgstr "Normal greeting"
 
 msgid "Not imported"
 msgstr "Not imported"
@@ -985,6 +1012,9 @@ msgstr "Physics"
 
 msgid "Play motion"
 msgstr "Play motion"
+
+msgid "Pointer interactions"
+msgstr "Pointer interactions"
 
 msgid "Pose"
 msgstr "Pose"
@@ -1196,6 +1226,9 @@ msgstr "Sample interrupted."
 msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
 msgstr "Sampling; hiding, reading suspension or character switching will interrupt it."
 
+msgid "Save area bindings"
+msgstr "Save area bindings"
+
 msgid "Save character settings"
 msgstr "Save character settings"
 
@@ -1279,6 +1312,9 @@ msgstr "Smile"
 
 msgid "Smile with eyes closed"
 msgstr "Smile with eyes closed"
+
+msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
+msgstr "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
 
 msgid "Some interactions could not load. Try again."
 msgstr "Some interactions could not load. Try again."
@@ -1525,6 +1561,9 @@ msgstr "This character requires WebGL 2. Choose another character or browser."
 
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
+
+msgid "This model declares no hit areas. Normal greeting remains available."
+msgstr "This model declares no hit areas. Normal greeting remains available."
 
 msgid "Thumbnail commit failed."
 msgstr "Thumbnail commit failed."
