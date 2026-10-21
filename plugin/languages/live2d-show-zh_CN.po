@@ -107,6 +107,9 @@ msgstr "同意条款并在本浏览器开启移动动画"
 msgid "Accept terms and show"
 msgstr "同意条款并显示"
 
+msgid "Action completed"
+msgstr "操作已完成"
+
 msgid "Active"
 msgstr "启用"
 
@@ -760,6 +763,9 @@ msgstr "盘点磁盘用量"
 
 msgid "Interact"
 msgstr "互动"
+
+msgid "Interaction help"
+msgstr "互动帮助"
 
 msgid "Interaction preset is invalid."
 msgstr "互动预设无效。"
@@ -1592,6 +1598,9 @@ msgstr "缩略图写入校验失败。"
 msgid "Thumbnail: %s"
 msgstr "缩略图：%s"
 
+msgid "Tool completed"
+msgstr "工具操作已完成"
+
 msgid "Trash"
 msgstr "回收站"
 
@@ -1639,6 +1648,9 @@ msgstr "更新此角色的模型 ZIP"
 
 msgid "Upload failed."
 msgstr "上传失败。"
+
+msgid "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
+msgstr "打开互动面板可预览角色并使用快捷互动。移动柄支持拖动和方向键移动。"
 
 msgid "Use this character"
 msgstr "使用这个角色"

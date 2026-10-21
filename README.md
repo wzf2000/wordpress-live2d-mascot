@@ -321,6 +321,21 @@ window.WZFMascot.cancel(); // 取消本接口尚未完成的命令
 
 返回 Promise，成功为 `{ok:true, code:'played'|'reset'|'stopped', characterId}`；拒绝为 `{ok:false, code}`，包括 `invalid-request`（参数）、`unknown-id`（目录无此 ID）、`unavailable`（未显示／就绪或已暂停）、`busy`、`rate-limited`、`cancelled`、`resource-error`。取消／资源失败结果可带 characterId。`cancel()` 返回 `{ok:true, code:'cancelled'|'idle'}`，阻止尚未完成命令产生动作或字幕；已开始播放的动作可另发 stop，已经发出的同源资源请求可能继续填入引擎缓存。收起、暂停、角色切换或新的手动操作也会取消未完成联动。接口不提供网络地址、任意参数写入或强制恢复入口。
 
+候选新增固定语义通知 `notify({event, caption?, presetId?})` 和同名数据的 DOM 事件 `wzf-mascot-event`，event 仅接受 `help`、`tool-complete`、`action-complete`。由工具的**用户操作完成回调主动接入**，不扫描页面文本，不监听全站任意点击或复制；当前未宣称其他工具都已联动。
+
+```js
+// 放在你自己的按钮操作成功回调中。
+await window.WZFMascot?.notify({
+  event: 'tool-complete', caption: '结果已准备好',
+  // presetId: 'preset-1', // 可选，当前角色管理员配置的预设 ID
+});
+document.dispatchEvent(new CustomEvent('wzf-mascot-event', {
+  detail: { event: 'action-complete', caption: '保存完成' },
+}));
+```
+
+caption 为最多 300 字节的纯文本；通知不改变显示、移动端或条款同意，不在预览角色、暂停或加载期间运行。成功通知至少间隔 15 秒，同角色同事件至少 30 秒；无效配置、忙碌或冷却返回明确 code。语义通知对应站点显式操作，台词遵循静默选择；预设动作／表情同时开始，不等待彼此。`cancel()` 同时取消待完成预设并清除气泡。互动面板的“互动帮助”始终可展开阅读；可选气泡反馈使用同一 help 路径，静默或冷却不影响帮助正文。
+
 ### 服务器与资源边界
 
 uploads 中仅写固定哈希 Core JS 和数据白名单，并生成 Apache/IIS 禁止服务器脚本执行的规则；Nginx 等服务器应按站点惯例禁止 uploads 下的服务器脚本执行。资源在前台使用时公开提供，不是私人文件存储。

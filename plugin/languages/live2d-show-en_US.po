@@ -110,6 +110,9 @@ msgstr "Accept terms and enable mobile animation in this browser"
 msgid "Accept terms and show"
 msgstr "Accept terms and show"
 
+msgid "Action completed"
+msgstr "Action completed"
+
 msgid "Active"
 msgstr "Active"
 
@@ -763,6 +766,9 @@ msgstr "Inspect disk usage"
 
 msgid "Interact"
 msgstr "Interact"
+
+msgid "Interaction help"
+msgstr "Interaction help"
 
 msgid "Interaction preset is invalid."
 msgstr "Interaction preset is invalid."
@@ -1595,6 +1601,9 @@ msgstr "Thumbnail write verification failed."
 msgid "Thumbnail: %s"
 msgstr "Thumbnail: %s"
 
+msgid "Tool completed"
+msgstr "Tool completed"
+
 msgid "Trash"
 msgstr "Trash"
 
@@ -1642,6 +1651,9 @@ msgstr "Update this character’s model ZIP"
 
 msgid "Upload failed."
 msgstr "Upload failed."
+
+msgid "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
+msgstr "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
 
 msgid "Use this character"
 msgstr "Use this character"

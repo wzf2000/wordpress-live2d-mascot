@@ -108,7 +108,7 @@
       bubble.textContent = line;
       bubble.hidden = false;
       placeDialogue();
-      bubbleTimer = setTimeout(clearDialogue, 4500);
+      bubbleTimer = setTimeout(clearDialogue, Math.max(4500,Math.min(12000,[...line].length*40)));
       return true;
     };
     const speak = (event, proactive = false) => {
@@ -743,6 +743,8 @@
     let nextHit = 0, gazeEnabled = false;
     try { gazeEnabled = localStorage.getItem('wzf-mascot-gaze-v1') === 'enabled'; } catch {}
     const capabilities = () => engine?.capabilities?.() || {gazeParameters:[],hitAreas:[]};
+    const helpButton = make('details', '', 'wzf-haru-layout');
+    helpButton.append(make('summary',t("Interaction help")),make('p',t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.")));
     const presetControls = make('div', '', 'wzf-haru-presets');
     presetControls.setAttribute('aria-label', t("Quick interactions"));
     const dialogueChoice = make('select');
@@ -785,6 +787,7 @@
       commitButton,
       cancelPreview,
       presetControls,
+      helpButton,
       motion,
       play,
       stopMotion,
@@ -1428,6 +1431,9 @@
         bubble.setAttribute('aria-live', 'polite');
         bubble.setAttribute('aria-label', t("Character dialogue"));
         bubble.tabIndex = 0;
+        bubble.onfocus=()=>{clearTimeout(bubbleTimer);bubbleTimer=null;};
+        bubble.onblur=()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,2000);}};
+        bubble.addEventListener('wheel',()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,12000);}},{passive:true});
         host.append(canvas, touch, bubble);
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
@@ -1894,10 +1900,36 @@
         }
       }
     };
+    const semanticTimes = new Map();
+    let semanticNext = 0;
+    const notify = async (request) => {
+      let event,caption,presetId;
+      try {
+        if (!request || typeof request!=='object' || ![Object.prototype,null].includes(Object.getPrototypeOf(request)) || Object.keys(request).some((key)=>!['event','caption','presetId'].includes(key))) return {ok:false,code:'invalid-request'};
+        ({event,caption,presetId}=request);
+        if (!['help','tool-complete','action-complete'].includes(event) || (caption!==undefined&&(typeof caption!=='string'||!caption.trim()||new TextEncoder().encode(caption).length>300||/[<>\u0000-\u001f\u007f]/.test(caption))) || (presetId!==undefined&&(typeof presetId!=='string'||!/^[a-z][a-z0-9-]{0,63}$/.test(presetId)))) return {ok:false,code:'invalid-request'};
+      } catch { return {ok:false,code:'invalid-request'}; }
+      if (!engine||!allowed()||loading||preview||dragState||engine.state().paused) return {ok:false,code:'unavailable'};
+      const preset=presetId===undefined?null:livePresets.get(presetId);
+      if(presetId!==undefined&&!preset)return {ok:false,code:'unknown-id'};
+      if(manualPending.size||touchPending||externalPending)return {ok:false,code:'busy'};
+      const now=performance.now(), key=active+':'+event;
+      if(now<semanticNext || now-(semanticTimes.get(key)??-Infinity)<30000)return {ok:false,code:'rate-limited'};
+      if(!preset&&dialogueMode==='silent')return {ok:false,code:'muted'};
+      semanticNext=now+15000; semanticTimes.set(key,now);
+      const characterId=active;
+      const line=caption??(event==='help'?t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."):event==='tool-complete'?t("Tool completed"):t("Action completed"));
+      if(preset){const ok=await performPreset({...preset,line:caption??preset.line});return {ok,code:ok?'played':'cancelled',characterId};}
+      welcomeConsumed=true;dialogueWelcomeConsumed=true;cancelWelcome();clearDialogue();
+      return {ok:showLine(line),code:'shown',characterId};
+    };
+    helpButton.addEventListener('toggle',()=>{if(helpButton.open)void notify({event:'help'});});
+    document.addEventListener('wzf-mascot-event',(event)=>{void notify(event.detail);});
     window.WZFMascot = Object.freeze({
       version: 1,
+      notify,
       command: externalCommand,
-      cancel: () => ({ ok: true, code: cancelExternal() ? 'cancelled' : 'idle' }),
+      cancel: () => {const pending=!!pendingPreset;cancelPreset();clearDialogue();return {ok:true,code:cancelExternal()||pending?'cancelled':'idle'};},
     });
     const setSuspension = (source, suspended) => {
       if (suspensions.has(source) === suspended) return;

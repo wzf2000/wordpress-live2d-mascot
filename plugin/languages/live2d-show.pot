@@ -110,6 +110,9 @@ msgstr ""
 msgid "Accept terms and show"
 msgstr ""
 
+msgid "Action completed"
+msgstr ""
+
 msgid "Active"
 msgstr ""
 
@@ -762,6 +765,9 @@ msgid "Inspect disk usage"
 msgstr ""
 
 msgid "Interact"
+msgstr ""
+
+msgid "Interaction help"
 msgstr ""
 
 msgid "Interaction preset is invalid."
@@ -1595,6 +1601,9 @@ msgstr ""
 msgid "Thumbnail: %s"
 msgstr ""
 
+msgid "Tool completed"
+msgstr ""
+
 msgid "Trash"
 msgstr ""
 
@@ -1641,6 +1650,9 @@ msgid "Update this character’s model ZIP"
 msgstr ""
 
 msgid "Upload failed."
+msgstr ""
+
+msgid "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
 msgstr ""
 
 msgid "Use this character"

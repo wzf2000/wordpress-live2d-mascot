@@ -37,6 +37,10 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Interaction help'=>__('Interaction help', 'live2d-show'),
+        'Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.'=>__('Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.', 'live2d-show'),
+        'Tool completed'=>__('Tool completed', 'live2d-show'),
+        'Action completed'=>__('Action completed', 'live2d-show'),
         'Follow pointer gently'=>__('Follow pointer gently', 'live2d-show'),
         'Pointer interactions'=>__('Pointer interactions', 'live2d-show'),
         'Model hit areas available: %1$s'=>__('Model hit areas available: %1$s', 'live2d-show'),

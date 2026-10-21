@@ -87,6 +87,28 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
     await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'preset-test',suspended:true}})));
     assert.equal(await bubble(page).textContent(),'');
     assert.equal(await page.getByRole('button',{name:'Quick greeting',exact:true}).isVisible(),false); checks++;
+    assert.equal((await page.evaluate(()=>window.WZFMascot.notify({event:'help'}))).code,'unavailable');
+    await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'preset-test',suspended:false}})));
+    assert.equal((await page.evaluate(()=>window.WZFMascot.notify({event:'help'}))).code,'unavailable');
+    await page.getByRole('button',{name:'Cancel preview',exact:true}).click();await page.waitForFunction(()=>window.WZFHaruStatus().character==='alpha'&&!window.WZFHaruStatus().loading);
+    for(const value of [{event:'arbitrary'},{event:'help',url:'https://example.invalid'},{event:'help',caption:'<b>markup</b>'},{event:'help',caption:'a'.repeat(301)},{event:'tool-complete',presetId:'missing'}]){
+      assert.equal((await page.evaluate((request)=>window.WZFMascot.notify(request),value)).ok,false);
+    }
+    let result=await page.evaluate(()=>window.WZFMascot.notify({event:'tool-complete',caption:'Local tool complete'}));assert.equal(result.ok,true);
+    assert.equal(await bubble(page).textContent(),'Local tool complete');
+    assert.equal((await page.evaluate(()=>window.WZFMascot.notify({event:'action-complete'}))).code,'rate-limited');
+    await page.evaluate(()=>window.WZFMascot.cancel());assert.equal(await bubble(page).textContent(),'');
+    await page.clock.runFor(31000);await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-event',{detail:{event:'action-complete',caption:'Explicit local event'}})));
+    assert.equal(await bubble(page).textContent(),'Explicit local event');
+    await page.clock.runFor(31000);await page.getByText('Interaction help',{exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('.wzf-haru-bubble').textContent.startsWith('Use Interact'));
+    assert.equal(await page.getByText('Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.',{exact:true}).first().isVisible(),true);
+    if(output)await page.screenshot({path:path.join(output,'semantic-help.png')});checks++;
+    await page.clock.runFor(31000);await page.evaluate(()=>{window.__mascotFixture.holdPlay=true;window.__mascotFixture.holdPlayChannel='expression';});
+    await page.evaluate(()=>{window.__semanticResult=window.WZFMascot.notify({event:'tool-complete',presetId:'greet'});});
+    await page.waitForFunction(()=>window.__mascotFixture.pendingPlays.length===1);
+    await page.evaluate(()=>window.WZFMascot.cancel());await page.evaluate(()=>window.__mascotFixture.pendingPlays.splice(0).forEach(fn=>fn()));
+    assert.equal((await page.evaluate(()=>window.__semanticResult)).code,'cancelled');assert.equal(await bubble(page).textContent(),'');checks++;
     console.log(JSON.stringify({complete:true,checks,syntheticOnly:true,realRenderingTested:false}));
   } finally {await context.close();await browser.close();await fixture.close();}
 })().catch((e)=>{console.error(e);process.exitCode=1;});
