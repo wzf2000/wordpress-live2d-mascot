@@ -123,6 +123,7 @@ jobs:
           npm run test:browser -- --out build/browser
           node tests/dialogue-browser.cjs build/browser/dialogue
           node tests/movement-browser.cjs build/browser/movement
+          node tests/account-browser.cjs build/browser/account
       - name: Preserve synthetic browser summary and selected screenshots only
         if: always()
         uses: actions/upload-artifact@v4

@@ -73,6 +73,7 @@ require_once __DIR__ . '/admin-thumbnail.php';
 require_once __DIR__ . '/admin-mobile.php';
 require_once __DIR__ . '/interaction-settings.php';
 require_once __DIR__ . '/hit-settings.php';
+require_once __DIR__ . '/account-preferences.php';
 require_once __DIR__ . '/admin-inventory.php';
 require_once __DIR__ . '/admin-listing.php';
 require_once __DIR__ . '/admin-readiness.php';

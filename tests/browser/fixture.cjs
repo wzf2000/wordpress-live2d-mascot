@@ -18,7 +18,7 @@ async function startFixture() {
         greetings: ['wave'], welcome: null, size: 180, offset: 0, credit: 'Synthetic test data' });
       const config = { version: 'synthetic-browser', termsVersion: 'synthetic-v1',
         terms: '/terms', core: '/synthetic/core.js', engine: '/synthetic/engine.js', shaders: '/synthetic/shaders/',
-        mobileEnabled: url.searchParams.get('mobile') === '1', mobilePauseOnInput: true,
+        mobileEnabled: url.searchParams.get('mobile') === '1', mobilePauseOnInput: true, accountEndpoint:'/account',
         characters: { alpha: character('alpha'), beta: character('beta') } };
       if (url.searchParams.get('dialogue') === '1') for (const [id, c] of Object.entries(config.characters)) {
         c.greetings = [];

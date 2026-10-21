@@ -110,6 +110,30 @@ msgstr "Accept terms and enable mobile animation in this browser"
 msgid "Accept terms and show"
 msgstr "Accept terms and show"
 
+msgid "Account and browser differ. Choose which preferences to use; saving to the account is a separate action."
+msgstr "Account and browser differ. Choose which preferences to use; saving to the account is a separate action."
+
+msgid "Account and browser preferences match."
+msgstr "Account and browser preferences match."
+
+msgid "Account preferences"
+msgstr "Account preferences"
+
+msgid "Account preferences applied to this browser."
+msgstr "Account preferences applied to this browser."
+
+msgid "Account preferences are busy. Try again."
+msgstr "Account preferences are busy. Try again."
+
+msgid "Account preferences could not be read or saved. Your browser preferences are retained."
+msgstr "Account preferences could not be read or saved. Your browser preferences are retained."
+
+msgid "Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."
+msgstr "Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."
+
+msgid "Account preferences saved. Any later browser changes remain local."
+msgstr "Account preferences saved. Any later browser changes remain local."
+
 msgid "Action completed"
 msgstr "Action completed"
 
@@ -809,6 +833,12 @@ msgstr "Isolated characters retain their configuration, files and browser favori
 msgid "JSON must be an object."
 msgstr "JSON must be an object."
 
+msgid "Keep browser preferences"
+msgstr "Keep browser preferences"
+
+msgid "Keeping browser preferences. The account was not changed."
+msgstr "Keeping browser preferences. The account was not changed."
+
 msgid "Legacy or unknown task state"
 msgstr "Legacy or unknown task state"
 
@@ -932,6 +962,9 @@ msgstr "New preset %s"
 msgid "New single-model runtime ZIP"
 msgstr "New single-model runtime ZIP"
 
+msgid "No account preferences saved. Saving is optional."
+msgstr "No account preferences saved. Saving is optional."
+
 msgid "No candidate character"
 msgstr "No candidate character"
 
@@ -1007,6 +1040,9 @@ msgstr "Open palms · head tilt"
 msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 msgstr "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 
+msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
+msgstr "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
+
 msgid "Partial: %s observed bytes"
 msgstr "Partial: %s observed bytes"
 
@@ -1079,8 +1115,14 @@ msgstr "Re-enabling diagnostics clears saved windows and starts a new batch. Up 
 msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 msgstr "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 
+msgid "Read account preferences"
+msgstr "Read account preferences"
+
 msgid "Readers opt in"
 msgstr "Readers opt in"
+
+msgid "Reading account preferences…"
+msgstr "Reading account preferences…"
 
 msgid "Ready"
 msgstr "Ready"
@@ -1235,6 +1277,9 @@ msgstr "Sampling; hiding, reading suspension or character switching will interru
 msgid "Save area bindings"
 msgstr "Save area bindings"
 
+msgid "Save browser preferences to account"
+msgstr "Save browser preferences to account"
+
 msgid "Save character settings"
 msgstr "Save character settings"
 
@@ -1252,6 +1297,9 @@ msgstr "Save thumbnail"
 
 msgid "Saved windows: %1$s of 20. Older windows replaced: %2$s."
 msgstr "Saved windows: %1$s of 20. Older windows replaced: %2$s."
+
+msgid "Saving account preferences…"
+msgstr "Saving account preferences…"
 
 msgid "Search"
 msgstr "Search"
@@ -1291,6 +1339,9 @@ msgstr "Showing"
 
 msgid "Showing %1$s of %2$s characters"
 msgstr "Showing %1$s of %2$s characters"
+
+msgid "Sign in to read or save account preferences."
+msgstr "Sign in to read or save account preferences."
 
 msgid "Silent"
 msgstr "Silent"
@@ -1415,11 +1466,20 @@ msgstr "The ZIP must contain exactly one model3.json."
 msgid "The ZIP must not contain symbolic links or special files."
 msgstr "The ZIP must not contain symbolic links or special files."
 
+msgid "The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version."
+msgstr "The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version."
+
+msgid "The account character could not load. Browser preferences were not changed."
+msgstr "The account character could not load. Browser preferences were not changed."
+
 msgid "The actual expanded size exceeds the limit."
 msgstr "The actual expanded size exceeds the limit."
 
 msgid "The browser blocked mascot execution. Refresh and retry."
 msgstr "The browser blocked mascot execution. Refresh and retry."
+
+msgid "The browser did not allow saving account preferences locally. Current preferences are retained."
+msgstr "The browser did not allow saving account preferences locally. Current preferences are retained."
 
 msgid "The browser did not allow saving. This preview is still usable."
 msgstr "The browser did not allow saving. This preview is still usable."
@@ -1499,6 +1559,9 @@ msgstr "The plugin includes no Core or models. Obtain resources you have the rig
 msgid "The rendering program is invalid; this character cannot be displayed."
 msgstr "The rendering program is invalid; this character cannot be displayed."
 
+msgid "The request timed out. A save may have completed. Read account preferences again before saving."
+msgstr "The request timed out. A save may have completed. Read account preferences again before saving."
+
 msgid "The required Core file and SHA256 are valid."
 msgstr "The required Core file and SHA256 are valid."
 
@@ -1570,6 +1633,9 @@ msgstr "This entry check does not render models. Mobile remains off by default; 
 
 msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr "This model declares no hit areas. Normal greeting remains available."
+
+msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
+msgstr "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 
 msgid "Thumbnail commit failed."
 msgstr "Thumbnail commit failed."
@@ -1654,6 +1720,9 @@ msgstr "Upload failed."
 
 msgid "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
 msgstr "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
+
+msgid "Use account preferences"
+msgstr "Use account preferences"
 
 msgid "Use this character"
 msgstr "Use this character"

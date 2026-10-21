@@ -125,3 +125,51 @@ class InteractionTests(unittest.TestCase):
     def test_hit_nonce_and_permissions(self):
         self.assertFalse(self.php('wzf_mascot_hits_post();')['ok'])
         self.assertFalse(self.php("$allowed=false;wzf_mascot_save_hits('x',str_repeat('0',64),[]);")['ok'])
+
+    def account(self, body):
+        setup='''$test_uid=7;$test_blog=1;$test_metadata=[];$test_writes=0;$test_filter=false;
+        function get_current_user_id(){global $test_uid;return $test_uid;}
+        function get_current_blog_id(){global $test_blog;return $test_blog;}
+        function update_user_meta($uid,$key,$value){global $test_metadata,$test_writes,$test_filter;$test_writes++;if($test_filter)$value['preferences']['character']='changed';$test_metadata[$uid][$key]=[serialize($value)];return true;}
+        class PreferenceDatabase extends TaskDatabase {
+          public $usermeta='stub_usermeta';public $query_args=[];
+          function get_blog_prefix($blog){return $blog===1?'wp_':'wp_'.$blog.'_';}
+          function prepare($sql,...$args){$this->query_args=$args;return $sql;}
+          function get_results(...$args){global $test_metadata;$sql=$args[0]??'';if(strpos($sql,'meta_value')!==false){$values=$test_metadata[$this->query_args[0]][$this->query_args[1]]??[];return array_map(function($value){return ['meta_value'=>$value];},$values);}return parent::get_results(...$args);}
+        }
+        $wpdb=new PreferenceDatabase();
+        $preferences=['character'=>'temporarily-disabled','favorites'=>['legacy_character','23','temporarily-disabled'],'layouts'=>[['id'=>'legacy_character','position'=>'left','size'=>200,'anchor'=>['x'=>0,'y'=>0.25]]]];
+        '''
+        return self.php(setup+body)
+
+    def test_account_revision_fresh_reads_and_no_admin_task_option(self):
+        result=self.account("""$initial=wzf_mascot_preference_snapshot(7);$before=$options;
+        $first=wzf_mascot_save_preferences(7,0,$preferences);$conflict=wzf_mascot_save_preferences(7,0,$preferences);
+        echo json_encode(['initial'=>$initial,'first'=>$first,'conflict'=>$conflict,'writes'=>$test_writes,'options_unchanged'=>$options===$before]);""")
+        self.assertEqual(result['initial'],{'revision':0,'preferences':None});self.assertEqual(result['first']['state']['revision'],1)
+        self.assertFalse(result['conflict']['ok']);self.assertEqual(result['conflict']['code'],'conflict');self.assertEqual(result['writes'],1);self.assertTrue(result['options_unchanged'])
+        self.assertEqual(result['first']['state']['preferences']['character'],'temporarily-disabled')
+
+    def test_account_blog_keys_are_isolated(self):
+        result=self.account("""$key1=wzf_mascot_preference_key();wzf_mascot_save_preferences(7,0,$preferences);$test_blog=2;$key2=wzf_mascot_preference_key();$empty=wzf_mascot_preference_snapshot(7);wzf_mascot_save_preferences(7,0,$preferences);echo json_encode(['keys'=>[$key1,$key2],'empty'=>$empty,'count'=>count($test_metadata[7])]);""")
+        self.assertNotEqual(*result['keys']);self.assertEqual(result['empty']['revision'],0);self.assertEqual(result['count'],2)
+
+    def test_account_cannot_address_another_user_and_guard_conflicts(self):
+        result=self.account("""$foreign=false;try{wzf_mascot_save_preferences(8,0,$preferences);}catch(Throwable $e){$foreign=true;}
+        $guard=wzf_mascot_task_guard(true);flock($guard,LOCK_EX);$busy=false;try{wzf_mascot_save_preferences(7,0,$preferences);}catch(Throwable $e){$busy=$e->getMessage()==='account-busy';}flock($guard,LOCK_UN);fclose($guard);
+        echo json_encode(['foreign'=>$foreign,'busy'=>$busy,'writes'=>$test_writes]);""")
+        self.assertTrue(result['foreign']);self.assertTrue(result['busy']);self.assertEqual(result['writes'],0)
+
+    def test_account_schema_rejects_extra_and_dangerous_data(self):
+        mutations=["$preferences['mobile']=true;","$preferences['favorites']=['__proto__'];","$preferences['character']='constructor';","$preferences['layouts'][0]['anchor']['x']=INF;","$preferences['layouts'][0]['anchor']['y']=-0.1;","$preferences['layouts'][0]['size']=201;","$preferences['layouts'][0]['offset']=10;","$preferences['favorites']=array_fill(0,101,'a');","$preferences['layouts'][0]['anchor']['prototype']=0;"]
+        for mutation in mutations:
+            result=self.account(mutation+"wzf_mascot_save_preferences(7,0,$preferences);echo json_encode(['accepted'=>true]);")
+            self.assertFalse(result.get('ok',True))
+
+    def test_account_write_confirmation_detects_mutating_filter(self):
+        result=self.account("$test_filter=true;wzf_mascot_save_preferences(7,0,$preferences);echo json_encode(['accepted'=>true]);")
+        self.assertFalse(result['ok']);self.assertEqual(result['error'],'account-unavailable')
+
+    def test_account_duplicate_metadata_rows_never_overwrite(self):
+        result=self.account("""$test_metadata[7][wzf_mascot_preference_key()]=[serialize(['revision'=>1,'preferences'=>$preferences]),serialize(['revision'=>1,'preferences'=>$preferences])];wzf_mascot_save_preferences(7,1,$preferences);echo json_encode(['accepted'=>true]);""")
+        self.assertFalse(result['ok']);self.assertEqual(result['error'],'account-unavailable')

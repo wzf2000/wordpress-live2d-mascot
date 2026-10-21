@@ -98,6 +98,7 @@ function wzf_haru_output() {
     $config=['version'=>'3.8.0-rc.1','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
     $config = array_merge($config, $presentation);
     $config['i18n'] = wzf_mascot_frontend_translations();
+    $config['accountEndpoint'] = admin_url('admin-ajax.php');
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';
     echo '<script defer src="'.esc_url($base.$assets['loader']).'"></script>';

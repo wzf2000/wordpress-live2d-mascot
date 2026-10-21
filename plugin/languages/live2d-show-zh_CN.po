@@ -107,6 +107,30 @@ msgstr "同意条款并在本浏览器开启移动动画"
 msgid "Accept terms and show"
 msgstr "同意条款并显示"
 
+msgid "Account and browser differ. Choose which preferences to use; saving to the account is a separate action."
+msgstr "账号与本机偏好不同，请明确选择使用哪一份；保存到账号需另行操作。"
+
+msgid "Account and browser preferences match."
+msgstr "账号与本机偏好一致。"
+
+msgid "Account preferences"
+msgstr "账号偏好"
+
+msgid "Account preferences applied to this browser."
+msgstr "已将账号偏好应用到此浏览器。"
+
+msgid "Account preferences are busy. Try again."
+msgstr "账号偏好正忙，请重试。"
+
+msgid "Account preferences could not be read or saved. Your browser preferences are retained."
+msgstr "无法读取或保存账号偏好，本机偏好已保留。"
+
+msgid "Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."
+msgstr "账号偏好已保存在此浏览器，所选角色暂时不可用，保留当前显示。"
+
+msgid "Account preferences saved. Any later browser changes remain local."
+msgstr "账号偏好已保存，之后的本机变更仍仅保存在本机。"
+
 msgid "Action completed"
 msgstr "操作已完成"
 
@@ -806,6 +830,12 @@ msgstr "被隔离角色保留原配置、文件与浏览器收藏／选择；其
 msgid "JSON must be an object."
 msgstr "JSON 必须是对象。"
 
+msgid "Keep browser preferences"
+msgstr "保留本机偏好"
+
+msgid "Keeping browser preferences. The account was not changed."
+msgstr "已保留本机偏好，账号未变更。"
+
 msgid "Legacy or unknown task state"
 msgstr "旧版或未知任务状态"
 
@@ -929,6 +959,9 @@ msgstr "新增预设 %s"
 msgid "New single-model runtime ZIP"
 msgstr "新单模型运行 ZIP"
 
+msgid "No account preferences saved. Saving is optional."
+msgstr "账号尚未保存偏好，可自愿保存。"
+
 msgid "No candidate character"
 msgstr "暂无候选角色"
 
@@ -1004,6 +1037,9 @@ msgstr "摊手侧头"
 msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 msgstr "仅使用本地纯文本。每行一条备选，每个事件最多 8 条，每条不超过 300 字节。不定时闲聊，离开至少 60 秒才触发返回台词。访客可选择自动、仅主动互动或静默。"
 
+msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
+msgstr "自愿同步角色、收藏与布局。显示、条款和移动端同意仅保留在此浏览器。只有主动选择操作才读取或保存账号偏好。"
+
 msgid "Partial: %s observed bytes"
 msgstr "部分观察值：%s 字节"
 
@@ -1076,8 +1112,14 @@ msgstr "重新开启诊断会清空已保存窗口并建立新批次。当前页
 msgid "Re-export one model3 runtime ZIP. Check relative model3 references, include required files and at least one motion, and remove sound, scripts and editor files. Keep your original files and configuration backup."
 msgstr "请重新导出单个 model3 运行 ZIP。检查 model3 的相对引用，包含必需文件和至少一个动作，移除声音、脚本与编辑工程文件。保留原始文件与配置备份。"
 
+msgid "Read account preferences"
+msgstr "读取账号偏好"
+
 msgid "Readers opt in"
 msgstr "读者自行开启"
+
+msgid "Reading account preferences…"
+msgstr "正在读取账号偏好…"
 
 msgid "Ready"
 msgstr "已就绪"
@@ -1232,6 +1274,9 @@ msgstr "正在采样；收起、阅读暂停或切换角色会中断。"
 msgid "Save area bindings"
 msgstr "保存区域绑定"
 
+msgid "Save browser preferences to account"
+msgstr "将本机偏好保存到账号"
+
 msgid "Save character settings"
 msgstr "保存角色设置"
 
@@ -1249,6 +1294,9 @@ msgstr "保存缩略图"
 
 msgid "Saved windows: %1$s of 20. Older windows replaced: %2$s."
 msgstr "已保存窗口：%1$s / 20。已替换更早窗口：%2$s。"
+
+msgid "Saving account preferences…"
+msgstr "正在保存账号偏好…"
 
 msgid "Search"
 msgstr "搜索"
@@ -1288,6 +1336,9 @@ msgstr "显示"
 
 msgid "Showing %1$s of %2$s characters"
 msgstr "显示 %1$s / %2$s 个角色"
+
+msgid "Sign in to read or save account preferences."
+msgstr "登录后才能读取或保存账号偏好。"
 
 msgid "Silent"
 msgstr "静默"
@@ -1412,11 +1463,20 @@ msgstr "ZIP 必须且只能包含一个 model3.json。"
 msgid "The ZIP must not contain symbolic links or special files."
 msgstr "ZIP 不能包含软链接或特殊文件。"
 
+msgid "The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version."
+msgstr "账号偏好已在别处变更，本次未覆盖。请选择使用账号版本或保留本机；再次保存将明确覆盖刚读取的账号版本。"
+
+msgid "The account character could not load. Browser preferences were not changed."
+msgstr "账号所选角色无法加载，本机偏好未变更。"
+
 msgid "The actual expanded size exceeds the limit."
 msgstr "实际解压大小超限。"
 
 msgid "The browser blocked mascot execution. Refresh and retry."
 msgstr "浏览器阻止了看板娘运行，请刷新页面后重试"
+
+msgid "The browser did not allow saving account preferences locally. Current preferences are retained."
+msgstr "浏览器不允许将账号偏好保存到本机，已保留当前偏好。"
 
 msgid "The browser did not allow saving. This preview is still usable."
 msgstr "浏览器未允许保存，当前预览仍可使用"
@@ -1496,6 +1556,9 @@ msgstr "插件不附带 Core 或模型。请自行取得有权在本站使用的
 msgid "The rendering program is invalid; this character cannot be displayed."
 msgstr "绘图程序无效，无法显示此角色"
 
+msgid "The request timed out. A save may have completed. Read account preferences again before saving."
+msgstr "请求已超时，保存可能已完成。请重新读取账号偏好后再保存。"
+
 msgid "The required Core file and SHA256 are valid."
 msgstr "固定 Core 文件和 SHA256 正常。"
 
@@ -1567,6 +1630,9 @@ msgstr "此入口检查不渲染模型。移动端仍默认关闭；减少动画
 
 msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr "此模型未声明命中区域，仍可使用普通招呼。"
+
+msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
+msgstr "本页保留原偏好，但浏览器保存可能不完整。请检查本机存储权限后重试。"
 
 msgid "Thumbnail commit failed."
 msgstr "缩略图提交失败。"
@@ -1651,6 +1717,9 @@ msgstr "上传失败。"
 
 msgid "Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."
 msgstr "打开互动面板可预览角色并使用快捷互动。移动柄支持拖动和方向键移动。"
+
+msgid "Use account preferences"
+msgstr "使用账号偏好"
 
 msgid "Use this character"
 msgstr "使用这个角色"

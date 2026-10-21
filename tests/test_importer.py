@@ -192,7 +192,7 @@ class ImporterTests(unittest.TestCase):
         report=self.php("""wzf_mascot_save_resource('model',"""+path+""",['id'=>'first-character','name'=>'First & \"Name\"']);
         $u=wzf_mascot_uploads(true); mkdir($u['path'].'/core-test'); file_put_contents($u['path'].'/core-test/core.js','stub');
         $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
-        function is_admin(){return false;} function is_user_logged_in(){return false;}
+        function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;} function is_user_logged_in(){return false;}
         function plugins_url(...$args){return '/nested/wp-content/plugins/live2d-show';}
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function wp_json_encode($s,$f){return json_encode($s,$f);}
@@ -278,7 +278,7 @@ class ImporterTests(unittest.TestCase):
         $options[WZF_MASCOT_OPTION]['presentation']=['terms'=>'terms/site.html','termsVersion'=>'legacy-v1','consentText'=>'Example owner & terms.'];
         $options[WZF_MASCOT_OPTION]['characters']['custom-character']['welcome']='motion-1';
         $options[WZF_MASCOT_OPTION]['characters']['custom-character']['greetings']=['motion-1'];
-        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;}function is_user_logged_in(){return false;}
         function plugins_url(...$args){return '/nested/wp-content/plugins/live2d-show';}
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function wp_json_encode($s,$f){return json_encode($s,$f);}
@@ -528,7 +528,7 @@ class ImporterTests(unittest.TestCase):
         $options[WZF_MASCOT_OPTION]['characters']['disabled']=$c;$options[WZF_MASCOT_OPTION]['characters']['disabled']['status']='disabled';
         $options[WZF_MASCOT_OPTION]['characters']['trash']=$c;$options[WZF_MASCOT_OPTION]['characters']['trash']['status']='trash';
         $options[WZF_MASCOT_OPTION]['history']=['private-history'=>$c];unset($options[WZF_MASCOT_OPTION]['presentation']);
-        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;}function is_user_logged_in(){return false;}
         function plugins_url(...$args){return '/plugins/live2d-show';}
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function wp_json_encode($s,$f){return json_encode($s,$f);}
@@ -707,7 +707,7 @@ class ImporterTests(unittest.TestCase):
         // diagnosis/browser loading, not the front-page entry metadata gate.
         unlink($u['path'].'/'.$c['root'].'Model.moc3');
         file_put_contents($u['path'].'/'.$c['root'].$c['file'],'synthetic broken body');
-        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;}function is_user_logged_in(){return false;}
         function plugins_url(...$args){return '/plugins/live2d-show';}
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function wp_json_encode($s,$f){return json_encode($s,$f);}
@@ -748,7 +748,7 @@ class ImporterTests(unittest.TestCase):
         unset($options[WZF_MASCOT_OPTION]['presentation']);
         mkdir($u['path'].'/core-test');file_put_contents($u['path'].'/core-test/core.js','stub');
         $options[WZF_MASCOT_OPTION]['core']=['path'=>'core-test/core.js','sha256'=>WZF_MASCOT_CORE_SHA];
-        function is_admin(){return false;}function is_user_logged_in(){return false;}
+        function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;}function is_user_logged_in(){return false;}
         require """ + json.dumps(str(entry)) + """;
         $before=get_option(WZF_MASCOT_OPTION);$outputs=[];
         ob_start();wzf_haru_output();$outputs[]=ob_get_clean();
@@ -777,7 +777,7 @@ class ImporterTests(unittest.TestCase):
                     'core-unreadable': "chmod($u['path'].'/core-test/core.js',0000);",
                     'terms': "$options[WZF_MASCOT_OPTION]['presentation']=['terms'=>'../escape.html'];",
                 }[failure] + """
-                function is_admin(){return false;}function is_user_logged_in(){return false;}
+                function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;}function is_user_logged_in(){return false;}
                 require dirname(getenv('TEST_MODULE'),2).'/live2d-show.php';
                 $before=get_option(WZF_MASCOT_OPTION);ob_start();wzf_haru_output();$html=ob_get_clean();
                 chmod($file,0644);chmod($u['path'].'/core-test/core.js',0644);
@@ -787,7 +787,7 @@ class ImporterTests(unittest.TestCase):
 
     def test_zero_resources_frontend_empty(self):
         env=dict(os.environ,TEST_ENTRY=str(ROOT/'plugin/live2d-show.php'))
-        code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'
+        code='define("ABSPATH","/stub/"); function add_action(...$x) {} function add_filter(...$x) {global $filters; $filters[]=$x;} function plugin_basename($p) { return "live2d-show/live2d-show.php"; } function is_admin(){return false;}function admin_url($p){return "/wp-admin/".$p;} function is_user_logged_in(){return false;} function get_option($k,$d){return $d;} require getenv("TEST_ENTRY"); wzf_haru_output();'
         result=subprocess.run(['php','-r',code],env=env,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual(result.stdout,'');self.assertEqual(result.stderr,'')

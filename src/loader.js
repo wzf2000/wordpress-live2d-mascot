@@ -834,6 +834,108 @@
     panel.insertBefore(settings, credit);
     const mobileSize = make('p', '', 'wzf-haru-mobile-size');
     panel.insertBefore(mobileSize, credit);
+    const accountSettings=make('details','','wzf-haru-layout');
+    accountSettings.append(make('summary',t("Account preferences")),make('p',t("Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action.")));
+    const accountRead=make('button',t("Read account preferences")),accountSave=make('button',t("Save browser preferences to account")),accountUse=make('button',t("Use account preferences")),accountKeep=make('button',t("Keep browser preferences")),accountStatus=make('p');
+    accountStatus.setAttribute('role','status');
+    const accountActions=make('div','','wzf-haru-account-actions');
+    accountActions.append(accountRead,accountSave,accountUse,accountKeep);
+    accountSettings.append(accountActions,accountStatus);
+    panel.insertBefore(accountSettings,credit);
+    let accountState=null,accountNonce='',accountPending=false;
+    const preferenceId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
+    const exactFields=(value,allowed,required=allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>allowed.includes(key))&&required.every(key=>Object.hasOwn(value,key));
+    const validPreferences=(value)=>{
+      if(!exactFields(value,['character','favorites','layouts'])||!preferenceId(value.character)||!Array.isArray(value.favorites)||value.favorites.length>100||!value.favorites.every(preferenceId)||new Set(value.favorites).size!==value.favorites.length||!Array.isArray(value.layouts)||value.layouts.length>100)return false;
+      const seen=new Set();
+      for(const row of value.layouts){
+        if(!exactFields(row,['id','position','size','anchor'],['id','position','size'])||!preferenceId(row.id)||seen.has(row.id)||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)return false;
+        seen.add(row.id);
+        if(Object.hasOwn(row,'anchor')&&(!exactFields(row.anchor,['x','y'])||!['x','y'].every(axis=>Number.isFinite(row.anchor[axis])&&row.anchor[axis]>=0&&row.anchor[axis]<=1)))return false;
+      }
+      return true;
+    };
+    const browserPreferences=()=>{
+      let character=committed;
+      try{const saved=localStorage.getItem('wzf-mascot-character');if(preferenceId(saved))character=saved;}catch{}
+      const rows=[];
+      for(const [id,row] of Object.entries(layouts)){
+        if(!preferenceId(id)||!row||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)continue;
+        const next={id,position:row.position,size:row.size};
+        if(row.anchor&&['x','y'].every(axis=>Number.isFinite(row.anchor[axis])&&row.anchor[axis]>=0&&row.anchor[axis]<=1))next.anchor={x:row.anchor.x,y:row.anchor.y};
+        rows.push(next);if(rows.length===100)break;
+      }
+      return {character,favorites:[...favorites].filter(preferenceId).slice(0,100),layouts:rows};
+    };
+    const accountUpdate=()=>{
+      accountRead.disabled=accountPending;
+      accountSave.disabled=accountPending||!accountState||loading||preview;
+      accountUse.disabled=accountPending||!accountState?.preferences||!engine||loading||preview||!allowed();
+      accountKeep.disabled=accountPending||!accountState;
+    };
+    const accountRequest=async(operation,extra={})=>{
+      const url=new URL(config.accountEndpoint,location.href);
+      if(!config.accountEndpoint||url.origin!==location.origin)throw Error('unavailable');
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+      try{
+        const response=await fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams({action:'wzf_mascot_preferences',operation,...extra})});
+        const raw=await response.text();if(raw.length>65536)throw Error('invalid-response');
+        const result=JSON.parse(raw);const data=result?.data;
+        if(!data||typeof data!=='object')throw Error('invalid-response');
+        if(data.state){if(!exactFields(data.state,['revision','preferences'])||!Number.isInteger(data.state.revision)||data.state.revision<0||data.state.revision>2147483646||(data.state.preferences!==null&&!validPreferences(data.state.preferences)))throw Error('invalid-response');}
+        return result;
+      }catch(error){if(error.name==='AbortError')throw Error('request-timeout');throw error;}
+      finally{clearTimeout(timer);}
+    };
+    const accountError=(code)=>code==='request-timeout'?t("The request timed out. A save may have completed. Read account preferences again before saving."):code==='sign-in-required'?t("Sign in to read or save account preferences."):code==='account-busy'?t("Account preferences are busy. Try again."):t("Account preferences could not be read or saved. Your browser preferences are retained.");
+    accountRead.onclick=async()=>{
+      if(accountPending)return;accountState=null;accountNonce='';accountPending=true;accountUpdate();accountStatus.textContent=t("Reading account preferences…");
+      try{
+        const result=await accountRequest('bootstrap');
+        if(!result.success||!result.data.state||typeof result.data.nonce!=='string'||result.data.nonce.length>128)throw Error(result.data.code||'invalid-response');
+        accountState=result.data.state;accountNonce=result.data.nonce;
+        accountStatus.textContent=!accountState.preferences?t("No account preferences saved. Saving is optional."):JSON.stringify(accountState.preferences)===JSON.stringify(browserPreferences())?t("Account and browser preferences match."):t("Account and browser differ. Choose which preferences to use; saving to the account is a separate action.");
+      }catch(error){accountStatus.textContent=accountError(error.message);}
+      finally{accountPending=false;accountUpdate();}
+    };
+    accountSave.onclick=async()=>{
+      if(accountPending||!accountState)return;const preferences=browserPreferences();accountPending=true;accountUpdate();accountStatus.textContent=t("Saving account preferences…");
+      try{
+        const result=await accountRequest('save',{nonce:accountNonce,revision:String(accountState.revision),preferences:JSON.stringify(preferences)});
+        if(!result.success){if(result.data.code==='conflict'&&result.data.state){accountState=result.data.state;accountStatus.textContent=t("The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version.");}else throw Error(result.data.code||'invalid-response');}
+        else{if(!result.data.state)throw Error('invalid-response');accountState=result.data.state;accountStatus.textContent=t("Account preferences saved. Any later browser changes remain local.");}
+      }catch(error){accountState=null;accountNonce='';accountStatus.textContent=accountError(error.message);}
+      finally{accountPending=false;accountUpdate();}
+    };
+    accountKeep.onclick=()=>{accountStatus.textContent=t("Keeping browser preferences. The account was not changed.");};
+    accountUse.onclick=async()=>{
+      if(accountPending||!accountState?.preferences||loading||preview||!allowed()||!engine)return;
+      const value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
+      for(const row of value.layouts){nextLayouts[row.id]={position:row.position,size:row.size,...(row.anchor?{anchor:{...row.anchor}}:{})};}
+      const changes=[['wzf-mascot-character',value.character],[favoritesKey,JSON.stringify(value.favorites)],['wzf-mascot-layouts',JSON.stringify(nextLayouts)]];
+      const previous=[];
+      const rollbackPreview=async()=>{
+        if(active===committed&&!preview)return;
+        if(allowed()&&engine&&!loading)await switchTo(committed,false);
+        else{destroy();active=committed;preview=false;readLayout();paint();}
+      };
+      accountPending=true;accountUpdate();
+      try{
+        // Stage an available role first. Do not persist selection or preferences
+        // until loading succeeds and the original explicit apply is still valid.
+        if(available&&value.character!==active)await switchTo(value.character,true);
+        if(available&&(active!==value.character||!engine||failed||loading||!allowed())){
+          await rollbackPreview();accountStatus.textContent=t("The account character could not load. Browser preferences were not changed.");return;
+        }
+        try{for(const [key]of changes)previous.push([key,localStorage.getItem(key)]);for(const [key,text]of changes)localStorage.setItem(key,text);}
+        catch{for(const [key,text]of previous){try{text===null?localStorage.removeItem(key):localStorage.setItem(key,text);}catch{}}let restored=false;try{restored=previous.length===changes.length&&previous.every(([key,text])=>localStorage.getItem(key)===text);}catch{}await rollbackPreview();accountStatus.textContent=restored?t("The browser did not allow saving account preferences locally. Current preferences are retained."):t("This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.");return;}
+        layouts=nextLayouts;favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
+        if(available){committed=active;preview=false;}
+        syncCharacterOptions(active);readLayout();paint();
+        accountStatus.textContent=available?t("Account preferences applied to this browser."):t("Account preferences saved in this browser. The selected character is unavailable now; the current display is retained.");
+      }finally{accountPending=false;accountUpdate();}
+    };
+    accountUpdate();
     const readLayout = () => {
       const saved = layouts[active] || {};
       position = ['left', 'right'].includes(saved.position) ? saved.position : 'right';
@@ -1079,6 +1181,7 @@
         loading || !characterSelect.options.length;
       commitButton.hidden = cancelPreview.hidden = !preview;
       commitButton.disabled = cancelPreview.disabled = loading || !engine;
+      accountUpdate();
       side.disabled = slider.disabled = reset.disabled = loading;
       label.textContent = preview ? t('%1$s · Previewing', characters[active].name) : characters[active].name;
       credit.textContent =

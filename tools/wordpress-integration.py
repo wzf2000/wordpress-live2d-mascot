@@ -318,6 +318,30 @@ def main():
         post(bad); assert state()['config'] == hit_state
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == hit_state
         record('real model-declared area binding, special-name value, unknown-area rejection and upgrade preservation')
+        account_path = '/wp-admin/admin-ajax.php'
+        account_action = {'action':'wzf_mascot_preferences','operation':'bootstrap'}
+        code, body, headers = request(anonymous, account_path, account_action, with_headers=True)
+        assert code == 401 and 'no-store' in headers.get('Cache-Control','')
+        code, body, headers = request(reader, account_path, account_action, with_headers=True)
+        bootstrap = json.loads(body)['data']; assert code == 200 and bootstrap['state'] == {'revision':0,'preferences':None}
+        assert 'private' in headers.get('Cache-Control','') and 'no-store' in headers.get('Cache-Control','')
+        account_preferences = {'character':'temporarily-disabled','favorites':['legacy_character','23','temporarily-disabled'],'layouts':[{'id':'legacy_character','position':'left','size':200,'anchor':{'x':0,'y':0.5}}]}
+        payload = {'action':'wzf_mascot_preferences','operation':'save','nonce':'invalid','revision':'0','preferences':json.dumps(account_preferences)}
+        assert request(reader, account_path, payload)[0] == 403
+        payload['nonce'] = bootstrap['nonce']; foreign = dict(payload,uid=uid)
+        assert request(reader, account_path, foreign)[0] == 403
+        assert json.loads(request(admin, account_path, account_action)[1])['data']['state']['revision'] == 0
+        assert 'nonce' not in front() and 'preferences' not in front()
+        record('real account bootstrap is authenticated/private/no-store, save requires nonce and cannot address another user')
+        before_account = state(); code, body = request(reader, account_path, payload)
+        saved_account = json.loads(body)['data']['state']; assert code == 200 and saved_account == {'revision':1,'preferences':account_preferences}
+        code, body = request(reader, account_path, payload); assert code == 409 and json.loads(body)['data']['code'] == 'conflict'
+        invalid = dict(payload,revision='1',preferences=json.dumps(dict(account_preferences,mobile=True)))
+        assert request(reader, account_path, invalid)[0] == 400
+        assert state() == before_account
+        wp('plugin', 'install', str(bundle), '--force', '--activate')
+        assert json.loads(request(reader, account_path, account_action)[1])['data']['state'] == saved_account
+        record('real account revision conflicts, strict scope, unavailable ID retention and upgrade preservation without resource option writes')
         data = form('wzf_mascot_settings'); stale = dict(data)
         data.update(name='Updated synthetic', credit='Synthetic credit', size='200', offset='6.5', idle='motion-1', welcome='01_extra', **{'greetings[]': '01_extra'})
         post(data); updated = state()['config']; c = updated['characters']['legacy_character']; old = original['characters']['legacy_character']
@@ -388,7 +412,7 @@ def main():
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 19, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 21, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

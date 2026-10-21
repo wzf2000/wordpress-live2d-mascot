@@ -18,8 +18,8 @@ __pycache__/
 !/plugin/shaders/*.vert
 !/plugin/shaders/*.frag
 !/plugin/haru-engine-2b9f3218fd5a.js
-!/plugin/haru-loader-7f7045293470.js
-!/plugin/haru-css-168744d2e533.css
+!/plugin/haru-loader-75a8ae1a4e55.js
+!/plugin/haru-css-d41acd145eb0.css
 
 !/plugin/admin.js
 !/plugin/languages/
