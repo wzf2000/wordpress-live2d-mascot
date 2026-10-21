@@ -192,16 +192,20 @@ function wzf_mascot_template_hidden($values) {
     // first so HTML parsing cannot alter the exact signed payload bytes.
     foreach ($values as $key=>$value) echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr(str_replace('&', '&amp;', $value)) . '">';
 }
+function wzf_mascot_template_literal($value) {
+    // Preview user text exactly as frontend textContent will display it.
+    return esc_html(str_replace('&', '&amp;', (string)$value));
+}
 function wzf_mascot_template_rule_summary($rule) {
     $label = !empty($rule['enabled']) ? __('Enabled', 'live2d-show') : __('Disabled', 'live2d-show');
     echo '<p><strong>' . esc_html($label) . '</strong> · ' . esc_html(sprintf(__('Cooldown: %s seconds', 'live2d-show'), (string)($rule['cooldown'] ?? 60))) . '</p>';
-    echo '<pre>' . esc_html($rule['lines'] ? implode("\n", $rule['lines']) : __('None', 'live2d-show')) . '</pre>';
+    echo '<pre>' . ($rule['lines'] ? wzf_mascot_template_literal(implode("\n", $rule['lines'])) : esc_html__('None', 'live2d-show')) . '</pre>';
 }
 function wzf_mascot_template_preset_summary($row) {
     if ($row === null) { echo '<p>' . esc_html__('None', 'live2d-show') . '</p>'; return; }
     echo '<dl class="wzf-mascot-template-preset">';
     foreach (['name'=>__('Preset name', 'live2d-show'),'motion'=>__('Motion', 'live2d-show'),'expression'=>__('Expression', 'live2d-show'),'line'=>__('Preset line', 'live2d-show')] as $field=>$label) {
-        echo '<dt>' . esc_html($label) . '</dt><dd>' . esc_html($row[$field] !== '' ? $row[$field] : __('None', 'live2d-show')) . '</dd>';
+        echo '<dt>' . esc_html($label) . '</dt><dd>' . ($row[$field] !== '' ? wzf_mascot_template_literal($row[$field]) : esc_html__('None', 'live2d-show')) . '</dd>';
     }
     echo '</dl>';
 }
@@ -226,7 +230,7 @@ function wzf_mascot_template_diff($review) {
             $same = isset($old[$preset_id], $new[$preset_id]) && $old[$preset_id] === $new[$preset_id];
             $change = !isset($old[$preset_id]) ? __('Added', 'live2d-show') : (!isset($new[$preset_id]) ? __('Removed', 'live2d-show') : ($same ? __('Unchanged', 'live2d-show') : __('Replaced', 'live2d-show')));
             $name = $new[$preset_id]['name'] ?? $old[$preset_id]['name'];
-            echo '<details class="wzf-mascot-replace wzf-mascot-template-change"' . ($same ? '' : ' open') . '><summary>' . esc_html($name . ' · ' . $change) . '</summary><p class="description"><code>' . esc_html($preset_id) . '</code></p><div class="wzf-mascot-template-columns">';
+            echo '<details class="wzf-mascot-replace wzf-mascot-template-change"' . ($same ? '' : ' open') . '><summary>' . wzf_mascot_template_literal($name) . ' · ' . esc_html($change) . '</summary><p class="description"><code>' . wzf_mascot_template_literal($preset_id) . '</code></p><div class="wzf-mascot-template-columns">';
             foreach (['before'=>__('Before', 'live2d-show'),'after'=>__('After', 'live2d-show')] as $key=>$label) {
                 echo '<div><h5>' . esc_html($label) . '</h5>'; wzf_mascot_template_preset_summary(($key === 'before' ? $old : $new)[$preset_id] ?? null); echo '</div>';
             }
@@ -236,7 +240,7 @@ function wzf_mascot_template_diff($review) {
             echo '<h4>' . esc_html__('Resource mapping', 'live2d-show') . '</h4><ul>';
             foreach ($plan['mapping'] as $row) {
                 $channel = $row['channel'] === 'motion' ? __('Motion', 'live2d-show') : __('Expression', 'live2d-show');
-                echo '<li>' . esc_html($row['preset'] . ' / ' . $channel) . ': <code>' . esc_html($row['file'] . ' → ' . $row['id']) . '</code></li>';
+                echo '<li>' . wzf_mascot_template_literal($row['preset']) . ' / ' . esc_html($channel) . ': <code>' . wzf_mascot_template_literal($row['file'] . ' → ' . $row['id']) . '</code></li>';
             }
             echo '</ul>';
         }

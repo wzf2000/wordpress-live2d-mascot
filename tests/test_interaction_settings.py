@@ -365,3 +365,20 @@ class InteractionTests(unittest.TestCase):
         ''')
         self.assertTrue(result['sameBytes'])
         self.assertEqual(result['saved'],['Literal &amp; &quot; "quotes" 中文 & café'])
+
+
+    def test_template_preview_user_text_roundtrips_literal_entities(self):
+        result=self.php(self.transfer_setup()+'''
+        function esc_html($value){return htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8',false);}
+        $line='Literal &amp; &quot; &copy; "quotes" 中文 & café';
+        $template['dialogue']['welcome']['lines']=[$line];
+        $template['presets']=[['id'=>'hello','name'=>$line,'motionFile'=>'','expressionFile'=>'','line'=>$line]];
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $r=wzf_mascot_template_preview('text',$version,json_encode($template),'dialogue-presets');
+        ob_start();wzf_mascot_template_diff($r);$html=ob_get_clean();
+        $display=html_entity_decode(strip_tags($html),ENT_QUOTES|ENT_HTML5,'UTF-8');
+        echo json_encode(['exactOccurrences'=>substr_count($display,$line),'canonicalLine'=>$r['plan']['after']['dialogue']['welcome']['lines'][0]]);
+        ''')
+        self.assertEqual(result['exactOccurrences'],4)
+        self.assertEqual(result['canonicalLine'],'Literal &amp; &quot; &copy; "quotes" 中文 & café')
