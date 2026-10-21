@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="238" viewBox="0 0 1200 238" role="img" aria-labelledby="title desc">
+  <title id="title">从准备资源到安心阅读</title>
+  <desc id="desc">原创流程示意：管理员取得并导入资源，读者同意显示，预览后确认角色，阅读面板打开时暂停。不是实际界面截图。</desc>
+  <rect width="1200" height="238" rx="16" fill="#f5f6f2"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="40" y="39" fill="#54735c" font-size="13" letter-spacing="2">从准备资源，到安心阅读</text>
+    <g fill="#fff" stroke="#d8e0d3">
+      <rect x="40" y="63" width="257" height="136" rx="10"/>
+      <rect x="327" y="63" width="257" height="136" rx="10"/>
+      <rect x="614" y="63" width="257" height="136" rx="10"/>
+      <rect x="901" y="63" width="257" height="136" rx="10"/>
+    </g>
+    <g fill="#54735c" font-size="14" font-weight="600">
+      <text x="61" y="94">01 / 管理员准备</text><text x="348" y="94">02 / 读者选择</text><text x="635" y="94">03 / 预览确认</text><text x="922" y="94">04 / 继续阅读</text>
+    </g>
+    <g fill="#203b2d" font-size="22" font-weight="600">
+      <text x="61" y="133">导入自己的资源</text><text x="348" y="133">同意条款并显示</text><text x="635" y="133">找到喜欢的角色</text><text x="922" y="133">需要时让出空间</text>
+    </g>
+    <g fill="#59665d" font-size="15">
+      <text x="61" y="168">Core 与单模型 ZIP</text><text x="348" y="168">显示偏好由读者决定</text><text x="635" y="168">先预览，再保存选择</text><text x="922" y="168">支持的阅读面板打开即暂停</text>
+    </g>
+    <g fill="#54735c" font-size="18"><text x="304" y="136">›</text><text x="591" y="136">›</text><text x="878" y="136">›</text></g>
+  </g>
+</svg>

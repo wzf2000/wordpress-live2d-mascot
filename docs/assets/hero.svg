@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="280" viewBox="0 0 1200 280" role="img" aria-labelledby="title desc">
+  <title id="title">WordPress Live2D Mascot</title>
+  <desc id="desc">原创抽象横幅：阅读页面、轨道与互动气泡，为阅读留出空间。</desc>
+  <rect width="1200" height="280" rx="20" fill="#f3f5ef"/>
+  <g fill="none" stroke="#dae2d6">
+    <circle cx="1020" cy="140" r="170"/><circle cx="1020" cy="140" r="126"/>
+    <path d="M0 248H1200"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="56" y="65" fill="#54735c" font-size="14" font-weight="600" letter-spacing="3">WORDPRESS LIVE2D MASCOT</text>
+    <text x="52" y="137" fill="#203b2d" font-size="46" font-weight="650">为阅读，留出空间。</text>
+    <text x="56" y="181" fill="#526057" font-size="19">选择喜欢的角色，让互动恰到好处。</text>
+    <text x="56" y="228" fill="#54735c" font-size="13" letter-spacing="2">PREVIEW · INTERACT · KEEP READING</text>
+  </g>
+  <g transform="translate(825 43)">
+    <rect x="0" y="0" width="205" height="191" rx="12" fill="#fff" stroke="#d5ded1"/>
+    <path d="M23 27h78M23 55h153M23 70h137M23 85h153M23 115h106M23 130h117M23 145h88" fill="none" stroke="#d5ded1" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="197" cy="132" r="49" fill="#2f6248"/>
+    <path d="M176 133c0-16 10-26 21-26s21 10 21 26c0 15-9 27-21 27s-21-12-21-27Z" fill="none" stroke="#eff4e8" stroke-width="2"/>
+    <ellipse cx="197" cy="133" rx="32" ry="12" transform="rotate(-30 197 133)" fill="none" stroke="#b5cfad" stroke-width="2"/>
+    <circle cx="205" cy="113" r="5" fill="#e5edb7"/>
+    <path d="M207 33h56a10 10 0 0 1 10 10v22a10 10 0 0 1-10 10h-39l-13 9V75h-4a10 10 0 0 1-10-10V43a10 10 0 0 1 10-10Z" fill="#e4ebde"/>
+    <circle cx="222" cy="54" r="3" fill="#54735c"/><circle cx="235" cy="54" r="3" fill="#54735c"/><circle cx="248" cy="54" r="3" fill="#54735c"/>
+  </g>
+</svg>

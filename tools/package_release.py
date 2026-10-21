@@ -99,11 +99,11 @@ def collect(repo, expected_version=None, source_sha=None):
     for name in SHADERS:
         files['shaders/' + name] = read(plugin, 'shaders/' + name)
     for source, dest in [('LICENSE','LICENSE'), ('COPYING','COPYING'),
-                         ('README.md','README.md'), ('docs/DISTRIBUTION.md','DISTRIBUTION.md'), ('docs/DISTRIBUTION.md','docs/DISTRIBUTION.md'), ('docs/INTERACTIONS.md','docs/INTERACTIONS.md')]:
+                         ('README.md','README.md'), ('docs/DISTRIBUTION.md','DISTRIBUTION.md'), ('docs/DISTRIBUTION.md','docs/DISTRIBUTION.md'), ('docs/INTERACTIONS.md','docs/INTERACTIONS.md'), ('docs/index.md', 'docs/index.md'), ('docs/INSTALL.md', 'docs/INSTALL.md'), ('docs/TROUBLESHOOTING.md', 'docs/TROUBLESHOOTING.md'), ('docs/DEVELOPMENT.md', 'docs/DEVELOPMENT.md'), ('docs/assets/hero.svg', 'docs/assets/hero.svg'), ('docs/assets/reading-flow.svg', 'docs/assets/reading-flow.svg'), ('docs/assets/hero-small.svg', 'docs/assets/hero-small.svg'), ('docs/assets/reading-flow-small.svg', 'docs/assets/reading-flow-small.svg'), ('docs/DEVICE_SAMPLING.md', 'docs/DEVICE_SAMPLING.md')]:
         files[dest] = read(repo, source)
     source = {name: read(repo, name) for name in (
         'build.py', 'package.json', 'package-lock.json', 'LICENSE', 'COPYING', 'README.md',
-        'docs/DISTRIBUTION.md', 'docs/INTERACTIONS.md', 'tools/package_release.py', 'tests/test_release_package.py',
+        'docs/DISTRIBUTION.md', 'docs/INTERACTIONS.md', 'docs/index.md', 'docs/INSTALL.md', 'docs/TROUBLESHOOTING.md', 'docs/DEVELOPMENT.md', 'docs/assets/hero.svg', 'docs/assets/reading-flow.svg', 'docs/assets/hero-small.svg', 'docs/assets/reading-flow-small.svg', 'tools/package_release.py', 'tests/test_release_package.py',
         'tests/test_importer.py', 'tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs', 'tests/test_release_pipeline.py',
         'tools/ci.py', 'tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/account-browser.cjs','tests/selection-browser.cjs','tests/capture-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js')}
     for path in sorted(checked(repo / 'src').rglob('*')):

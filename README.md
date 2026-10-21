@@ -1,341 +1,73 @@
-# WordPress Live2D Mascot
+<p align="center"><picture><source media="(max-width: 600px)" srcset="docs/assets/hero-small.svg"><img src="docs/assets/hero.svg" alt="WordPress Live2D Mascot — 为阅读留出空间" width="100%"></picture></p>
 
+<h1 align="center">WordPress Live2D Mascot</h1>
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
-<p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
-<p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.9.0">下载 3.9.0</a> · <a href="#许可与资源来源">许可</a></p>
+<p align="center">Character previews · Local favorites · Reading-aware interaction</p>
+<p align="center">
+  <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.9.0">下载 3.9.0</a> ·
+  <a href="#开始使用">开始使用</a> ·
+  <a href="docs/index.md">使用文档</a> ·
+  <a href="docs/TROUBLESHOOTING.md">常见问题</a> ·
+  <a href="docs/index.md#english-entry-points">English</a>
+</p>
 
-**当前发行版：3.9.0。** 角色现在可以说台词、使用快捷互动、拖动停靠，并按模型现有能力提供视线与分区点击；另有站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG。面板采用精简的分组与明暗配色，支持 PageNest 主题及独立安装。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。
+把自己有权使用的 Live2D 角色带到 WordPress：访客可以预览、切换、收藏角色，播放动作与表情，或让角色说一句。阅读对话框、支持的评论面板打开时，看板娘会暂停并让出空间。
 
-本版也包含异常任务恢复、浏览器回归 CI、只读容量报告与诊断连续采样等维护改进。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
-
-| 你需要准备 | 当前要求与验收范围                                                                              |
-| ---------- | ----------------------------------------------------------------------------------------------- |
-| 服务器     | PHP **8.2+**、ZipArchive 扩展、可写的 WordPress uploads                                         |
-| WordPress  | 真实 CI 固定 **WordPress 7.1.3**，分别使用 **PHP 8.2 / 8.5**；已验范围不表示最低 WordPress 版本要求 |
-| 浏览器     | 支持 WebGL 的浏览器；移动端默认关闭，减少动画始终抑制显示                                           |
-| 资源       | 固定 Web 5 R5 Core，以及一个有权在本站使用的 Cubism model3 运行模型                             |
+插件支持独立安装及 PageNest 明暗主题，后台、个人资料和前台控件提供中文与英文。**安装包不含 Cubism Core 或模型**；管理员需从官方或其他有权来源自行取得并导入资源。
 
 ## 你能用它做什么
 
-- **选择喜欢的角色。** 在互动面板搜索、预览、取消或确认角色；收藏保存在当前浏览器。支持在当前筛选内随机抽取收藏、选择最近确认角色，两者仍须预览并确认。
-- **控制动作与表情。** 播放已登记的动作或表情，停止动作并恢复待机，或单独恢复默认表情；管理员可将动作、表情与台词组合成快捷互动。
-- **让角色说一句。** 配置本地欢迎、时段和点击台词，访客可选择自动、仅主动或静默。偶尔闲聊默认关闭，需访客自愿开启；管理员可选用原创草稿并审阅保存。
-- **按模型能力互动。** 自愿开启轻柔视线跟随，将模型已有点击区域绑定到快捷互动；站点工具也可接入固定操作通知。
-- **调整显示方式。** 用画布外的移动柄拖动、左右停靠或复位，按角色保存位置与大小；支持键盘移动和原生控件操作。
-- **让阅读继续顺畅。** 其他原生对话框或支持的评论面板打开时暂停看板娘，关闭后按原显示偏好恢复。
-- **编辑角色配置。** 管理员在设置页调整名称、署名、默认大小与偏移，选择待机、欢迎与招呼动作；引用按已安装模型目录校验。
-- **自行管理模型。** 管理员导入、更新、停用或回收角色，并可回退上一版；资源留在 uploads 中，升级插件不覆盖已导入内容。
-- **管理预览图片与诊断。** 上传有权使用的缩略图，只读查看角色当前／上一版／缩略图容量并下载报告；管理员可主动连续采样加载与帧率、冻结窗口并批量下载。
-- **保存角色 PNG。** 管理员逐角色明确允许后，可下载当前角色的透明 PNG；更新或回退模型资源会关闭此许可，需重新确认。
-- **按需开启手机与联动。** 管理员允许后，手机浏览器单独选择开启；同页 API 可操作已显示角色的目录动作，不连接音频或聊天服务。
+| 选一位喜欢的角色 | 让互动恰到好处 | 按自己的习惯摆放 |
+| --- | --- | --- |
+| 搜索、收藏、预览后确认；从收藏中随机挑选，或找回最近使用的角色。 | 播放动作、表情与快捷互动；本地台词可选自动、仅主动或静默。 | 用画布外的移动柄拖动、左右停靠、调整大小，也支持键盘移动与复位。 |
 
-导入默认不设置招呼或欢迎动作；可在“角色管理 → 编辑”中选择，留空保持关闭。管理员也可显式上传有权使用的角色缩略图，缺省显示名称缩写。显示偏好、条款与手机同意保存在当前浏览器。另提供自愿账号偏好：只有主动读取／保存才访问账号，明确选择使用账号或保留本机，只同步角色、收藏与布局；并发变更显示冲突，不自动覆盖。
+- **阅读时留出空间。** 支持的对话框／评论面板打开或页面进入后台时暂停；恢复后沿用原显示偏好。
+- **按模型已有能力互动。** 可选轻柔视线跟随、已有命中区域绑定；站点工具可主动接入操作完成通知。
+- **偏好由读者选择。** 默认保存在本机；登录后可主动读取或保存账号的角色、收藏和布局，遇到冲突明确选择。
+- **资源由管理员管理。** 支持角色配置、同 ID 更新、上一版回退、停用与回收站、可选缩略图，以及只读容量报告和本地诊断。
+- **按需开启更多体验。** 手机显示需管理员允许与读者单独开启；偶尔闲聊默认关闭；透明 PNG 需管理员逐角色核对许可后开启。
+
+<p align="center"><picture><source media="(max-width: 600px)" srcset="docs/assets/reading-flow-small.svg"><img src="docs/assets/reading-flow.svg" alt="流程示意：管理员导入合法资源，读者同意后显示，预览确认角色，阅读时暂停" width="100%"></picture></p>
+<p align="center"><sub>原创流程示意，不包含模型素材或实际界面截图。</sub></p>
 
 ## 开始使用
 
-### 1. 下载并安装插件
+**[下载安装包：wordpress-live2d-mascot-3.9.0.zip](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.9.0/wordpress-live2d-mascot-3.9.0.zip)**
 
-[**下载 WordPress 安装包：wordpress-live2d-mascot-3.9.0.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.9.0/wordpress-live2d-mascot-3.9.0.zip)
+1. 在 WordPress 后台 **插件 → 安装插件 → 上传插件**，安装并启用上面的 ZIP。
+2. 打开 **设置 → Live2D Mascot**，从 [Live2D 官方 SDK 下载页](https://www.live2d.com/en/sdk/download/web/)自行取得 **Web 5 R5 Core**，上传 `live2dcubismcore.min.js` 并确认使用权。当前仅接受固定版本的已核验文件。
+3. 从[官方样例](https://www.live2d.com/en/learn/sample/)或其他有权来源准备**单个 Cubism model3 模型的运行 ZIP**，导入并填写角色 ID、名称、署名与来源。具体文件结构见[模型 ZIP 准备](docs/INSTALL.md#准备模型-zip)。
+4. 在桌面前台点击 **显示看板娘 → 同意条款并显示**，打开 **互动** 检查画面。切换角色时先预览，再确认使用。
 
-在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在站点或网络后台插件列表的操作区，以及本插件说明区，可通过 **设置** 直达资源配置（仅对具备设置权限的管理员显示），也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
+首次导入默认不设置欢迎或招呼动作，可在 **角色管理 → 编辑** 中选择。完整步骤、资源限制和升级方法见[安装与资源准备](docs/INSTALL.md)。
 
-发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.9.0/SHA256SUMS) 核对下载。
+后台安装请使用完整插件 ZIP；`-source.zip` 与 GitHub 自动生成的 **Source code** 用于开发。可用发行附件 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.9.0/SHA256SUMS) 核对下载。
 
-### 2. 导入自己取得的 Core
+## 使用条件
 
-打开后台 **设置 → Live2D Mascot**。自行访问 [Cubism SDK for Web 官方下载页](https://www.live2d.com/en/sdk/download/web/)，阅读和接受适用条件，取得 **Web 5 R5**，上传其中的 `live2dcubismcore.min.js`，并勾选使用权确认。
+| 项目 | 要求 |
+| --- | --- |
+| 服务器 | PHP **8.2+**、ZipArchive、可写的 WordPress uploads；缩略图处理另需 GD |
+| 浏览器 | 支持 WebGL；系统或浏览器的“减少动画”设置会抑制显示 |
+| 资源 | 指定 **Web 5 R5 Core** 与有权在本站使用的 Cubism model3 运行模型 |
+| 已验环境 | 真实 CI 固定 WordPress **7.1.3**、PHP **8.2 / 8.5**；浏览器自动测试使用合成资源 |
 
-当前只接受这一固定版本的已核验文件；不同版本会被拒绝。插件不会自动下载 SDK，也不会在服务器上执行上传内容来识别版本。
+移动端默认关闭。模型显示效果与实体设备表现需在自己的站点检查；上述环境不表示最低 WordPress 版本要求，也不代表所有模型、手机或真实 GPU 均已验证。采样方法见[设备指南](docs/DEVICE_SAMPLING.md)。
 
-### 3. 导入单个模型
+## 文档与支持
 
-自行取得有权使用的模型，例如 [Live2D 官方样例](https://www.live2d.com/en/learn/sample/)。按[模型 ZIP 说明](#准备模型-zip)提取一个模型的导出运行文件，上传 ZIP，填写**角色 ID、名称与署名／来源**，并确认使用权。
+| 入口 | 内容 |
+| --- | --- |
+| [安装与资源准备](docs/INSTALL.md) | 安装、Core、模型 ZIP、署名、升级与服务器要求 |
+| [互动与偏好](docs/INTERACTIONS.md) | 台词、快捷互动、移动停靠、账号偏好、PNG 和手机显示 |
+| [常见问题与维护](docs/TROUBLESHOOTING.md) | 无法显示、导入失败、角色恢复、容量盘点与诊断 |
+| [开发与站点集成](docs/DEVELOPMENT.md) | 构建、测试、发布约定、阅读暂停与同页 API |
+| [版本更新](https://github.com/wzf2000/wordpress-live2d-mascot/releases) | 本版和历史发行说明、安装包与校验和 |
 
-使用官方角色时，须填写权利人要求的署名，并向访问者提供来源及特别使用条件；默认的“管理员导入资源”不能代替版权声明。首次角色 ID 可以自定，无须命名为 `haru`。
-
-导入后，在 **角色管理 → 编辑** 中可调整名称、署名、默认大小（140–260 像素，步长 10）、垂直偏移（-100–100%）与动作。待机必选，欢迎可关闭，招呼可多选或全部取消。既有浏览器大小偏好优先。保存只更新这些字段，保留模型路径、条款及其他服务器配置；不修改模型文件。并发导入或设置修改会拒绝冲突请求，请刷新后重新编辑。打开设置页不会迁移或改写旧配置。
-
-### 4. 在前台显示并确认效果
-
-在桌面前台页面点击 **显示看板娘 → 同意条款并显示**。模型出现后点击 **互动**，检查角色、动作、表情和布局。多角色时先预览，再点击 **使用这个角色** 保存当前浏览器的选择。
-
-管理员应实际检查画面和许可条件。成功导入不等于模型已通过视觉验收，也不会自动授予其他使用或再分发权利。
-
-## 准备模型 ZIP
-
-**上传单个模型的导出运行文件，不要直接上传整个 SDK、编辑工程或多模型合集。** ZIP 需要一个 `.model3.json`，以及它引用的 `.moc3`、PNG 和运行 JSON。至少保留一个合法动作；待机优先采用 Idle 组第一个动作，否则使用第一个合法动作。
-
-下面仅示意 ASCII 文件名及目录关系，**不提供实际模型素材**：
-
-```text
-my-character.zip
-└── my-character/
-    ├── Model.model3.json
-    ├── Model.moc3
-    ├── Model.physics3.json          # 可选：仅当 model3 引用它
-    ├── textures/
-    │   └── texture_00.png
-    ├── motions/
-    │   └── idle.motion3.json
-    └── expressions/
-        └── smile.exp3.json          # 可选：仅当 model3 引用它
-```
-
-`Model.model3.json` 中的路径必须相对该文件，例如 `textures/texture_00.png`。不要用绝对路径、`../` 或网络 URL。声音文件与动作中的 `Sound` 引用应事先移除。可以保留现有 `catalog.json`，导入器仍会按 model3 重新生成动作／表情目录；未引用的资源不写入站点。
-
-<details>
-<summary><strong>展开：文件、大小与命名限制</strong></summary>
-
-| 项目                         | 限制                                                                  |
-| ---------------------------- | --------------------------------------------------------------------- |
-| ZIP 上传、解压总大小、单文件 | 分别不超过 **64 MiB**                                                 |
-| ZIP 项数                     | 最多 **1000** 项                                                      |
-| JSON                         | 单文件最多 **8 MiB**                                                  |
-| PNG                          | 最多 **16** 张；单张最多 **32 MiB**、**8192 × 8192**                  |
-| 角色 ID                      | 1–64 位，首位小写字母，其余为小写字母、数字或短横线；不可使用保留名称 |
-| 名称／署名                   | 名称必填、最多 200 字节；署名最多 300 字节；不接受 HTML 或控制字符    |
-| 资源路径                     | ASCII 字母、数字、下划线、点、短横线与目录分隔符 `/`                  |
-
-支持 `.model3.json`、`.moc3`、`.png`、`.motion3.json`、`.exp3.json`、`.physics3.json`、`.pose3.json`、`.userdata3.json`、`.cdi3.json` 及可选 `catalog.json`。
-
-拒绝绝对路径、越界、百分号编码、重复路径（含大小写冲突）、软链接、特殊文件、加密 ZIP、异常压缩比，以及 PHP／JS／HTML／声音／编辑文件。含脚本中间扩展名的文件同样拒绝，例如 `evil.php.png`。ZIP 必须只有一个 model3；引用文件缺失或没有合法动作也会拒绝。
-
-Core 单文件最多 8 MiB，必须匹配以下 SHA256：
-
-```text
-8741f739779b5d5210872bd3d7d99f0f1e56e6c87409e7d26d6bb4b80aa1ef47
-```
-
-只允许具备 `manage_options` 的管理员导入，上传会校验 nonce 与使用权确认。文件先写入独立候选目录，校验后原子提交并持锁保存配置；失败不改变有效配置并清理本次候选。已有角色 ID 不覆盖，请使用新的 ID。
-
-</details>
-
-## 常见问题
-
-**启用后为什么没有看板娘？** 先在“设置 → Live2D Mascot”确认 Core 和至少一个角色已配置，再用桌面浏览器点击“显示看板娘”并同意条款。登录用户还应检查个人资料中的“允许前台显示看板娘”。减少动画、后台标签页或正在打开的支持对话框／评论面板会抑制显示；加载失败时按前台提示重试。
-
-**手机能显示吗？** 宽度 **≤ 782px** 的移动模式默认关闭。管理员允许后，读者仍须在手机浏览器单独同意并开启；桌面偏好不会自动开启。采用紧凑布局，系统或浏览器开启“减少动画”时始终不渲染。
-
-**为什么 Core 或模型导入被拒绝？** Core 必须是指定 Web 5 R5 文件。模型检查单 model3、引用闭包、格式、路径和大小；整个 SDK、带声音／编辑文件的项目包、多模型合集都会拒绝。先查看后台提示，再按上面的 ZIP 结构重新准备，不要仅重命名旧格式文件。
-
-**升级会丢失模型或偏好吗？** 导入资源放在当前站点 uploads 的 `wzf-mascot/` 独立目录，正常更新插件不覆盖；停用后也保留。浏览器偏好和 WordPress 资源配置独立保存，迁移站点仍需迁移 uploads 和数据库。
-
-**可以更新、停用或删除已有角色吗？** 在“角色管理 → 编辑”中可更新同 ID 的模型、停用／启用、移入回收站／恢复，并交换回退到上一版资源与动作。更新保留名称、署名、布局和其他显示配置；动作按相对文件路径映射，无法保留时默认拒绝，须明确允许重置不兼容动作。回退保留当前显示信息和启用／回收站状态。所有旧文件仍保留供缓存和恢复，回收站不执行永久文件删除。首次导入的 ID 仍须唯一。停用角色的本地收藏与已有选择保留，恢复后可继续使用。
-
-**支持音频、招呼和自动欢迎吗？** 当前不支持音频。导入器生成动作／表情目录，但默认不设置招呼或自动欢迎动作，管理员可在“角色管理 → 编辑”中从真实动作目录配置待机、招呼和首次显示欢迎动作，也可在互动面板手动播放动作。
-
-**导入提示已有任务正在进行，怎么办？** 查看后台“资源和设置任务”：空闲、运行中、中断待核查或旧版／未知。任务不会按时间自动抢锁；运行中请等待并刷新。只有守卫确认无活动任务的新协议遗留记录，才提供需明确确认的“恢复中断的任务”。恢复仅删除该条锁记录，模型、配置和候选目录均保留；随后请检查已安装资源，再重试原操作。旧版、非法记录或守卫缺失／被替换等情况须管理员人工核查，不能仅凭时间删除锁。正常打开后台不会创建守卫或改写旧锁。
-
-首次导入与同 ID 更新均区分服务器上传大小限制、上传中断、未选文件和临时存储失败。请求超过 `post_max_size` 而丢失表单字段时会拒绝并说明限制；诊断不会跳过权限或 nonce 执行写入。
+遇到问题可[提交 issue](https://github.com/wzf2000/wordpress-live2d-mascot/issues)，说明插件版本、WordPress／PHP／浏览器版本、操作步骤与错误提示。诊断报告可由管理员主动下载；分享前请自行核对内容与资源许可。
 
 ## 许可与资源来源
 
-自有代码采用 **GPL-2.0-or-later**，适用 [LICENSE](LICENSE) 中指定 Web 5 R5 的组合附加许可；Framework 与着色器保留各自条款。安装包、源码包与公开仓库不附带 Core、模型、贴图、动作或表情素材。
+自有代码采用 **[GPL-2.0-or-later](LICENSE)**，包含针对指定 Web 5 R5 的组合附加许可；Framework 与着色器保留各自条款。
 
-维护者按收到的官方回复，以资源由用户自行官网下载导入的方式发行；这不表示官方认证，也不授予第三方权利。站点管理员仍需满足 Core、模型和角色的使用条件及署名要求。完整边界见[发行与许可说明](https://github.com/wzf2000/wordpress-live2d-mascot/blob/main/docs/DISTRIBUTION.md)。
-
-<details>
-<summary><strong>开发、测试与集成接口</strong></summary>
-
-### 构建与打包
-
-配套源码 ZIP 根为 `wordpress-live2d-mascot/`，自包含插件文件与固定 Framework，可重建或再打包。需要 Python 3、Node.js 和 **esbuild 0.25.12**。
-
-以下命令用于克隆后的当前 main 工作树；`npm run check` 需要 Git 提交信息。从发行源码 ZIP 开发时，请遵循包内 README，可独立运行测试、构建和打包。3.7.0 源码包包含 npm／CI 入口；历史 3.5.0 附件保持原样。
-
-```sh
-npm ci --ignore-scripts
-npm run check
-# 也可独立运行合成回归或生成审阅构建：
-python3 -m unittest discover -s tests -p 'test_*.py'
-python3 tools/translations.py --check
-node tests/admin-ui.cjs
-python3 build.py --esbuild node_modules/.bin/esbuild
-```
-
-构建写入 `build/`。审阅后将生成的三个哈希前端文件及 `haru-assets.json` 放到 `plugin/`，再运行：
-
-```sh
-python3 tools/package_release.py --out build/public-release-unique
-```
-
-输出安装 ZIP、源码 ZIP、SHA256SUMS 与机器清单。工具只读取明确白名单、当前前端资源和固定 13 个着色器；不读取忽略目录中的旧 Core、模型、历史元数据或备份。拒绝软链、缺失、非空角色清单、带 Core/model 的清单与哈希不一致。
-
-Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 smoke 检查没有前端输出。真实 WordPress 集成另以独立数据库和 HTTP 登录／表单验证服务端行为。3.5.0 另通过独立 WordPress 7.1 / PHP 8.2 环境的 37 项安装、导入和浏览器检查；这不代表所有 WordPress 版本、模型或真机均已验证。工具直接核对 loader/CSS 源码字节；引擎必须用固定 esbuild 重建并比较 SHA256，不能用文件名检查替代源码对应性验证。
-
-### GitHub Actions
-
-[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2、esbuild 0.25.12 与 Playwright 1.55.1；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
-
-检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。真实 WordPress integration job 必须通过，发布所复用的 CI 完成前会等待该 job 的 PHP 8.2／8.5 两项。隔离 MySQL 服务、新建 WordPress 7.1.3 和 WP-CLI 2.12.0 下载均固定版本，下载核对 SHA256；测试禁用邮件与 cron。升级测试以合成旧插件入口起步，再将完整合成资源、配置和账号显示偏好经真实 WordPress 覆写升级，逐项核对 option、user meta 和资源文件摘要；它不是历史真实素材或旧版渲染验收。以 Python 标准库 cookiejar 完成真实 HTTP 登录、nonce／权限失败、设置保存与过期版本冲突、multipart 导入／更新／缩略图，以及回退、停用恢复、移动设置和角色隔离。测试用独立 option 配置合成非执行 Core 占位文件及固定哈希元数据，仅验证服务端输出；生产常量和 Core 上传校验保持完整，占位文件也无法通过完整哈希诊断。只上传不含凭据的测试摘要，合成素材不作为 artifact 或发行附件。**不代替真实 SDK、模型画面、GPU、手机或许可验收。**
-
-新版本发布从 [Live2D Mascot 手动发布](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/release.yml) 发起：
-
-1. 将新版本的 PHP 版本入口、源码和核验过的构建产物提交到 main，并在 `.github/release-notes/<版本>.md` 写好中文发行说明，介绍本次更新和安装方式。
-2. 选择 main，填写与 PHP 入口完全一致的版本号（不带 `v`），保留 `publish=false`，先下载该次运行的 artifact 审阅。
-3. 准备正式发布时再次发起，明确选择 `publish=true`。已存在的 tag 或 release 会拒绝，不覆盖既有 v3.5.0 附件。
-
-每次运行固定触发时的 `github.sha`，附件携带该 SHA、版本和文件摘要。发布任务仅验证本次运行的 artifact，具有写权限的任务不 checkout 或执行仓库代码；原子创建对应 tag，先建立草稿、上传并核对所有附件摘要，确认 tag 仍指向核验的提交后才公开。失败会保留已创建的草稿/tag 供检查，不自动覆盖或删除。
-
-检查入口还覆盖翻译目录完整性与占位符、PO/MO 编译重现、未保存提醒、离线采样输入边界，以及真实后台的搜索／状态筛选、盘点权限与只读行为、英文／中文页面。资源仍全部使用合成样例；GitHub 流水线运行结果以对应提交为准。
-
-### 本地前台浏览器回归
-
-```sh
-npm ci --ignore-scripts
-npx --no-install playwright install chromium
-npm run test:browser
-# 专项：台词／语义事件、移动／视线、账号、候选选择、PNG
-npm run test:dialogue-browser
-npm run test:movement-browser
-npm run test:account-browser
-npm run test:selection-browser
-npm run test:capture-browser
-# 可选：仅保存合成结果 JSON 和选定关键截图，不记录 trace、cookie 或 storage state。
-npm run test:browser -- --out /tmp/mascot-browser-review
-```
-
-独立 `browser` CI job 使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
-
-整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
-
-Local whole-page browser tests use only shipped loader/CSS and public synthetic contract fixtures. Run `npm run test:browser` after installing the pinned development dependencies and matching Chromium. Optional `MASCOT_PLAYWRIGHT` (module directory) and `MASCOT_CHROMIUM` (browser executable) reuse local tools; neither is a required installation path or bundled dependency. An explicitly overridden browser version is recorded in the result and is distinct from CI's Playwright-matched revision. Output contains only a synthetic summary and selected screenshots; no trace, cookies, storage state or automatic upload is produced locally.
-
-### 本地运行真实 WordPress 集成
-
-为测试预先准备专用空数据库服务和 PHP mysqli／zip／GD、MySQL CLI；只接受显式 loopback 地址、新的 `mascot_ci_*` 数据库和新的 `/tmp/mascot-ci-*` 目录。脚本拒绝含其他应用数据库的服务、复用已有数据库／目录、生产路径或非本地地址，不清空已有站点。凭据通过环境变量设置，勿写入源码或终端共享记录。
-
-```sh
-# MASCOT_CI_DB_NAME=mascot_ci_example
-# MASCOT_CI_DB_HOST=127.0.0.1:专用数据库端口
-# MASCOT_CI_DB_USER / MASCOT_CI_DB_PASSWORD 由本机测试环境提供
-python3 tools/wordpress-integration.py --lab /tmp/mascot-ci-example --port 18129
-```
-
-测试只下载固定公开 WordPress／WP-CLI，不下载 Core、官方或私人模型。执行后 HTTP 服务停止，摘要保存在实验目录的 `results.json`；数据库与含合成凭据的实验目录由实验负责人按本机保留规则清理，不上传。测试摘要明确标记未做渲染验收。
-
-### 阅读协调
-
-加载器适配其他已打开的原生 `dialog`，以及 `.pagenest-notes-slot`、`.llmn-show-notes`、`.llmn-panel` / `.llmc-panel` 的阅读状态。其他页面组件可以在加载器初始化后发送：
-
-```js
-document.dispatchEvent(
-  new CustomEvent("wzf-mascot-suspension", {
-    detail: { source: "example-reader", suspended: true },
-  }),
-);
-// 关闭时用相同 source 发送 suspended: false。
-```
-
-同一来源重复通知幂等，多来源分别记录，只有所有原因解除才恢复。暂停保留显示偏好，不改评论、笔记或主题；初始化前打开的已支持界面由 DOM 初次扫描识别。
-
-### 既有站点的条款兼容
-
-3.5.1 支持服务器维护的可选 `presentation` 配置，保留站点原有条款页、条款版本和纯文本同意提示。该配置用于经过审阅的站点接入；后台没有上传 HTML 或编辑这些字段的入口。
-
-`wzf_mascot_resources_v1` 中的 `presentation` 必须同时包含 `terms`、`termsVersion`、`consentText`：`terms` 是相对 uploads 中插件资源根的现存 `.html` 路径，不接受网络 URL、越界或软链接；版本和提示只能是非空纯文本（分别最多 200／2000 字节）。提示由 `textContent` 显示，不作为 HTML 解释。缺省沿用公开版通用说明；显式配置无效时停止前台输出，避免展示错误条款。相同条款版本保留已有浏览器同意记录；是否仍适用于现有资源由站点维护者确认。
-
-### 角色缩略图
-
-管理员在角色管理中上传 **PNG、JPEG 或 WebP**，确认使用权。输入最多 **4 MiB**，宽高均不超过 **2048**，最多 **4M 像素**；需要服务器 PHP GD。图片解码后缩至最长边 **512** 并重新编码 PNG，移除 EXIF／其他元数据、源文件脚本和尾部字节，不接受 SVG 或 URL。生成图片独立存入 uploads，不随模型更新或回退改变；清除只移除配置引用，旧文件保留供缓存。
-
-前台仅在互动面板打开并选中候选角色时按需加载这一张图片，不预取 Core 或模型。缩略图须来自本站同源的插件缩略图目录；缺省、无效或解码失败时显示名称缩写。搜索、收藏和候选变化只更新候选图，仍须明确预览／确认才会切换并保存角色。升级不会自动生成图片或改写旧配置。
-
-### 管理与双语界面
-
-3.7.0 在角色管理中增加名称／ID 搜索与全部、启用、停用、回收站、被隔离、入口可显示筛选。状态数量复用已有轻量入口检查；被隔离与生命周期状态可以重叠，入口通过仍不代表画面或完整资源正常。搜索和筛选只读，不保存设置。首次使用清单区分 Core 入口、启用角色与条款，提示下一步导入、修复或前台同意。
-
-修改角色／手机设置或选择上传文件后，离页会触发浏览器的未保存提醒；提交另一个表单也会提醒仍未保存的修改。有效提交自己的表单可继续，未改动的只读搜索不提醒。多个表单分别保存，提醒不会自动保存文件或输入内容。
-
-自有后台、个人资料和前台控件支持 **en_US / zh_CN**；后台跟随 WordPress 用户界面语言，匿名前台跟随站点语言。采用 `live2d-show` textdomain、随包 PO/MO 与前台配置字典，缺省 JS 使用本地英文文案。角色名称、署名、角色 ID、导入目录的动作／表情标签、用户资料和既有站点条款内容保持原样。旧 Haru 内置动作标签保留并提供双语文案。Framework／vendor、机器错误码、资源许可与自定义条款页面不属于界面翻译范围。
-
-修改 `plugin/languages/live2d-show-*.po` 后执行 `python3 tools/translations.py` 生成 POT/MO；`--check` 只读核对 PHP 嵌套包含文件、自有前台错误与控件的完整覆盖、插值参数及逐字节可重现性。只使用 Python 标准库，无在线翻译或额外依赖。
-
-### Task status and controlled recovery
-
-The administrator task panel distinguishes idle, running, interrupted and legacy/unknown states. All resource and settings writers share a non-blocking OS file guard for the entire write task. The permanent small guard file is retained in resource storage; never replace or remove it during maintenance. The option record identifies the guard protocol and inode, task kind and start time. Age never permits takeover.
-
-Only a new-protocol record whose original guard is safe and unlocked offers recovery. Recovery requires `manage_options`, its own nonce, explicit confirmation, the original record fingerprint and unchanged configuration version, then rechecks under the same OS guard. It removes only that option record. Resources, configuration, candidate directories and user preferences remain; inspect installed resources before retrying. Legacy, malformed, missing or replaced guards require manual server investigation. Opening the settings page creates no guard and migrates no old record. Import and same-ID replacement share upload-error categories; oversized POST rejection never authorizes a write without a nonce.
-
-### 只读磁盘盘点
-
-管理员主动点击 **盘点磁盘用量 / Inspect disk usage** 后，使用权限与 nonce 校验的 POST 在当前站点 `uploads/wzf-mascot` 精确根内盘点文件元数据。打开设置页不会自动遍历磁盘。报告只向管理员显示相对路径、文件数、逻辑字节数、当前／上一版模型、缩略图、共享 Core 与条款引用；不把盘点数据加入前台配置。
-
-整个被引用模型目录都受保护，包括 model3 未引用但 catalog 使用的维护动作；停用与回收站角色、上一版历史、嵌套／迁移目录均计入引用。目录保护文件与候选目录也标为保留。**未引用不代表安全可删**，来源使用权限未知；此功能没有删除、清理、定时任务、配置写入或新增锁，也不读贴图内容或计算哈希。
-
-扫描上限为 20,000 项／3 秒；显示最多 500 条路径、保护引用最多 1,000 条。显示截断与扫描不完整分别标注。缺失／不可读／非法引用、软链接、特殊文件、达到扫描上限、正在进行的资源任务或盘点期间配置变化，都会保守标为不完整／未知并停止“未引用”判断。不会跟随软链接或访问根外目录。硬链接逐路径计入逻辑大小并另列数量，报告不代表物理磁盘占用；盘点不是恢复演练或模型视觉验收。
-
-同一次受限扫描还提供逐角色的当前模型、上一版模型、缩略图、各版去重小计、当前／上一版交集和角色路径去重合计，位于路径明细之前。角色共用或嵌套同一目录、缩略图处于模型目录内、当前／上一版复用路径时，联合统计仅计该相对文件路径一次；共享引用明确标注保留。不同角色／版本行不可相加当作全站总量；全局 `bytes` 完整值仍为扫描根下所有唯一相对文件路径的逻辑字节，硬链接继续逐路径计数。
-
-路径显示到 500 行后，容量仍由同一完整受限扫描汇总。扫描不完整、引用未知、任务锁存在或配置并发变化时，完整容量字段为 `null`，保留明确标为部分观察值的 `observedBytes`；不能把部分数值或零解释为完整占用。
-
-点击 **下载最新盘点 JSON / Download fresh inventory JSON** 会以独立权限和 nonce 校验的 POST 重新扫描，直接下载到管理员本机；它可能与先前页面盘点不同。schema 2 报告保留 `complete`、`referencesComplete`、`displayTruncated`、`limits`、相对路径和角色容量指标，不含绝对路径、账号、凭据、配置正文或模型内容。报告不保存在服务器文件、option 或 transient，也不提供给普通账号或前台。
-
-Character capacity is aggregated during the same bounded metadata scan, independently of the displayed-path limit. Each version subtotal, character union and global character union counts a relative file path once; overlapping model/history/thumbnail references and shared paths are explicitly marked. Do not add character/version rows together. Incomplete scans or unknown references expose `observedBytes` while complete capacity `bytes` values are `null`. The separate administrator-only JSON download starts a fresh scan, returns an attachment directly and persists nothing on the server. This remains an inventory, with no cleanup or deletion feature.
-
-### 本地诊断
-
-设置页的 **前台入口检查** 自动进行轻量只读门禁：检查角色配置类型，以及安全模型／catalog 入口路径、可读性和大小；不解析 model3，不扫描动作引用或贴图，也不哈希所有角色。异常角色标为“被隔离”，其他有效角色继续显示；所有角色异常或共享 Core／条款配置无效时停止输出。原配置、文件和浏览器收藏／选择保留；修复后重新可用。可显示仅表示角色入口通过，仍须共享资源有效，并由读者开启。
-
-管理员在设置页点击 **检查已安装资源**，另外只读核对 Core SHA256、运行引用、catalog、布局与条款配置。不会修改选项或模型，不代表已通过画面验收。
-
-前台的 **本地诊断** 仅对具备 `manage_options` 权限的管理员创建入口；访客和普通账号不采集。登录HTML须绕过共享页面缓存。此flag仅控制本地工具，不是服务端权限凭证。诊断独立于角色就绪状态，加载失败时也能打开。展开不会采集；点击 **开启本地诊断** 后才读取当前 WebGL / GPU renderer，并在内存中记录白名单阶段及错误码。请先开启诊断，再显示或重试角色，才能记录完整加载时间。`readyMs` 是引擎初始化完成时间，`firstFrameMs` 必须在实际 `frames > 0` 后记录；未观察到首帧时留空并注明原因。
-
-**采样 3 秒** 使用采样期间实际新增帧数和经过时间计算 FPS；收起、阅读暂停、后台标签或切换角色会中断并标记窗口。`cpuDrawMsAvg` 是此窗口 CPU 侧绘制调用耗时，`engineLifetimeCpuDrawMsMax` 与 `engineStats.renderMsAvg/Max` 为引擎累计 CPU 侧统计，均不是 GPU 执行时间。每个采样窗口记录自己的角色 ID 和环境；切换后保留的旧窗口不会重新归属到新角色。预览失败与恢复原角色分别记录为加载 attempt，包含请求／实际显示角色、失败角色和 fallback 标记。软件 renderer 标识只是字符串启发式判断；未提供 renderer 时为 `null`。这些数据不能代替真实硬件或不同模型的画面测试。
-
-点击 **连续采样 3 组 / Sample 3 windows** 会依次采集 3 个 3 秒窗口，显示进度；**停止采样** 中断当前窗口并停止后续连采，**停止记录** 另外停止诊断采集。收起、切换角色、阅读暂停或隐藏标签会中断并停止序列，恢复后不会自动补采。当前页内存仅保留最近 20 个已完成或中断窗口，并显示被替换数量；重新开启诊断会清空窗口并建立新批次。每个窗口冻结角色、环境、加载与首帧记录及统计，带批次、加载 session 和窗口 ID。
-
-**下载全部已保存窗口** 输出最多 20 窗口的 `wzf-mascot-diagnostic-batch` schema 1 批次，停止记录后仍可下载。**下载诊断 JSON** 保持单报告 schema 1：已有窗口时下载最后冻结窗口，尚未采样时下载当前状态；它不代表切换后新角色的当前状态。点击下载才生成本地文件；没有网络上传，也不保存到浏览器持久存储。报告含插件版本、角色 ID、加载阶段与错误类别、窗口统计及明确授权采集的环境信息，不包含页面 URL／query、Cookie、账号或用户资料。停止采集后仍可下载本页已生成报告；重新开启会重置报告。
-
-### 可选移动端
-
-设置页“移动端显示”默认关闭，未配置也视为关闭。管理员允许后，手机浏览器仍须点击显示按钮、同意条款并单独开启；已有桌面显示偏好不会自动开启手机。收起只保存本设备类型的偏好，减少动画、账号显示权限、阅读暂停和后台标签限制始终有效。升级不自动打开移动端或改写原配置。
-
-手机采用紧凑尺寸并标明实际像素大小，保留桌面位置／大小偏好；面板可滚动、按钮至少 44 像素并避让安全区。默认在外部输入框聚焦时暂停，可由管理员关闭该规则；插件自身搜索与选择控件不触发此暂停。输入结束后只有其他暂停原因也解除才会恢复。
-
-### 实机采样步骤
-
-完整中英设备清单、真实设备证据边界、离线 manifest 与汇总命令见 [设备采样与离线汇总](docs/DEVICE_SAMPLING.md)。`tools/diagnostic_samples.py` 只读取显式本地输入并写入新的本地输出，无自动上传、Core／模型下载或性能策略修改；当前没有真实 GPU／Android／iOS 采样结果。
-
-以下是待管理员执行的实机流程，文档和合成 CI 不表示已经完成真机验收。准备有合法真实资源的隔离站；移动默认关闭，手机测试须由管理员在该隔离站另行开启，读者仍需自行同意并开启。不要把桌面模拟手机尺寸或软件 WebGL 的结果当作 Android／iOS 或真实桌面 GPU 验收。
-
-1. 以具备 `manage_options` 权限的管理员账号登录隔离站前台（访客和普通账号没有本地诊断入口）。分别准备真实桌面 GPU、Android、iOS。记录插件版本、浏览器及版本、系统、设备／GPU、角色 ID；选定同一页面、视口、缩放和网络条件，每个角色保持一致。手机记录竖屏／横屏实际视口、安全区和软键盘状态。
-2. 每轮先收起角色，再重新打开页面，避免加载早于诊断授权；打开 **本地诊断 → 开启本地诊断** 后再点击显示并加载角色。开启前不会采集 GPU 信息；仅当前页面内存保存。先做冷加载 3 次（清除此隔离站相关浏览器资源缓存，再重新开启诊断），再做暖加载 3 次（保留缓存），分别下载诊断 JSON 并标记轮次。避免把清缓存造成的网络差异混为渲染差异。
-3. 每次就绪后点击 **连续采样 3 组**，等待 3/3 完成，再 **下载全部已保存窗口**。也可保留原单次 **采样 3 秒** 操作；最多保留最近 20 窗口，刷新或重新开启诊断前先下载。记录 `readyMs`、实际首帧 `firstFrameMs`、FPS、CPU 绘制统计、renderer 及是否软件 renderer；被切换／暂停／后台中断的窗口单列，未观察到首帧的字段保持空值。
-4. 连续切换／预览角色、播放动作／表情、收起再显示；打开阅读面板后关闭，切到后台再返回。检查原选择、收藏、暂停原因和恢复画面。桌面用键盘完成控件操作；手机打开外部输入框和软键盘，检查暂停及结束后的恢复，再测试旋转、安全区和面板滚动。
-5. 在固定角色和条件下长驻至少 15 分钟，在开始、中段和结束各做 3 秒采样，检查画面、响应及异常日志。记录长驻期间发生的后台、网络变化和操作；用相同条件重现异常，报告当前角色与设备，不推断未测机型。
-
-JSON 只在点击下载时保存在本机，无自动采集、自动上传或远程汇总。`cpuDrawMsAvg` 是 CPU 侧耗时，不能解释为 GPU 执行时间；诊断仍须配合肉眼画面检查。资源、条款或前台入口异常先修复，再继续该角色的采样。
-
-可直接保留批次 JSON 交给维护者离线整理，无需先手写 manifest。自行处理时运行 `python3 tools/diagnostic_samples.py --unpack-batch batch.json --out new-directory`，先校验再生成固定文件名的 schema 1 窗口和 `runs.json`。模板默认 `physicalDevice=false`、`visualCheck=not-run`，设备、系统／浏览器版本、平台、缓存、场景与视觉结果须实际观察后填写；解包成功不代表验收。安全解包需 Linux/macOS，输入最多 2 MiB／20 窗口，拒绝软链接和已有输出目录；Windows 浏览器可正常采样并交回 JSON。原 manifest 汇总命令继续可用。详见设备文档。
-
-For physical sampling, sign in as an administrator with `manage_options` (guests and ordinary accounts have no diagnostic entry), then enable diagnostics explicitly before showing a character, then choose **Sample 3 windows** and download all saved windows after the sequence completes. Stop sampling, hiding, switching, reading suspension or backgrounding interrupts the active window and stops the sequence; returning never resumes it automatically. The page retains the latest 20 frozen windows and shows replacement counts. **Stop recording** preserves downloads; enabling again starts a new random batch and clears saved windows. Single-report JSON stays schema 1 and downloads the last saved snapshot, or current state before any window exists. Batch files can be handed directly to a maintainer, or unpacked locally with `--unpack-batch ... --out NEW_DIRECTORY`. Fill real device/OS/browser versions and conditions manually; defaults declare no physical-device or visual pass. Check both orientations, keyboards, background/resume and at least 15 minutes of residence. CPU timings and synthetic browser tests establish no GPU improvement or physical-device acceptance.
-
-### 本地联动 API v1
-
-加载器初始化后提供 `window.WZFMascot`，`version === 1`。这是同页本地接口，不连接音频、聊天或外部服务，不发送数据。只能操作读者已同意、明确显示、就绪且未暂停的当前角色；不能显示、切换角色、加载 URL 或绕过减少动画／阅读暂停。
-
-```js
-// ID 必须存在于当前角色 catalog；示例 ID 按实际模型替换。
-const result = await window.WZFMascot.command({
-  action: 'motion', id: '01', caption: '你好',
-});
-await window.WZFMascot.command({ action: 'expression', id: 'smile' });
-await window.WZFMascot.command({ action: 'reset', channel: 'expression' });
-await window.WZFMascot.command({ action: 'stop' }); // 恢复待机
-window.WZFMascot.cancel(); // 取消本接口尚未完成的命令
-```
-
-`command()` 接受普通对象且只允许 `action`、`id`、`channel`、`caption`：`motion`／`expression` 必须有当前目录 ID，不能带 channel；`reset` 可选 `all`（默认）／`motion`／`expression`，`stop` 无 channel，二者均不能带 ID。可选 caption 最多 120 个 Unicode 字符，不接受 HTML 标记或控制字符，仅在互动面板状态区用纯文本显示约 5 秒，不是聊天气泡。成功命令至少间隔 500 毫秒；手动动作、招呼或 API 命令正在处理时拒绝并发。
-
-返回 Promise，成功为 `{ok:true, code:'played'|'reset'|'stopped', characterId}`；拒绝为 `{ok:false, code}`，包括 `invalid-request`（参数）、`unknown-id`（目录无此 ID）、`unavailable`（未显示／就绪或已暂停）、`busy`、`rate-limited`、`cancelled`、`resource-error`。取消／资源失败结果可带 characterId。`cancel()` 返回 `{ok:true, code:'cancelled'|'idle'}`，阻止尚未完成命令产生动作或字幕；已开始播放的动作可另发 stop，已经发出的同源资源请求可能继续填入引擎缓存。收起、暂停、角色切换或新的手动操作也会取消未完成联动。接口不提供网络地址、任意参数写入或强制恢复入口。
-
-固定站点操作通知、自愿账号偏好、模型区域与 PNG 的具体步骤和示例见[互动与偏好指南](docs/INTERACTIONS.md)。
-
-### 服务器与资源边界
-
-uploads 中仅写固定哈希 Core JS 和数据白名单，并生成 Apache/IIS 禁止服务器脚本执行的规则；Nginx 等服务器应按站点惯例禁止 uploads 下的服务器脚本执行。资源在前台使用时公开提供，不是私人文件存储。
-
-运行时脚本经可取消请求下载后通过 Blob URL 执行。站点 CSP 需允许对应资源请求与 Blob 脚本；插件不会自动放宽安全头。模型视觉、来源许可和实际浏览器兼容性仍由管理员确认。
-
-</details>
+公开仓库、安装包和源码包均不附带 Core、模型、贴图、动作或表情素材。维护者按收到的 Live2D 官方回复，引导用户自行取得并导入资源。管理员须满足对应素材的使用条件、署名与来源要求；导入后供前台访问的资源是公开文件。该发行方式不表示官方认证或额外授权。详见[发行与许可说明](docs/DISTRIBUTION.md)。

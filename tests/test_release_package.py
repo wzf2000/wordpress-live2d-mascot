@@ -1,5 +1,6 @@
 """Asset-free package security and corresponding-source regressions."""
 import json
+import posixpath
 import re
 from pathlib import Path
 import shutil
@@ -19,7 +20,7 @@ class ReleasePackageTests(unittest.TestCase):
         self.repo=Path(self.temp.name)/'repo'
         self.repo.mkdir()
         self.out=Path(self.temp.name)/'package'
-        names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md','docs/INTERACTIONS.md',
+        names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md','docs/INTERACTIONS.md','docs/index.md','docs/INSTALL.md','docs/TROUBLESHOOTING.md','docs/DEVELOPMENT.md','docs/assets/hero.svg','docs/assets/reading-flow.svg','docs/assets/hero-small.svg','docs/assets/reading-flow-small.svg',
                'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
                'tools/ci.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/account-browser.cjs','tests/selection-browser.cjs','tests/capture-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
                'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',
@@ -56,6 +57,18 @@ class ReleasePackageTests(unittest.TestCase):
                     self.assertNotIn('release-candidate',name)
                     self.assertFalse(any(word in name for word in ['/vendor/','/haru/','model_provenance','source-lock','backup.sql','.png','.moc3','.model3.json','.motion3.json','.exp3.json']))
                 self.assertTrue(any(name.endswith('includes/admin-import.php') for name in archive.namelist()))
+                # Every local document/image link remains usable after either ZIP is extracted.
+                paths=set(archive.namelist())
+                for name in sorted(paths):
+                    if not name.endswith('.md'):continue
+                    text=archive.read(name).decode('utf-8')
+                    links=re.findall(r'\]\(([^)\s]+)\)',text)
+                    links+=re.findall(r'(?:src|srcset)="([^"]+)"',text)
+                    for link in links:
+                        if re.match(r'[a-z]+:',link) or link.startswith('#'):continue
+                        target=link.split('#',1)[0]
+                        resolved=posixpath.normpath(posixpath.join(posixpath.dirname(name),target))
+                        self.assertIn(resolved,paths,f'{name}: broken local link {link}')
 
     def test_source_zip_repackages_without_binary_assets(self):
         first=package(self.repo,self.out)
