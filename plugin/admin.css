@@ -277,6 +277,7 @@
 }
 
 .wzf-mascot-admin .wzf-mascot-template > summary { cursor: pointer; font-weight: 600; font-size: 1.15em; }
+.wzf-mascot-admin .wzf-mascot-template input[type='file'] { margin-inline: 0; }
 .wzf-mascot-admin .wzf-mascot-template-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 .wzf-mascot-admin .wzf-mascot-template pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 12px; background: #f6f7f7; }
 .wzf-mascot-admin .wzf-mascot-template code { overflow-wrap: anywhere; }

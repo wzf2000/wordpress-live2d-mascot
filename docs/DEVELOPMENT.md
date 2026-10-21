@@ -64,7 +64,7 @@ npm run test:capture-browser
 npm run test:browser -- --out /tmp/mascot-browser-review
 ```
 
-独立 `browser` CI job 使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
+独立 `browser` CI job 固定 **Ubuntu 24.04**，使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
 
 整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
 
