@@ -41,6 +41,10 @@
     };
     let favorites = new Set(),
       favoritesNotice = '';
+    let recent = [], recentNotice = '';
+    const recentKey='wzf-mascot-recent-v1';
+    const historyId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
+    try{const saved=JSON.parse(localStorage.getItem(recentKey)||'[]');if(Array.isArray(saved))recent=[...new Set(saved.filter(historyId))].slice(0,8);}catch{}
     const pendingFavorites = new Map();
     // Favorites storage must not interrupt the existing visibility/consent reads.
     try {
@@ -604,6 +608,28 @@
       favoriteButton = make('button', t("Favorite selected character"), 'wzf-haru-favorite-toggle'),
       favoritesState = make('span', '', 'wzf-haru-favorites-state'),
       characterSelect = make('select');
+    characterSelect.className='wzf-haru-character-select';
+    const randomFavorite=make('button',t("Random favorite candidate")),recentSettings=make('details','','wzf-haru-layout'),recentSelect=make('select'),recentState=make('span','','wzf-haru-search-results');
+    randomFavorite.className='wzf-haru-random';
+    recentSelect.setAttribute('aria-label',t("Recent confirmed characters"));
+    recentState.setAttribute('role','status');
+    recentSettings.append(make('summary',t("Recent characters")),recentSelect,recentState);
+    let randomBag=[],randomPoolKey='',randomLast=null;
+    const randomPool=()=>[...characterSelect.options].map(option=>option.value).filter(id=>favorites.has(id));
+    const syncRecentOptions=()=>{
+      const available=new Set([...characterSelect.options].map(option=>option.value));
+      recentSelect.replaceChildren();const empty=make('option',t("Choose a recent character candidate"));empty.value='';recentSelect.append(empty);
+      for(const id of recent){if(!available.has(id))continue;const option=make('option',characters[id].name);option.value=id;recentSelect.append(option);}
+      recentSelect.disabled=loading||recentSelect.options.length<2;
+      recentState.textContent=recentNotice;recentState.hidden=!recentNotice;
+      randomFavorite.disabled=loading||!randomPool().length;
+    };
+    const rememberRecent=(id)=>{
+      if(!historyId(id))return;
+      recent=[id,...recent.filter(value=>value!==id)].slice(0,8);
+      try{localStorage.setItem(recentKey,JSON.stringify(recent));recentNotice='';}catch{recentNotice=t("Recent choices apply only to this page; the browser did not allow saving.");}
+      syncRecentOptions();
+    };
     favoritesFilter.type = 'checkbox';
     favoritesLabel.append(favoritesFilter, document.createTextNode(t("Favorites only")));
     favoritesState.setAttribute('role', 'status');
@@ -724,6 +750,7 @@
             : t("No matching characters. Change the search or clear it.");
       syncFavoriteButton();
       syncThumbnail();
+      syncRecentOptions();
     };
     syncCharacterOptions(active);
     const previewButton = make('button', t("Preview character")),
@@ -779,6 +806,8 @@
       searchRow,
       searchResults,
       characterSelect,
+      randomFavorite,
+      recentSettings,
       candidatePreview,
       previewButton,
       favoritesLabel,
@@ -930,9 +959,9 @@
         try{for(const [key]of changes)previous.push([key,localStorage.getItem(key)]);for(const [key,text]of changes)localStorage.setItem(key,text);}
         catch{for(const [key,text]of previous){try{text===null?localStorage.removeItem(key):localStorage.setItem(key,text);}catch{}}let restored=false;try{restored=previous.length===changes.length&&previous.every(([key,text])=>localStorage.getItem(key)===text);}catch{}await rollbackPreview();accountStatus.textContent=restored?t("The browser did not allow saving account preferences locally. Current preferences are retained."):t("This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.");return;}
         layouts=nextLayouts;favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
-        if(available){committed=active;preview=false;}
+        if(available){committed=active;preview=false;rememberRecent(active);}
         syncCharacterOptions(active);readLayout();paint();
-        accountStatus.textContent=available?t("Account preferences applied to this browser."):t("Account preferences saved in this browser. The selected character is unavailable now; the current display is retained.");
+        accountStatus.textContent=(available?t("Account preferences applied to this browser."):t("Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."))+(recentNotice?' '+recentNotice:'');
       }finally{accountPending=false;accountUpdate();}
     };
     accountUpdate();
@@ -1173,6 +1202,7 @@
       characterSearch.disabled = loading;
       favoritesFilter.disabled = loading;
       syncFavoriteButton();
+      syncRecentOptions();
       favoritesState.textContent =
         favoritesNotice ||
         t("Available favorites: %1$s characters", Object.keys(characters).filter((id) => favorites.has(id)).length);
@@ -1213,6 +1243,19 @@
       syncCharacterOptions();
       paint();
     };
+    const selectCandidate=(id)=>{
+      if(loading||![...characterSelect.options].some(option=>option.value===id))return;
+      characterSelect.value=id;syncFavoriteButton();syncThumbnail();
+      state.textContent=t("Candidate selected. Preview it before choosing.");
+    };
+    randomFavorite.onclick=()=>{
+      if(loading)return;
+      const pool=randomPool(),key=JSON.stringify([...pool].sort());if(!pool.length)return;
+      if(key!==randomPoolKey){randomPoolKey=key;randomBag=[];}
+      if(!randomBag.length){randomBag=[...pool];for(let index=randomBag.length-1;index>0;index--){const other=Math.floor(Math.random()*(index+1));[randomBag[index],randomBag[other]]=[randomBag[other],randomBag[index]];}if(randomBag.length>1&&randomBag[0]===randomLast)[randomBag[0],randomBag[1]]=[randomBag[1],randomBag[0]];}
+      const id=randomBag.shift();randomLast=id;selectCandidate(id);
+    };
+    recentSelect.onchange=()=>{selectCandidate(recentSelect.value);recentSelect.value='';};
     characterSelect.onchange = () => {
       syncFavoriteButton();
       syncThumbnail();
@@ -1644,7 +1687,8 @@
         localStorage.setItem('wzf-mascot-character', active);
         committed = active;
         preview = false;
-        state.textContent = t("Using %1$s; this browser will remember your selection.", characters[active].name);
+        rememberRecent(active);
+        state.textContent = t("Using %1$s; this browser will remember your selection.", characters[active].name)+(recentNotice?' '+recentNotice:'');
       } catch {
         state.textContent = t("The browser did not allow saving. This preview is still usable.");
       }

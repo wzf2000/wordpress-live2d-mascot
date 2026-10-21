@@ -37,6 +37,12 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Random favorite candidate'=>__('Random favorite candidate', 'live2d-show'),
+        'Recent confirmed characters'=>__('Recent confirmed characters', 'live2d-show'),
+        'Recent characters'=>__('Recent characters', 'live2d-show'),
+        'Choose a recent character candidate'=>__('Choose a recent character candidate', 'live2d-show'),
+        'Recent choices apply only to this page; the browser did not allow saving.'=>__('Recent choices apply only to this page; the browser did not allow saving.', 'live2d-show'),
+        'Candidate selected. Preview it before choosing.'=>__('Candidate selected. Preview it before choosing.', 'live2d-show'),
         'The request timed out. A save may have completed. Read account preferences again before saving.'=>__('The request timed out. A save may have completed. Read account preferences again before saving.', 'live2d-show'),
         'This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.'=>__('This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.', 'live2d-show'),
         'The account character could not load. Browser preferences were not changed.'=>__('The account character could not load. Browser preferences were not changed.', 'live2d-show'),

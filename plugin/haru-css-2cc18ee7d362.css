@@ -425,3 +425,7 @@
 
 .wzf-haru-account-actions { display: grid; gap: 6px; }
 .wzf-haru-account-actions button { width: 100%; }
+
+.wzf-haru-controls .wzf-haru-character-select { grid-column: 1 / -1; }
+
+.wzf-haru-controls .wzf-haru-random { grid-column: 1 / -1; }

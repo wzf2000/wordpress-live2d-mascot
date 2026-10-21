@@ -242,6 +242,9 @@ msgstr "取消预览"
 msgid "Cancelled"
 msgstr "已取消"
 
+msgid "Candidate selected. Preview it before choosing."
+msgstr "已选为候选，请先预览后确认。"
+
 msgid "Candidate:"
 msgstr "候选："
 
@@ -439,6 +442,9 @@ msgstr "只检查角色配置类型及模型／目录入口路径、可读性和
 
 msgid "Chin in hand · open palm"
 msgstr "托腮摊手"
+
+msgid "Choose a recent character candidate"
+msgstr "选择最近角色作为候选"
 
 msgid "Choose a resource file before importing."
 msgstr "请先选择要导入的资源文件。"
@@ -1106,6 +1112,9 @@ msgstr "快捷互动"
 msgid "Raise hand to greet"
 msgstr "举手招呼"
 
+msgid "Random favorite candidate"
+msgstr "随机收藏候选"
+
 msgid "Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced."
 msgstr "重新开启诊断会清空已保存窗口并建立新批次。当前页内存最多保留 20 个窗口，更早窗口将被替换。"
 
@@ -1123,6 +1132,15 @@ msgstr "正在读取账号偏好…"
 
 msgid "Ready"
 msgstr "已就绪"
+
+msgid "Recent characters"
+msgstr "最近角色"
+
+msgid "Recent choices apply only to this page; the browser did not allow saving."
+msgstr "最近选择仅保留在本页，浏览器不允许保存。"
+
+msgid "Recent confirmed characters"
+msgstr "最近确认的角色"
 
 msgid "Recover interrupted task"
 msgstr "恢复中断的任务"

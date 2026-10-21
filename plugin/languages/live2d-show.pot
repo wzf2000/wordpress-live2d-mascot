@@ -245,6 +245,9 @@ msgstr ""
 msgid "Cancelled"
 msgstr ""
 
+msgid "Candidate selected. Preview it before choosing."
+msgstr ""
+
 msgid "Candidate:"
 msgstr ""
 
@@ -441,6 +444,9 @@ msgid "Checks only character configuration types and model/catalog entry paths, 
 msgstr ""
 
 msgid "Chin in hand · open palm"
+msgstr ""
+
+msgid "Choose a recent character candidate"
 msgstr ""
 
 msgid "Choose a resource file before importing."
@@ -1109,6 +1115,9 @@ msgstr ""
 msgid "Raise hand to greet"
 msgstr ""
 
+msgid "Random favorite candidate"
+msgstr ""
+
 msgid "Re-enabling diagnostics clears saved windows and starts a new batch. Up to 20 windows stay in this page's memory; older windows are replaced."
 msgstr ""
 
@@ -1125,6 +1134,15 @@ msgid "Reading account preferences…"
 msgstr ""
 
 msgid "Ready"
+msgstr ""
+
+msgid "Recent characters"
+msgstr ""
+
+msgid "Recent choices apply only to this page; the browser did not allow saving."
+msgstr ""
+
+msgid "Recent confirmed characters"
 msgstr ""
 
 msgid "Recover interrupted task"
