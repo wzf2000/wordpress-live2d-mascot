@@ -258,10 +258,12 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await diagnosticPage.clock.runFor(100);
       assert((await diagnosticPage.evaluate(() => window.__mascotFixture.gpuQueries)) > 0);
       await diagnosticPage.getByRole('button', { name: 'Sample 3 windows', exact: true }).click();
-      await diagnosticPage.clock.runFor(9010);
+      // Give the three 3000ms windows enough virtual-clock advancement to settle.
+      await diagnosticPage.clock.runFor(9100);
       assert.match(await diagnosticPage.locator('.wzf-haru-diagnostic-body [role="status"]').textContent(), /3 of 3 windows saved/);
       initialBatch = await diagnosticDownload(diagnosticPage, 'Download all saved windows');
       assert.equal(initialBatch.kind, 'wzf-mascot-diagnostic-batch'); assert.equal(initialBatch.windows.length, 3);
+      assert(initialBatch.windows.every((window) => window.sample.durationMs >= 3000 && window.sample.durationMs < 3100), 'Each completed window keeps its 3-second sampling interval');
       assert.equal(new Set(initialBatch.windows.map((window) => window.windowId)).size, 3);
       assert.equal(new Set(initialBatch.windows.map((window) => window.loadSessionId)).size, 1);
       assert(initialBatch.windows.every((window) => !window.sample.interrupted && window.load.firstFrameStatus === 'observed'));

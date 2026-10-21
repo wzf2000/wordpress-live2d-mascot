@@ -210,3 +210,68 @@
 .wzf-mascot-admin .wzf-mascot-capacity-table {
   min-width: 820px;
 }
+
+/* Keep WordPress form conventions inside the mascot's own surfaces. */
+.wzf-mascot-admin, .wzf-mascot-profile {
+  --wzf-admin-accent: #356454;
+  --wzf-admin-border: #d8e0da;
+}
+.wzf-mascot-admin .wzf-mascot-status > div,
+.wzf-mascot-admin .wzf-mascot-card,
+.wzf-mascot-profile {
+  border-color: var(--wzf-admin-border);
+  border-radius: 12px;
+  background: #fffefb;
+}
+.wzf-mascot-admin .wzf-mascot-status > div {
+  border-left-color: var(--wzf-admin-accent);
+  padding: 18px 20px;
+}
+.wzf-mascot-admin .wzf-mascot-card h2, .wzf-mascot-profile h3 { color: #263c34; }
+.wzf-mascot-admin .wzf-mascot-card .button,
+.wzf-mascot-profile .button {
+  border-color: #b8c9be;
+  border-radius: 6px;
+  color: #356454;
+  min-height: 34px;
+  padding-inline: 12px;
+}
+.wzf-mascot-admin .wzf-mascot-card .button-primary,
+.wzf-mascot-profile .button-primary {
+  background: var(--wzf-admin-accent);
+  border-color: var(--wzf-admin-accent);
+  color: #fff;
+}
+.wzf-mascot-admin .wzf-mascot-card .button-primary:hover,
+.wzf-mascot-profile .button-primary:hover { background: #294f41; border-color: #294f41; }
+.wzf-mascot-admin .wzf-mascot-field input:not([type='checkbox']):not([type='radio']),
+.wzf-mascot-admin .wzf-mascot-field select,
+.wzf-mascot-admin .wzf-mascot-field textarea { border-radius: 6px; }
+.wzf-mascot-admin .wzf-mascot-checks { border-color: var(--wzf-admin-border); border-radius: 8px; }
+.wzf-mascot-admin .wzf-mascot-replace, .wzf-mascot-admin .wzf-mascot-diagnostic-row { border-color: var(--wzf-admin-border); }
+.wzf-mascot-admin .wzf-mascot-admin-thumbnail,
+.wzf-mascot-admin .wzf-mascot-admin-initials { border-color: var(--wzf-admin-border); border-radius: 8px; background: #edf3ee; }
+@media (max-width: 782px) {
+  .wzf-mascot-admin .wzf-mascot-card .button, .wzf-mascot-profile .button { min-height: 44px; line-height: 42px; }
+}
+
+.wzf-mascot-admin .wzf-mascot-field input:not([type]),
+.wzf-mascot-admin .wzf-mascot-field input[type='text'],
+.wzf-mascot-admin .wzf-mascot-field input[type='number'],
+.wzf-mascot-admin .wzf-mascot-field select,
+.wzf-mascot-admin .wzf-mascot-field textarea {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--wzf-admin-border);
+  border-radius: 6px;
+  background: #fff;
+  color: #2c3338;
+  font: inherit;
+}
+@media (max-width: 782px) {
+  .wzf-mascot-admin .wzf-mascot-field input:not([type]),
+  .wzf-mascot-admin .wzf-mascot-field input[type='text'],
+  .wzf-mascot-admin .wzf-mascot-field input[type='number'],
+  .wzf-mascot-admin .wzf-mascot-field select,
+  .wzf-mascot-admin .wzf-mascot-field textarea { min-height: 40px; }
+}

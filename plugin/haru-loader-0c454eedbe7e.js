@@ -605,7 +605,7 @@
     panel.id = 'wzf-haru-panel';
     panel.setAttribute('aria-label', t("Mascot interaction"));
     panel.hidden = true;
-    const label = make('strong'),
+    const label = make('strong', '', 'wzf-haru-heading'),
       characterSearch = make('input'),
       clearSearch = make('button', t("Clear")),
       searchResults = make('span', '', 'wzf-haru-search-results'),
@@ -760,7 +760,7 @@
     };
     syncCharacterOptions(active);
     const previewButton = make('button', t("Preview character")),
-      commitButton = make('button', t("Use this character")),
+      commitButton = make('button', t("Use this character"), 'wzf-haru-primary'),
       cancelPreview = make('button', t("Cancel preview"));
     const motion = make('select'),
       expression = make('select');
@@ -1240,7 +1240,7 @@
     link.href = config.terms;
     link.target = '_blank';
     link.rel = 'noopener';
-    const agree = make('button', t("Accept terms and show")),
+    const agree = make('button', t("Accept terms and show"), 'wzf-haru-primary'),
       cancel = make('button', t("Cancel"));
     consent.append(title, text, link, make('br'), agree, cancel);
     document.body.append(consent);

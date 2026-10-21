@@ -4,7 +4,7 @@
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
 <p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.7.0">下载 3.7.0</a> · <a href="#许可与资源来源">许可</a></p>
 
-**本分支候选：3.9.0-rc.2，尚未发布或部署。** 新增角色台词、快捷互动、拖动停靠、视线与模型区域互动、站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG，并包含 3.8 候选维护改进。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。下方稳定下载仍为 3.7.0。
+**本分支候选：3.9.0-rc.3，尚未发布或部署。** 新增角色台词、快捷互动、拖动停靠、视线与模型区域互动、站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG，并包含 3.8 候选维护改进。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。下方稳定下载仍为 3.7.0。
 
 **当前发行版：3.7.0。** 新增后台搜索与状态筛选、中英文界面、只读资源盘点和离线采样汇总。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
