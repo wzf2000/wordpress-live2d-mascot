@@ -2048,6 +2048,9 @@ msgstr ""
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr ""
 
+msgid "This preference applies only to this page; the browser did not allow saving."
+msgstr ""
+
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr ""
 

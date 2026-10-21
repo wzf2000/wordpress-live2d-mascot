@@ -57,7 +57,19 @@ const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
   text=await page.locator('.wzf-haru-bubble').boundingBox();assert(text.y>=0&&text.y+text.height<=390,JSON.stringify(text));
   await page.locator('.wzf-haru-bubble').focus();await page.keyboard.press('End');await page.clock.runFor(200);
   assert(await page.locator('.wzf-haru-bubble').evaluate(el=>el.scrollTop>0));
+  await page.locator('.wzf-haru-bubble').dispatchEvent('wheel',{deltaY:80});
+  await page.clock.runFor(31000);assert.equal(await page.locator('.wzf-haru-bubble').isVisible(),true);
+  const readingBox=await page.locator('.wzf-haru-bubble').boundingBox(),moveBox=await handle.boundingBox();
+  assert(moveBox.x+moveBox.width<=readingBox.x||moveBox.x>=readingBox.x+readingBox.width||moveBox.y+moveBox.height<=readingBox.y||moveBox.y>=readingBox.y+readingBox.height,JSON.stringify({readingBox,moveBox}));
   if(out)await page.screenshot({path:path.join(out,'dialogue-landscape-scroll.png')});
+  await page.setViewportSize({width:390,height:390});await page.waitForTimeout(80);await page.clock.runFor(50);
+  await page.locator('.wzf-haru-bubble').focus();await page.keyboard.press('End');await page.clock.runFor(100);
+  const priorScroll=await page.locator('.wzf-haru-bubble').evaluate(el=>el.scrollTop);assert(priorScroll>0);
+  await page.getByRole('button',{name:'Interact',exact:true}).click();
+  const afterMove=await page.locator('.wzf-haru-bubble').evaluate(el=>({scroll:el.scrollTop,max:el.scrollHeight-el.clientHeight}));
+  assert(afterMove.max>0);assert(Math.abs(afterMove.scroll-Math.min(priorScroll,afterMove.max))<=1,JSON.stringify({priorScroll,afterMove}));
+  if(out)await page.screenshot({path:path.join(out,'dialogue-mobile-retained-scroll.png')});
+
   await page.setViewportSize({width:1440,height:900});await page.goto(fixture.origin+'/?mobile=1&presets=1&hits=1');await ready();
   await page.mouse.move(200,180);assert.equal(await page.evaluate(()=>window.__mascotFixture.events.filter(e=>e.type==='gaze').length),0);
   await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);await page.getByText('Pointer interactions',{exact:true}).click();
@@ -79,6 +91,50 @@ const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
   assert.equal(await page.getByText('No model hit areas; normal greeting is used.',{exact:true}).isVisible(),true);
   await page.getByLabel('Follow pointer gently',{exact:true}).evaluate(el=>{el.checked=false;el.dispatchEvent(new Event('change'));});const gazeCount=await page.evaluate(()=>window.__mascotFixture.events.filter(e=>e.type==='gaze').length);await page.mouse.move(500,450);assert.equal(await page.evaluate(()=>window.__mascotFixture.events.filter(e=>e.type==='gaze').length),gazeCount);
   if(out)await page.screenshot({path:path.join(out,'pointer-capabilities.png')});
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks:9,syntheticOnly:true,realRenderingTested:false}));
+  // Simulated visual viewport contraction (not a physical keyboard test).
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(fixture.origin+'/?mobile=1');await ready();
+  await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);
+  await page.evaluate(()=>{const v=visualViewport;Object.defineProperties(v,{height:{configurable:true,value:390},offsetTop:{configurable:true,value:80},width:{configurable:true,value:280},offsetLeft:{configurable:true,value:65}});v.dispatchEvent(new Event('resize'));});
+  await page.waitForFunction(()=>{const p=document.querySelector('#wzf-haru-panel').getBoundingClientRect();return p.top>=96&&p.bottom<=470;});
+  for(const side of ['left','right']) {
+    await page.getByLabel('Character position',{exact:true}).evaluate((el,value)=>{el.value=value;el.dispatchEvent(new Event('change'));},side);
+    for(const selector of ['#wzf-haru-panel','.wzf-haru-dock']) {
+      const bounds=await page.locator(selector).boundingBox();assert(bounds.x>=81&&bounds.x+bounds.width<=329,JSON.stringify({selector,bounds}));
+    }
+  }
+  await search.fill('beta');await page.getByLabel('Choose character',{exact:true}).selectOption('beta');
+  await page.getByRole('button',{name:'Preview character',exact:true}).click();await ready();
+  assert.equal(await page.getByRole('button',{name:'Use this character',exact:true}).evaluate(el=>el===document.activeElement),true);
+  await page.getByRole('button',{name:'Use this character',exact:true}).scrollIntoViewIfNeeded();
+  const confirm=await page.getByRole('button',{name:'Use this character',exact:true}).boundingBox();assert(confirm.y>=80&&confirm.y+confirm.height<=470,JSON.stringify(confirm));
+  position=await host.boundingBox();assert(position.y>=80&&position.y+position.height<=470);
+  if(out)await page.screenshot({path:path.join(out,'visual-viewport-contraction.png')});
+  // A delayed current preview may hand focus back only if the user did not leave its stable loading entry.
+  await page.getByRole('button',{name:'Cancel preview',exact:true}).click();await ready();
+  await page.evaluate(()=>{window.__mascotFixture.holdCreate=true;});
+  await page.getByLabel('Choose character',{exact:true}).selectOption('beta');await page.getByRole('button',{name:'Preview character',exact:true}).click();
+  await page.waitForFunction(()=>window.__mascotFixture.pendingCreates.length>0);
+  await page.locator('#outside-button').focus();await page.evaluate(()=>{window.__mascotFixture.holdCreate=false;window.__mascotFixture.pendingCreates.splice(0).forEach(fn=>fn());});await ready();
+  assert.equal(await page.locator('#outside-button').evaluate(el=>el===document.activeElement),true);
+  // First panel focus prefers available actions over the closed character section.
+  await page.goto(fixture.origin+'/?mobile=1&idle=1&noGreeting=1');await ready();await page.getByRole('button',{name:'Interact',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Chat once',exact:true}).evaluate(el=>el===document.activeElement),true);
+  await page.goto(fixture.origin+'/?mobile=1&presets=1&noGreeting=1');await ready();await page.getByRole('button',{name:'Interact',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Quick greeting',exact:true}).evaluate(el=>el===document.activeElement),true);
+  await page.goto(fixture.origin+'/?mobile=1&noGreeting=1');await ready();await page.getByRole('button',{name:'Interact',exact:true}).click();
+  assert.equal(await page.getByText('Change character',{exact:true}).evaluate(el=>el===document.activeElement),true);
+  await page.goto(fixture.origin+'/?mobile=1&presets=1');await ready();
+  await page.evaluate(()=>{Storage.prototype.setItem=function(){throw Error('denied')};});
+  await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);
+  await page.getByText('Dialogue preferences',{exact:true}).click();await page.getByLabel('Dialogue mode',{exact:true}).selectOption('active');
+  const notice='This preference applies only to this page; the browser did not allow saving.';
+  assert.equal(await page.locator('.wzf-haru-state').textContent(),notice);
+  await page.getByText('Pointer interactions',{exact:true}).click();await page.getByLabel('Follow pointer gently',{exact:true}).check();
+  assert.equal(await page.locator('.wzf-haru-state').textContent(),notice);
+  await page.goto(fixture.origin+'/?mobile=1&idle=1');await ready();await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);await page.getByText('Dialogue preferences',{exact:true}).click();
+  await page.evaluate(()=>{Storage.prototype.setItem=function(){throw Error('denied')};});await page.getByLabel('Occasional chatter',{exact:true}).check();
+  assert.equal(await page.locator('.wzf-haru-state').textContent(),notice);
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks:14,syntheticOnly:true,realRenderingTested:false}));
  }finally{await context.close();await browser.close();await fixture.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

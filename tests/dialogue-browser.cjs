@@ -60,8 +60,36 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
         assert.equal(await bubble(page).evaluate((el)=>el.scrollHeight>el.clientHeight),false);
         if(output) await page.screenshot({path:path.join(output,language+'-'+viewport.width+'.png')});
       }
+      // Both scripts need more than the former 4.5 second Chinese timeout.
+      await page.clock.runFor(8000);assert.equal(await bubble(page).isVisible(),true);
+      await bubble(page).focus();await page.keyboard.press('End');
+      await bubble(page).dispatchEvent('wheel',{deltaY:120});
+      await page.clock.runFor(31000);assert.equal(await bubble(page).isVisible(),true);
+      assert.equal(await bubble(page).evaluate(el=>getComputedStyle(el).outlineStyle),'solid');
+      await page.getByRole('button',{name:'Interact',exact:true}).click();
+      // Keep the bubble focused while the responsive layout moves it between containers.
+      await bubble(page).focus();
+      await page.setViewportSize({width:1440,height:900});
+      await page.waitForFunction(()=>document.activeElement===document.querySelector('.wzf-haru-bubble') && document.activeElement.parentElement.id==='wzf-haru-character');
+      await page.setViewportSize({width:390,height:844});
+      await page.waitForFunction(()=>document.activeElement===document.querySelector('.wzf-haru-bubble') && document.activeElement.parentElement.id==='wzf-haru-panel');
+      await page.clock.runFor(31000);assert.equal(await bubble(page).isVisible(),true);
+      await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'reading-test',suspended:true}})));
+      assert.equal(await bubble(page).isVisible(),false);
+      assert.notEqual(await page.evaluate(()=>document.activeElement?.className),'wzf-haru-bubble');
+      await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'reading-test',suspended:false}})));
       await page.setViewportSize({width:1440,height:900});
     } checks++;
+    // Hover and touch scrolling preserve the same full reading window on release.
+    await page.goto(fixture.origin+'/?dialogue=1&mobile=1');await ready(page);
+    await bubble(page).hover();await page.clock.runFor(31000);assert.equal(await bubble(page).isVisible(),true);
+    await page.mouse.move(0,0);await page.clock.runFor(4600);assert.equal(await bubble(page).isVisible(),false);
+    await page.clock.runFor(16000);await page.getByRole('button',{name:'Tap Alpha fixture to greet',exact:true}).click();
+    await bubble(page).dispatchEvent('pointerdown',{pointerType:'touch'});
+    await page.clock.runFor(31000);assert.equal(await bubble(page).isVisible(),true);
+    await bubble(page).dispatchEvent('pointercancel',{pointerType:'touch'});
+    await page.clock.runFor(4600);assert.equal(await bubble(page).isVisible(),false);checks++;
+
     await page.goto(fixture.origin+'/?presets=1&mobile=1'); await ready(page);
     await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);
     assert.equal(await page.getByRole('button',{name:'Invalid preset',exact:true}).count(),0);

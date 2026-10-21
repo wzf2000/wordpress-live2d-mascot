@@ -100,24 +100,37 @@
     } catch {}
     const dialogueShown = new Map();
     let bubble = null, bubbleTimer = null, dialogueWelcomeConsumed = false,
-      lastDialogue = -Infinity, awayAt = null;
-    const clearDialogue = () => {
+      lastDialogue = -Infinity, awayAt = null, bubbleMoving = false, bubbleTouch = false;
+    const dialogueDuration = () => Math.max(4500, Math.min(30000, 1500 + [...(bubble?.textContent || '')].reduce((time, char) => time + (/[\u2e80-\u9fff\uac00-\ud7af\uf900-\ufaff]/u.test(char) ? 180 : 45), 0)));
+    const scheduleDialogueHide = () => {
+      clearTimeout(bubbleTimer); bubbleTimer = null;
+      if (!bubble || bubble.hidden || bubbleMoving || bubbleTouch || bubble === document.activeElement || bubble.matches(':hover')) return;
+      bubbleTimer = setTimeout(clearDialogue, dialogueDuration());
+    };
+    const clearDialogue = (replacing = false) => {
       clearTimeout(bubbleTimer);
       bubbleTimer = null;
-      if (bubble) { bubble.textContent = ''; bubble.hidden = true; }
+      if (bubble) {
+        if (!replacing && document.activeElement === bubble) {
+          const target = permitted() ? (!panelToggle.hidden ? panelToggle : !button.hidden ? button : null) : null;
+          if (target) target.focus({preventScroll:true}); else bubble.blur();
+        }
+        bubble.textContent = '';
+        if (!replacing) { bubble.hidden = true; bubbleTouch = false; if(dragHandle)dragHandle.style.zIndex=''; }
+      }
     };
     const showLine = (line, proactive = false) => {
       if (!allowed() || !engine || loading || dialogueMode === 'silent' ||
           (proactive && (dialogueMode !== 'auto' || preview))) return false;
       if (typeof line !== 'string' || !line.trim() || new TextEncoder().encode(line).length > 300 || /[\u0000-\u001f\u007f]/.test(line)) return false;
-      clearDialogue();
+      clearDialogue(true);
       if (!bubble) return false;
       lastDialogue = performance.now();
       cancelIdle();
       bubble.textContent = line;
       bubble.hidden = false;
       placeDialogue();
-      bubbleTimer = setTimeout(clearDialogue, Math.max(4500,Math.min(12000,[...line].length*40)));
+      scheduleDialogueHide();
       syncIdle();
       return true;
     };
@@ -775,6 +788,11 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const saveLocalPreference = (key, value) => {
+      const notice = t("This preference applies only to this page; the browser did not allow saving.");
+      try { localStorage.setItem(key, value); if (state.textContent === notice) state.textContent = ''; }
+      catch { state.textContent = notice; }
+    };
     const livePresets = new Map();
     let nextHit = 0, gazeEnabled = false;
     try { gazeEnabled = localStorage.getItem('wzf-mascot-gaze-v1') === 'enabled'; } catch {}
@@ -793,7 +811,7 @@
       dialogueMode = dialogueChoice.value;
       clearDialogue();
       dialogueWelcomeConsumed = true;
-      try { localStorage.setItem('wzf-mascot-dialogue-v1', dialogueMode); } catch {}
+      saveLocalPreference('wzf-mascot-dialogue-v1', dialogueMode);
       paint();
     };
     let idleEnabled = false, idleTimer = null, idleTimerCharacter = null;
@@ -844,7 +862,7 @@
         syncIdle();
       },delay*(1+Math.random())*1000);
     };
-    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;try{localStorage.setItem('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');}catch{}syncIdle();};
+    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -858,7 +876,7 @@
     gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
     gazeLabel.append(gazeChoice,document.createTextNode(t("Follow pointer gently")));
     pointerSettings.append(make('summary',t("Pointer interactions")),gazeLabel,pointerStatus);
-    gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();try{localStorage.setItem('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');}catch{}};
+    gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();saveLocalPreference('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');};
     const characterSettings = make('details', '', 'wzf-haru-layout wzf-haru-character-settings');
     characterSettings.append(make('summary', t("Change character")), searchRow, searchResults,
       characterSelect, randomFavorite, recentSettings, candidatePreview, previewButton,
@@ -1074,31 +1092,61 @@
     };
     const safeProbe = make('div', '', 'wzf-haru-safe-area');
     document.body.append(safeProbe);
-    const movementBounds = () => {
+    const visibleViewport = () => {
       const css = getComputedStyle(safeProbe), view = window.visualViewport;
-      const left = (view?.offsetLeft || 0) + Math.max(6, parseFloat(css.paddingLeft) || 0);
-      const top = (view?.offsetTop || 0) + Math.max(6, parseFloat(css.paddingTop) || 0);
-      const right = (view?.offsetLeft || 0) + (view?.width || innerWidth) - Math.max(6, parseFloat(css.paddingRight) || 0);
-      const bottom = (view?.offsetTop || 0) + (view?.height || innerHeight) - Math.max(6, parseFloat(css.paddingBottom) || 0);
+      return {left:view?.offsetLeft || 0, top:view?.offsetTop || 0,
+        right:(view?.offsetLeft || 0)+(view?.width || innerWidth), bottom:(view?.offsetTop || 0)+(view?.height || innerHeight),
+        safeLeft:parseFloat(css.paddingLeft)||0, safeTop:parseFloat(css.paddingTop)||0,
+        safeRight:parseFloat(css.paddingRight)||0, safeBottom:parseFloat(css.paddingBottom)||0};
+    };
+    const movementBounds = () => {
+      const view = visibleViewport();
+      const left = view.left + Math.max(6, view.safeLeft), top = view.top + Math.max(6, view.safeTop);
+      const right = view.right - Math.max(6, view.safeRight), bottom = view.bottom - Math.max(6, view.safeBottom);
       return {left,top,maxX:Math.max(left,right-(host?.offsetWidth || size)),maxY:Math.max(top,bottom-(host?.offsetHeight || size*1.5)),right,bottom};
     };
     const clamp = (n, low, high) => Math.max(low, Math.min(high,n));
+    const moveDialogue = (parent, before = null) => {
+      if (bubble.parentElement === parent) return;
+      bubbleMoving = true;
+      parent.insertBefore(bubble, before);
+    };
+    const avoidDialogueHandle = (bounds) => {
+      if(!dragHandle || dragHandle.hidden)return;
+      dragHandle.style.zIndex='';
+      const text=bubble.getBoundingClientRect(), handle=dragHandle.getBoundingClientRect(), model=host.getBoundingClientRect();
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(!overlaps(text,handle))return;
+      for(const left of [text.left-handle.width-8,text.right+8]) {
+        const next={left,right:left+handle.width,top:handle.top,bottom:handle.bottom};
+        if(next.left>=bounds.left&&next.right<=bounds.right&&!overlaps(next,model)) {dragHandle.style.left=left+'px';return;}
+      }
+      // When space cannot fit both, text stays readable above the move handle.
+      dragHandle.style.zIndex='898';
+    };
     const placeDialogue = () => {
       if (!bubble || bubble.hidden || !host) return;
-      const bounds=movementBounds(), box=host.getBoundingClientRect();
+      const bounds=movementBounds(), box=host.getBoundingClientRect(), scroll=bubble.scrollTop, focused=document.activeElement===bubble;
       if (panelOpen && !desktop.matches && !panel.hidden) {
-        if(bubble.parentElement!==panel)panel.insertBefore(bubble,previewActions);
+        moveDialogue(panel,previewActions);
         bubble.style.left='';bubble.style.top='';bubble.style.right='';bubble.style.bottom='';
         bubble.style.maxHeight=Math.max(44,Math.min(160,(bounds.bottom-bounds.top)*0.3))+'px';
+        bubble.scrollTop=scroll;
+        if(focused)bubble.focus({preventScroll:true});
+        if(bubbleMoving){bubbleMoving=false; scheduleDialogueHide();}
         return;
       }
-      if(bubble.parentElement!==host)host.append(bubble);
+      moveDialogue(host);
       bubble.style.maxHeight=Math.max(44,bounds.bottom-bounds.top-12)+'px';
       const text=bubble.getBoundingClientRect();
       const x=clamp(position==='right'?box.right-text.width:box.left,bounds.left,Math.max(bounds.left,bounds.right-text.width));
       const y=clamp(box.top-text.height+30,bounds.top,Math.max(bounds.top,bounds.bottom-text.height));
       bubble.style.right='auto';bubble.style.bottom='auto';
       bubble.style.left=(x-box.left)+'px';bubble.style.top=(y-box.top)+'px';
+      bubble.scrollTop=scroll;
+      if(focused)bubble.focus({preventScroll:true});
+      if(bubbleMoving){bubbleMoving=false; scheduleDialogueHide();}
+      avoidDialogueHandle(bounds);
     };
     const layout = () => {
       let renderedSize = desktop.matches
@@ -1107,11 +1155,7 @@
       const visibleBounds = movementBounds();
       renderedSize = Math.max(1, Math.min(renderedSize, visibleBounds.right-visibleBounds.left, (visibleBounds.bottom-visibleBounds.top)/1.5));
       const leftControls = position === 'right';
-      const edge = 'max(16px, env(safe-area-inset-' + (leftControls ? 'left' : 'right') + '))';
-      for (const element of [panel, controlsDock]) {
-        element.style.left = leftControls ? edge : 'auto';
-        element.style.right = leftControls ? 'auto' : edge;
-      }
+      layoutDock();
       controlsDock.style.alignItems = leftControls ? 'flex-start' : 'flex-end';
       diagnosticBody.style.left = leftControls ? '0' : 'auto';
       diagnosticBody.style.right = leftControls ? 'auto' : '0';
@@ -1167,12 +1211,18 @@
       output.textContent = t("%1$s pixels", size);
     };
     const layoutDock = () => {
-      const bottom = 24 + controlsDock.offsetHeight;
-      panel.style.bottom = 'calc(' + bottom + 'px + env(safe-area-inset-bottom))';
-      panel.style.maxHeight =
-        'calc(100dvh - ' +
-        (bottom + 16) +
-        'px - env(safe-area-inset-bottom) - env(safe-area-inset-top))';
+      const view = visibleViewport();
+      const left=view.left+Math.max(16,view.safeLeft), right=view.right-Math.max(16,view.safeRight);
+      for(const element of [panel,controlsDock]) {
+        element.style.left=position==='right'?left+'px':'auto';
+        element.style.right=position==='left'?Math.max(0,innerWidth-right)+'px':'auto';
+        element.style.maxWidth=Math.max(0,right-left)+'px';
+      }
+      const dockBottom = Math.max(0, innerHeight-view.bottom)+Math.max(16,view.safeBottom);
+      controlsDock.style.bottom = dockBottom+'px';
+      const bottom = dockBottom+controlsDock.offsetHeight+8;
+      panel.style.bottom = bottom+'px';
+      panel.style.maxHeight = Math.max(44,innerHeight-bottom-view.top-Math.max(16,view.safeTop))+'px';
     };
     const rememberLayout = () => {
       const row={position,size,...(anchor?{anchor:{...anchor}}:{})};
@@ -1408,7 +1458,10 @@
         if (failed) {
           characterSettings.open = true;
           characterSelect.focus({ preventScroll: true });
-        } else (greeting.hidden ? characterSettings.querySelector('summary') : greeting).focus({ preventScroll: true });
+        } else {
+          const first = [greeting,chatButton,...presetControls.querySelectorAll('button')].find(element => !element.hidden && !element.disabled && element.getClientRects().length);
+          (first || characterSettings.querySelector('summary')).focus({preventScroll:true});
+        }
       }
     };
     characterSearch.oninput = () => {
@@ -1761,9 +1814,10 @@
         bubble.setAttribute('aria-live', 'polite');
         bubble.setAttribute('aria-label', t("Character dialogue"));
         bubble.tabIndex = 0;
-        bubble.onfocus=()=>{clearTimeout(bubbleTimer);bubbleTimer=null;};
-        bubble.onblur=()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,2000);}};
-        bubble.addEventListener('wheel',()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,12000);}},{passive:true});
+        bubble.onfocus = bubble.onblur = bubble.onpointerenter = bubble.onpointerleave = scheduleDialogueHide;
+        bubble.addEventListener('pointerdown', event => { if (event.pointerType === 'touch') { bubbleTouch=true; scheduleDialogueHide(); } });
+        for (const name of ['pointerup','pointercancel']) bubble.addEventListener(name, () => { bubbleTouch=false; scheduleDialogueHide(); });
+        for (const name of ['wheel','scroll']) bubble.addEventListener(name, scheduleDialogueHide, {passive:true});
         host.append(canvas, touch, bubble);
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
@@ -1842,7 +1896,7 @@
       const recovering = failed;
       if (!permitted() || loading || (!engine && !recovering) || !Object.hasOwn(characters, id)) return;
       const recoveryError = recovering ? loadError : null;
-      const handoffFocus = recovering && panelOpen && panel.contains(document.activeElement);
+      const handoffFocus = panelOpen && ((recovering && panel.contains(document.activeElement)) || document.activeElement === previewButton || document.activeElement === cancelPreview);
       if (handoffFocus) button.focus({ preventScroll: true });
       if (recovering) resetFailure();
       welcomeConsumed = true;
@@ -1893,7 +1947,7 @@
     };
     previewButton.onclick = () => switchTo(characterSelect.value, true);
     const previewReturnFocus = () => { if (panelOpen && !panel.hidden && !preview) characterSettings.querySelector('summary').focus({preventScroll:true}); };
-    cancelPreview.onclick = async () => { await switchTo(committed, false); previewReturnFocus(); };
+    cancelPreview.onclick = () => switchTo(committed, false);
     commitButton.onclick = () => {
       if (!allowed() || loading || !engine || !preview) return;
       try {
@@ -2391,7 +2445,7 @@
     document.addEventListener('focusin', syncMobileInput);
     document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
     window.visualViewport?.addEventListener('resize', () => { syncMobileInput(); layout(); layoutDock(); });
-    window.visualViewport?.addEventListener('scroll', layout);
+    window.visualViewport?.addEventListener('scroll', () => { layout(); layoutDock(); });
     window.addEventListener('resize', () => {
       layout();
       layoutDock();

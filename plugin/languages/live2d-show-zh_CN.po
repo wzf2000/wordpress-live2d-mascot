@@ -2045,6 +2045,9 @@ msgstr "此模型未声明命中区域，仍可使用普通招呼。"
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr "本页保留原偏好，但浏览器保存可能不完整。请检查本机存储权限后重试。"
 
+msgid "This preference applies only to this page; the browser did not allow saving."
+msgstr "此偏好仅在本页生效；浏览器未允许保存。"
+
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr "此预览将在 15 分钟后过期。其他地方修改配置后，需要重新预览。"
 

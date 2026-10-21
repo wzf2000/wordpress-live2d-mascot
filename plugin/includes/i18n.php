@@ -226,6 +226,7 @@ function wzf_mascot_frontend_translations() {
         'Ready'=>__('Ready', 'live2d-show'),
         'Retry loading'=>__('Retry loading', 'live2d-show'),
         'Browser preferences changed in another tab. Read account preferences again before using or saving them.'=>__('Browser preferences changed in another tab. Read account preferences again before using or saving them.', 'live2d-show'),
+        'This preference applies only to this page; the browser did not allow saving.'=>__('This preference applies only to this page; the browser did not allow saving.', 'live2d-show'),
         'Layout applies only to this page; the browser did not allow saving.'=>__('Layout applies only to this page; the browser did not allow saving.', 'live2d-show'),
         'Choose another character'=>__('Choose another character', 'live2d-show'),
         'Reduced motion enabled'=>__('Reduced motion enabled', 'live2d-show'),
