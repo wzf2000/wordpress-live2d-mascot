@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-适用于 3.9.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.9.0；互动模板部分为 3.10.0-rc.1 开发候选新增。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -38,6 +38,25 @@
 前台按钮位于角色选择之后。点击后动作、表情与台词同时开始，不等待动作播放结束。新操作会取消旧预设尚未加载完成的通道；部分资源失败会给出提示。
 
 更新模型时，动作和表情按相对文件路径映射，无法映射的整个预设会跳过并在后台提示。回退模型恢复对应资源版本的预设，保留当前台词与展示偏好。
+
+
+## 复用互动模板（3.10 开发候选）
+
+在角色编辑页展开 **互动模板 / Interaction templates**，可把已配置的台词和快捷互动保存为 JSON，在另一个角色或站点复用。
+
+1. 在来源角色中选择 **下载互动 JSON**。文件只包含七类台词、冷却时间和快捷预设；动作与表情记录相对资源路径，不打包模型。
+2. 在目标角色中上传该 JSON，选择 **预览模板变化**。默认只替换台词；如需一起替换快捷预设，先勾选对应选项。
+3. 检查前后内容、启用状态、冷却时间以及动作／表情映射，再勾选确认并应用。未出现在模板中的原有台词或预设会随对应分组被替换，预览会展示这些变化。
+
+上传预览不会保存设置。预览有效期为 15 分钟；期间角色或其他资源配置被修改时，需要重新预览。取消、返回或关闭页面不会应用模板。文件上限为 **64 KiB**，仅接受此插件导出的 schema 1 互动 JSON。
+
+偶尔闲聊保留目标角色当前的启用状态，导入不会把关闭的闲聊打开；导入空白闲聊句池会关闭该规则。读者本机的闲聊选择仍独立保存。
+
+快捷预设只匹配目标角色已经存在、路径完全一致且唯一的动作或表情；缺失或歧义时不会保存。可改用“仅台词”，或先修复目标目录。若目标角色已有模型点击区域绑定，必须先在原设置中解除绑定才能替换快捷预设；仅导入台词可以保留这些绑定。
+
+模板不包含 Core、模型、贴图、源角色目录、账号偏好、模型点击区域绑定或 PNG 下载许可，也不修改角色名称、署名、布局、资源历史和移动端设置。请检查台词内容是否适合目标角色；模板不会赋予素材或文字的额外使用权。
+
+Interaction templates are introduced in the 3.10 development candidate. Export a JSON file from one character, upload it to another and review the before/after changes before confirming. Dialogue-only import is the default; presets require a separate opt-in and exact, unique relative resource matches. Existing hit-area bindings block preset replacement. Chatter keeps the target enable setting, and an empty imported pool disables that rule. Previews write nothing, expire after 15 minutes and become stale after configuration changes. Templates contain no Core/model files, account data or PNG permission.
 
 ## 移动、停靠和复位
 

@@ -119,6 +119,9 @@ msgstr "A pause can reveal details you missed before."
 msgid "A preset needs a name and at least one motion, expression or line."
 msgstr "A preset needs a name and at least one motion, expression or line."
 
+msgid "A preset resource cannot be mapped. Repair the preset before exporting."
+msgstr "A preset resource cannot be mapped. Repair the preset before exporting."
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "A resource or settings task is in progress. Inspect task status before retrying."
 
@@ -139,6 +142,9 @@ msgstr "A small pause can make room for a new thought."
 
 msgid "A small question can lead to an interesting discovery."
 msgstr "A small question can lead to an interesting discovery."
+
+msgid "A template resource is missing or ambiguous in this character. Import dialogue only, or fix the matching catalog."
+msgstr "A template resource is missing or ambiguous in this character. Import dialogue only, or fix the matching catalog."
 
 msgid "Accept terms and enable mobile animation in this browser"
 msgstr "Accept terms and enable mobile animation in this browser"
@@ -179,11 +185,17 @@ msgstr "Active"
 msgid "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
 msgstr "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
 
+msgid "Added"
+msgstr "Added"
+
 msgid "Administrator permission is required."
 msgstr "Administrator permission is required."
 
 msgid "Administrator-imported resources"
 msgstr "Administrator-imported resources"
+
+msgid "After"
+msgstr "After"
 
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
@@ -206,6 +218,9 @@ msgstr "Allow the mascot on the frontend"
 msgid "Allow transparent PNG download for this character"
 msgstr "Allow transparent PNG download for this character"
 
+msgid "Also replace quick interactions"
+msgstr "Also replace quick interactions"
+
 msgid "Alternative lines"
 msgstr "Alternative lines"
 
@@ -220,6 +235,9 @@ msgstr "Another request changed the resource configuration. Refresh before retry
 
 msgid "Another request changed the resource configuration. Refresh before trying again."
 msgstr "Another request changed the resource configuration. Refresh before trying again."
+
+msgid "Apply reviewed template"
+msgstr "Apply reviewed template"
 
 msgid "Arms crossed · glance aside"
 msgstr "Arms crossed · glance aside"
@@ -265,6 +283,9 @@ msgstr "Available favorites: %1$s characters"
 
 msgid "Background unverified; these drafts use a neutral voice."
 msgstr "Background unverified; these drafts use a neutral voice."
+
+msgid "Before"
+msgstr "Before"
 
 msgid "Between 1 and 16 textures are required."
 msgstr "Between 1 and 16 textures are required."
@@ -518,6 +539,9 @@ msgstr "Choose a recent character candidate"
 msgid "Choose a resource file before importing."
 msgstr "Choose a resource file before importing."
 
+msgid "Choose a valid interaction JSON file no larger than 64 KiB."
+msgstr "Choose a valid interaction JSON file no larger than 64 KiB."
+
 msgid "Choose an existing hit area and a valid interaction preset."
 msgstr "Choose an existing hit area and a valid interaction preset."
 
@@ -572,6 +596,9 @@ msgstr "Configured · Web 5 R5"
 msgid "Confirm recovery of the interrupted task record."
 msgstr "Confirm recovery of the interrupted task record."
 
+msgid "Confirm the displayed interaction changes before applying."
+msgstr "Confirm the displayed interaction changes before applying."
+
 msgid "Confirm your right to use the thumbnail."
 msgstr "Confirm your right to use the thumbnail."
 
@@ -595,6 +622,9 @@ msgstr "Control whether this account allows the mascot to appear on the frontend
 
 msgid "Cooldown (seconds)"
 msgstr "Cooldown (seconds)"
+
+msgid "Cooldown: %s seconds"
+msgstr "Cooldown: %s seconds"
 
 msgid "Core SHA256 does not match the required Web 5 R5 file."
 msgstr "Core SHA256 does not match the required Web 5 R5 file."
@@ -698,6 +728,9 @@ msgstr "Download diagnostic JSON"
 msgid "Download fresh inventory JSON"
 msgstr "Download fresh inventory JSON"
 
+msgid "Download interaction JSON"
+msgstr "Download interaction JSON"
+
 msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
 msgstr "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
 
@@ -730,6 +763,9 @@ msgstr "Enable dialogue"
 
 msgid "Enable local diagnostics"
 msgstr "Enable local diagnostics"
+
+msgid "Enabled"
+msgstr "Enabled"
 
 msgid "Encrypted ZIP files are not supported."
 msgstr "Encrypted ZIP files are not supported."
@@ -932,6 +968,9 @@ msgstr "I have the right to use these resources on this site and have read their
 msgid "I have the right to use this image on this site and have read its source license and terms."
 msgstr "I have the right to use this image on this site and have read its source license and terms."
 
+msgid "I reviewed these changes and want to replace the selected interaction settings."
+msgstr "I reviewed these changes and want to replace the selected interaction settings."
+
 msgid "I understand that recovery only removes the interrupted task record."
 msgstr "I understand that recovery only removes the interrupted task record."
 
@@ -968,6 +1007,9 @@ msgstr "Inspect disk usage"
 msgid "Interact"
 msgstr "Interact"
 
+msgid "Interaction JSON (up to 64 KiB)"
+msgstr "Interaction JSON (up to 64 KiB)"
+
 msgid "Interaction help"
 msgstr "Interaction help"
 
@@ -976,6 +1018,15 @@ msgstr "Interaction preset is invalid."
 
 msgid "Interaction presets saved."
 msgstr "Interaction presets saved."
+
+msgid "Interaction template applied to this character."
+msgstr "Interaction template applied to this character."
+
+msgid "Interaction template fields are invalid."
+msgstr "Interaction template fields are invalid."
+
+msgid "Interaction templates"
+msgstr "Interaction templates"
 
 msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
 msgstr "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
@@ -1202,6 +1253,9 @@ msgstr "Normal greeting"
 msgid "Not imported"
 msgstr "Not imported"
 
+msgid "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
+msgstr "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
+
 msgid "Observed paths (admin only)"
 msgstr "Observed paths (admin only)"
 
@@ -1331,6 +1385,9 @@ msgstr "Preset name"
 msgid "Preview character"
 msgstr "Preview character"
 
+msgid "Preview template changes"
+msgstr "Preview template changes"
+
 msgid "Previewing. Select “Use this character” to save."
 msgstr "Previewing. Select “Use this character” to save."
 
@@ -1357,6 +1414,9 @@ msgstr "Pursed lips"
 
 msgid "Quick interactions"
 msgstr "Quick interactions"
+
+msgid "Quick interactions are retained. Only dialogue will be replaced."
+msgstr "Quick interactions are retained. Only dialogue will be replaced."
 
 msgid "Quiet company"
 msgstr "Quiet company"
@@ -1421,8 +1481,14 @@ msgstr "Reference inspection reached its bound; classification is unknown."
 msgid "Relative path"
 msgstr "Relative path"
 
+msgid "Removed"
+msgstr "Removed"
+
 msgid "Rendering failed. Try again."
 msgstr "Rendering failed. Try again."
+
+msgid "Replaced"
+msgstr "Replaced"
 
 msgid "Reset defaults"
 msgstr "Reset defaults"
@@ -1459,6 +1525,9 @@ msgstr "Resource file"
 
 msgid "Resource loading timed out. Try again."
 msgstr "Resource loading timed out. Try again."
+
+msgid "Resource mapping"
+msgstr "Resource mapping"
 
 msgid "Resource path escapes the allowed directory."
 msgstr "Resource path escapes the allowed directory."
@@ -1507,6 +1576,12 @@ msgstr "Return after absence"
 
 msgid "Returned to the original character"
 msgstr "Returned to the original character"
+
+msgid "Reuse your dialogue and quick interactions with a JSON file. Model files, account preferences, PNG permission and hit-area bindings are excluded. Uploading only previews changes; applying needs a separate confirmation."
+msgstr "Reuse your dialogue and quick interactions with a JSON file. Model files, account preferences, PNG permission and hit-area bindings are excluded. Uploading only previews changes; applying needs a separate confirmation."
+
+msgid "Review interaction changes"
+msgstr "Review interaction changes"
 
 msgid "Roll back to previous resources and motions"
 msgstr "Roll back to previous resources and motions"
@@ -1733,6 +1808,9 @@ msgstr "Task state is unavailable. Ask an administrator to inspect server storag
 msgid "Task state or configuration changed. Refresh before retrying recovery."
 msgstr "Task state or configuration changed. Refresh before retrying recovery."
 
+msgid "Template resource paths must be relative motion or expression files."
+msgstr "Template resource paths must be relative motion or expression files."
+
 msgid "Terms"
 msgstr "Terms"
 
@@ -1904,6 +1982,9 @@ msgstr "The task guard is unavailable or unsafe. Ask an administrator to inspect
 msgid "The task is still running. Recovery is unavailable."
 msgstr "The task is still running. Recovery is unavailable."
 
+msgid "The template is not valid UTF-8 JSON or is nested too deeply."
+msgstr "The template is not valid UTF-8 JSON or is nested too deeply."
+
 msgid "The thumbnail must be a local image file no larger than 4 MiB."
 msgstr "The thumbnail must be a local image file no larger than 4 MiB."
 
@@ -1937,17 +2018,29 @@ msgstr "This browser does not support WebGL; the mascot cannot be displayed."
 msgid "This character ID already exists. Use a new ID; the existing character will not be overwritten."
 msgstr "This character ID already exists. Use a new ID; the existing character will not be overwritten."
 
+msgid "This character has hit-area bindings. Import dialogue only, or remove the bindings in their existing panel before importing presets."
+msgstr "This character has hit-area bindings. Import dialogue only, or remove the bindings in their existing panel before importing presets."
+
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "This character requires WebGL 2. Choose another character or browser."
 
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 
+msgid "This interaction template type or version is not supported."
+msgstr "This interaction template type or version is not supported."
+
 msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr "This model declares no hit areas. Normal greeting remains available."
 
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
+
+msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
+msgstr "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
+
+msgid "This template preview expired or changed. Upload it again to review a fresh preview."
+msgstr "This template preview expired or changed. Upload it again to review a fresh preview."
 
 msgid "Thumbnail commit failed."
 msgstr "Thumbnail commit failed."
@@ -1990,6 +2083,9 @@ msgstr "Trash"
 
 msgid "Turn with hands behind"
 msgstr "Turn with hands behind"
+
+msgid "Unchanged"
+msgstr "Unchanged"
 
 msgid "Understand this stage first, then keep moving."
 msgstr "Understand this stage first, then keep moving."

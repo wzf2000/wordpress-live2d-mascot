@@ -116,6 +116,9 @@ msgstr "偶尔停一下，也会发现刚才没注意到的细节呢。"
 msgid "A preset needs a name and at least one motion, expression or line."
 msgstr "预设需要名称，并至少包含动作、表情或台词中的一项。"
 
+msgid "A preset resource cannot be mapped. Repair the preset before exporting."
+msgstr "无法映射快捷互动资源，请先修复该快捷互动再导出。"
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "资源或设置任务正在进行。请先检查任务状态，再重试。"
 
@@ -136,6 +139,9 @@ msgstr "稍作停留，也许会有新的想法。"
 
 msgid "A small question can lead to an interesting discovery."
 msgstr "一个小问题，也可能带来很有趣的发现。"
+
+msgid "A template resource is missing or ambiguous in this character. Import dialogue only, or fix the matching catalog."
+msgstr "此角色中缺少模板所需资源，或同一路径对应多个资源。请仅导入台词，或先修复资源目录的映射。"
 
 msgid "Accept terms and enable mobile animation in this browser"
 msgstr "同意条款并在本浏览器开启移动动画"
@@ -176,11 +182,17 @@ msgstr "启用"
 msgid "Active frontend characters: %s. An invalid character entry isolates that character; invalid shared Core or terms prevents all output."
 msgstr "前台启用角色：%s 位。单个角色入口失效时仅隔离该角色；共享 Core 或条款无效时全部停止输出。"
 
+msgid "Added"
+msgstr "新增"
+
 msgid "Administrator permission is required."
 msgstr "需要管理员权限。"
 
 msgid "Administrator-imported resources"
 msgstr "管理员导入资源"
+
+msgid "After"
+msgstr "变更后"
 
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr "主动开启后读取当前 WebGL / GPU 信息并在本地记录加载与短时帧率。报告不包含页面地址、查询参数、Cookie 或用户资料；不会发送到服务器。"
@@ -203,6 +215,9 @@ msgstr "允许前台显示看板娘"
 msgid "Allow transparent PNG download for this character"
 msgstr "允许下载此角色的透明 PNG"
 
+msgid "Also replace quick interactions"
+msgstr "同时替换快捷互动"
+
 msgid "Alternative lines"
 msgstr "备选台词"
 
@@ -217,6 +232,9 @@ msgstr "资源配置已被其他请求修改，请刷新后重试。"
 
 msgid "Another request changed the resource configuration. Refresh before trying again."
 msgstr "资源配置已被其他请求修改，请刷新页面后重新操作。"
+
+msgid "Apply reviewed template"
+msgstr "应用已核对的模板"
 
 msgid "Arms crossed · glance aside"
 msgstr "抱臂侧望"
@@ -262,6 +280,9 @@ msgstr "可用收藏 %1$s 个角色"
 
 msgid "Background unverified; these drafts use a neutral voice."
 msgstr "角色背景尚未核实，草稿采用中性语气。"
+
+msgid "Before"
+msgstr "变更前"
 
 msgid "Between 1 and 16 textures are required."
 msgstr "需要 1–16 张贴图。"
@@ -515,6 +536,9 @@ msgstr "选择最近角色作为候选"
 msgid "Choose a resource file before importing."
 msgstr "请先选择要导入的资源文件。"
 
+msgid "Choose a valid interaction JSON file no larger than 64 KiB."
+msgstr "请选择有效的互动 JSON 文件，大小不超过 64 KiB。"
+
 msgid "Choose an existing hit area and a valid interaction preset."
 msgstr "请选择模型已有区域和有效互动预设。"
 
@@ -569,6 +593,9 @@ msgstr "已配置 · Web 5 R5"
 msgid "Confirm recovery of the interrupted task record."
 msgstr "请确认恢复中断的任务记录。"
 
+msgid "Confirm the displayed interaction changes before applying."
+msgstr "请确认已展示的互动变更后再应用。"
+
 msgid "Confirm your right to use the thumbnail."
 msgstr "请确认有权使用缩略图。"
 
@@ -592,6 +619,9 @@ msgstr "控制此账号是否允许前台显示看板娘。"
 
 msgid "Cooldown (seconds)"
 msgstr "冷却时间（秒）"
+
+msgid "Cooldown: %s seconds"
+msgstr "间隔：%s 秒"
 
 msgid "Core SHA256 does not match the required Web 5 R5 file."
 msgstr "Core SHA256 不匹配固定 Web 5 R5。"
@@ -695,6 +725,9 @@ msgstr "下载诊断 JSON"
 msgid "Download fresh inventory JSON"
 msgstr "下载最新盘点 JSON"
 
+msgid "Download interaction JSON"
+msgstr "下载互动 JSON"
+
 msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
 msgstr "下载会重新执行受限元数据扫描，仅将 JSON 保存到本机，可能与先前的盘点不同。服务器不会保存报告，也不会向其他服务发送数据。"
 
@@ -727,6 +760,9 @@ msgstr "启用台词"
 
 msgid "Enable local diagnostics"
 msgstr "开启本地诊断"
+
+msgid "Enabled"
+msgstr "已启用"
 
 msgid "Encrypted ZIP files are not supported."
 msgstr "不支持加密 ZIP。"
@@ -929,6 +965,9 @@ msgstr "我有权在本站使用资源，并已阅读其来源许可与使用条
 msgid "I have the right to use this image on this site and have read its source license and terms."
 msgstr "我有权在本站使用这张图片，并已阅读来源许可与使用条件。"
 
+msgid "I reviewed these changes and want to replace the selected interaction settings."
+msgstr "我已核对这些变更，并确认替换所选的互动设置。"
+
 msgid "I understand that recovery only removes the interrupted task record."
 msgstr "我理解恢复操作仅移除中断的任务记录。"
 
@@ -965,6 +1004,9 @@ msgstr "盘点磁盘用量"
 msgid "Interact"
 msgstr "互动"
 
+msgid "Interaction JSON (up to 64 KiB)"
+msgstr "互动 JSON（不超过 64 KiB）"
+
 msgid "Interaction help"
 msgstr "互动帮助"
 
@@ -973,6 +1015,15 @@ msgstr "互动预设无效。"
 
 msgid "Interaction presets saved."
 msgstr "互动预设已保存。"
+
+msgid "Interaction template applied to this character."
+msgstr "互动模板已应用到此角色。"
+
+msgid "Interaction template fields are invalid."
+msgstr "互动模板字段无效。"
+
+msgid "Interaction templates"
+msgstr "角色互动模板"
 
 msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
 msgstr "已移除中断的任务记录，资源和配置均已保留。重试原任务前请检查已安装资源。"
@@ -1199,6 +1250,9 @@ msgstr "普通招呼"
 msgid "Not imported"
 msgstr "尚未导入"
 
+msgid "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
+msgstr "尚未保存任何变更。应用将替换所选设置区，模板中没有的原台词或快捷互动也会被移除。偶尔闲聊保留此角色当前的启用状态；导入空台词时会关闭。"
+
 msgid "Observed paths (admin only)"
 msgstr "已观察路径（仅管理员可见）"
 
@@ -1328,6 +1382,9 @@ msgstr "预设名称"
 msgid "Preview character"
 msgstr "预览角色"
 
+msgid "Preview template changes"
+msgstr "预览模板变更"
+
 msgid "Previewing. Select “Use this character” to save."
 msgstr "正在预览，点击“使用这个角色”才会保存"
 
@@ -1354,6 +1411,9 @@ msgstr "抿嘴"
 
 msgid "Quick interactions"
 msgstr "快捷互动"
+
+msgid "Quick interactions are retained. Only dialogue will be replaced."
+msgstr "保留现有快捷互动，仅替换台词。"
 
 msgid "Quiet company"
 msgstr "安静陪伴"
@@ -1418,8 +1478,14 @@ msgstr "引用检查已达到限制；引用分类未知。"
 msgid "Relative path"
 msgstr "相对路径"
 
+msgid "Removed"
+msgstr "删除"
+
 msgid "Rendering failed. Try again."
 msgstr "绘图失败，请重试"
+
+msgid "Replaced"
+msgstr "覆盖"
 
 msgid "Reset defaults"
 msgstr "恢复默认"
@@ -1456,6 +1522,9 @@ msgstr "资源文件"
 
 msgid "Resource loading timed out. Try again."
 msgstr "资源加载超时，请重试"
+
+msgid "Resource mapping"
+msgstr "资源映射"
 
 msgid "Resource path escapes the allowed directory."
 msgstr "资源路径越界。"
@@ -1504,6 +1573,12 @@ msgstr "离开后返回"
 
 msgid "Returned to the original character"
 msgstr "已返回原角色"
+
+msgid "Reuse your dialogue and quick interactions with a JSON file. Model files, account preferences, PNG permission and hit-area bindings are excluded. Uploading only previews changes; applying needs a separate confirmation."
+msgstr "通过 JSON 文件复用台词和快捷互动。文件不包含模型文件、账号偏好、PNG 授权或点击区域绑定。上传仅预览变更，应用时还需单独确认。"
+
+msgid "Review interaction changes"
+msgstr "核对互动变更"
 
 msgid "Roll back to previous resources and motions"
 msgstr "回退到上一版资源与动作"
@@ -1730,6 +1805,9 @@ msgstr "无法读取任务状态。请管理员检查服务器存储和数据库
 msgid "Task state or configuration changed. Refresh before retrying recovery."
 msgstr "任务状态或配置已变更。请刷新页面后再尝试恢复。"
 
+msgid "Template resource paths must be relative motion or expression files."
+msgstr "模板资源路径必须是动作或表情文件的安全相对路径。"
+
 msgid "Terms"
 msgstr "条款"
 
@@ -1901,6 +1979,9 @@ msgstr "任务守卫不可用或不安全。请管理员检查资源存储。"
 msgid "The task is still running. Recovery is unavailable."
 msgstr "任务仍在运行，无法恢复。"
 
+msgid "The template is not valid UTF-8 JSON or is nested too deeply."
+msgstr "模板不是有效的 UTF-8 JSON，或嵌套层级过深。"
+
 msgid "The thumbnail must be a local image file no larger than 4 MiB."
 msgstr "缩略图须为不超过 4 MiB 的本地图片文件。"
 
@@ -1934,17 +2015,29 @@ msgstr "浏览器不支持 WebGL，无法显示看板娘"
 msgid "This character ID already exists. Use a new ID; the existing character will not be overwritten."
 msgstr "角色 ID 已存在，请使用新的 ID；现有角色不会被覆盖。"
 
+msgid "This character has hit-area bindings. Import dialogue only, or remove the bindings in their existing panel before importing presets."
+msgstr "此角色已有点击区域绑定。请仅导入台词，或先在原设置区解除绑定，再导入快捷互动。"
+
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "此角色需要 WebGL 2，请选择其他角色或更换浏览器"
 
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "此入口检查不渲染模型。移动端仍默认关闭；减少动画与账号显示偏好仍然有效。"
 
+msgid "This interaction template type or version is not supported."
+msgstr "不支持此互动模板类型或版本。"
+
 msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr "此模型未声明命中区域，仍可使用普通招呼。"
 
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr "本页保留原偏好，但浏览器保存可能不完整。请检查本机存储权限后重试。"
+
+msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
+msgstr "此预览将在 15 分钟后过期。其他地方修改配置后，需要重新预览。"
+
+msgid "This template preview expired or changed. Upload it again to review a fresh preview."
+msgstr "模板预览已过期或发生变化，请重新上传并查看新预览。"
 
 msgid "Thumbnail commit failed."
 msgstr "缩略图提交失败。"
@@ -1987,6 +2080,9 @@ msgstr "回收站"
 
 msgid "Turn with hands behind"
 msgstr "转身背手"
+
+msgid "Unchanged"
+msgstr "未变化"
 
 msgid "Understand this stage first, then keep moving."
 msgstr "先把眼前这一关弄明白，再继续前进吧。"
