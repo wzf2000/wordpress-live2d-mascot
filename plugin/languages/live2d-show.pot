@@ -122,6 +122,9 @@ msgstr ""
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr ""
 
+msgid "Afternoon"
+msgstr ""
+
 msgid "All"
 msgstr ""
 
@@ -132,6 +135,9 @@ msgid "Allow readers to opt in to the mascot in mobile browsers"
 msgstr ""
 
 msgid "Allow the mascot on the frontend"
+msgstr ""
+
+msgid "Alternative lines"
 msgstr ""
 
 msgid "Another request changed the resource configuration. Refresh before editing again."
@@ -171,6 +177,9 @@ msgid "Arms open · smile with eyes closed"
 msgstr ""
 
 msgid "Arms slightly open"
+msgstr ""
+
+msgid "Automatic dialogue"
 msgstr ""
 
 msgid "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
@@ -294,6 +303,9 @@ msgid "Character configuration is invalid."
 msgstr ""
 
 msgid "Character configuration structure is invalid."
+msgstr ""
+
+msgid "Character dialogue"
 msgstr ""
 
 msgid "Character history configuration is invalid."
@@ -425,6 +437,9 @@ msgstr ""
 msgid "Clear thumbnail reference (retain file)"
 msgstr ""
 
+msgid "Click"
+msgstr ""
+
 msgid "Close interaction"
 msgstr ""
 
@@ -462,6 +477,9 @@ msgid "Continuous sampling: window %1$s of 3. Hiding or switching stops the sequ
 msgstr ""
 
 msgid "Control whether this account allows the mascot to appear on the frontend."
+msgstr ""
+
+msgid "Cooldown (seconds)"
 msgstr ""
 
 msgid "Core SHA256 does not match the required Web 5 R5 file."
@@ -504,6 +522,21 @@ msgid "Default size (pixels)"
 msgstr ""
 
 msgid "Diagnostics are not enabled."
+msgstr ""
+
+msgid "Dialogue cooldown must be 15–3600 seconds."
+msgstr ""
+
+msgid "Dialogue mode"
+msgstr ""
+
+msgid "Dialogue preferences"
+msgstr ""
+
+msgid "Dialogue settings are invalid."
+msgstr ""
+
+msgid "Dialogue settings saved."
 msgstr ""
 
 msgid "Directory protection file"
@@ -563,6 +596,9 @@ msgstr ""
 msgid "Enable character"
 msgstr ""
 
+msgid "Enable dialogue"
+msgstr ""
+
 msgid "Enable local diagnostics"
 msgstr ""
 
@@ -570,6 +606,9 @@ msgid "Encrypted ZIP files are not supported."
 msgstr ""
 
 msgid "Engine"
+msgstr ""
+
+msgid "Evening"
 msgstr ""
 
 msgid "Existing resource configuration is invalid."
@@ -803,6 +842,9 @@ msgstr ""
 msgid "Model: %s"
 msgstr ""
 
+msgid "Morning"
+msgstr ""
+
 msgid "Motion"
 msgstr ""
 
@@ -890,6 +932,9 @@ msgstr ""
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr ""
 
+msgid "Only on interaction"
+msgstr ""
+
 msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
 msgstr ""
 
@@ -897,6 +942,9 @@ msgid "Open mouth · frown"
 msgstr ""
 
 msgid "Open palms · head tilt"
+msgstr ""
+
+msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 msgstr ""
 
 msgid "Partial: %s observed bytes"
@@ -1049,6 +1097,9 @@ msgstr ""
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr ""
 
+msgid "Return after absence"
+msgstr ""
+
 msgid "Returned to the original character"
 msgstr ""
 
@@ -1103,6 +1154,9 @@ msgstr ""
 msgid "Save character settings"
 msgstr ""
 
+msgid "Save dialogue settings"
+msgstr ""
+
 msgid "Save mobile settings"
 msgstr ""
 
@@ -1149,6 +1203,9 @@ msgid "Showing"
 msgstr ""
 
 msgid "Showing %1$s of %2$s characters"
+msgstr ""
+
+msgid "Silent"
 msgstr ""
 
 msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
@@ -1493,6 +1550,9 @@ msgstr ""
 msgid "Use this character"
 msgstr ""
 
+msgid "Use up to 8 plain-text lines per event, each at most 300 bytes."
+msgstr ""
+
 msgid "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
 msgstr ""
 
@@ -1512,6 +1572,9 @@ msgid "View character entry status"
 msgstr ""
 
 msgid "View character sources, terms and notices"
+msgstr ""
+
+msgid "Welcome"
 msgstr ""
 
 msgid "Welcome motion (first display)"

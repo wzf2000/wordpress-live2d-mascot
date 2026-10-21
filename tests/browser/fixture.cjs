@@ -20,6 +20,12 @@ async function startFixture() {
         terms: '/terms', core: '/synthetic/core.js', engine: '/synthetic/engine.js', shaders: '/synthetic/shaders/',
         mobileEnabled: url.searchParams.get('mobile') === '1', mobilePauseOnInput: true,
         characters: { alpha: character('alpha'), beta: character('beta') } };
+      if (url.searchParams.get('dialogue') === '1') for (const [id, c] of Object.entries(config.characters)) {
+        c.greetings = [];
+        c.dialogue = Object.fromEntries(['welcome','click','return','morning','afternoon','evening'].map((event) => [event, {enabled:true,cooldown:15,lines:[id + ' <literal> ' + event]}]));
+      }
+      if (url.searchParams.get('period') === '1') for (const c of Object.values(config.characters)) c.dialogue.welcome.enabled = false;
+      if (url.searchParams.has('long')) for (const c of Object.values(config.characters)) c.dialogue.click.lines = [url.searchParams.get('long') === 'zh' ? '欢迎阅读'.repeat(25) : 'W'.repeat(300)];
       return send('text/html; charset=utf-8', `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mascot synthetic browser fixture</title><link rel="stylesheet" href="/assets/${manifest.css}"><style>body{font:16px/1.6 system-ui;margin:24px;max-width:68ch}input{font:inherit}dialog{max-width:min(420px,80vw)}.fixture-note{background:#eef4f9;padding:16px}</style></head><body><h1>Browser contract fixture</h1><p class="fixture-note">Synthetic engine and resources. No Cubism SDK, model rendering, real GPU or physical mobile acceptance.</p><label for="outside-input">External reader input</label><input id="outside-input"><button id="outside-button">Reader action</button><dialog id="reader-dialog"><p>Reading notes fixture</p></dialog><script>window.__mascotFixture={events:[],holdCreate:false,holdPlay:false,pendingCreates:[],pendingPlays:[],gpuQueries:0,noFrames:false};</script><script id="wzf-live2d-config" type="application/json">${JSON.stringify(config)}</script><script src="/assets/${manifest.loader}" defer></script></body></html>`);
     }
     if (url.pathname === '/assets/' + manifest.loader) return send('text/javascript', fs.readFileSync(path.join(root, 'plugin', manifest.loader)));

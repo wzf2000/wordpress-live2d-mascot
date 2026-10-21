@@ -81,7 +81,7 @@ def collect(repo, expected_version=None, source_sha=None):
     if assets['shaders'] != 'shaders/' or assets['terms'] != 'usage-imported-resources.html':
         raise ValueError('Unexpected shader/terms entry')
     files = {name: read(plugin, name) for name in (
-        'live2d-show.php', 'includes/admin-import.php','includes/admin-task.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','includes/admin-inventory.php','includes/admin-listing.php','includes/admin-readiness.php','includes/i18n.php','admin.js','languages/live2d-show.pot','languages/live2d-show-en_US.po','languages/live2d-show-en_US.mo','languages/live2d-show-zh_CN.po','languages/live2d-show-zh_CN.mo','admin.css', 'characters.json', 'haru-assets.json',
+        'live2d-show.php', 'includes/admin-import.php','includes/admin-task.php','includes/admin-settings.php','includes/admin-lifecycle.php','includes/admin-diagnostics.php','includes/admin-thumbnail.php','includes/admin-mobile.php','includes/admin-inventory.php','includes/admin-listing.php','includes/admin-readiness.php','includes/interaction-settings.php','includes/i18n.php','admin.js','languages/live2d-show.pot','languages/live2d-show-en_US.po','languages/live2d-show-en_US.mo','languages/live2d-show-zh_CN.po','languages/live2d-show-zh_CN.mo','admin.css', 'characters.json', 'haru-assets.json',
         'usage-imported-resources.html', 'licenses/Framework-LICENSE.md')}
     if json.loads(files['characters.json']) != {}:
         raise ValueError('Shipped registry must be empty')
@@ -105,7 +105,7 @@ def collect(repo, expected_version=None, source_sha=None):
         'build.py', 'package.json', 'package-lock.json', 'LICENSE', 'COPYING', 'README.md',
         'docs/DISTRIBUTION.md', 'tools/package_release.py', 'tests/test_release_package.py',
         'tests/test_importer.py', 'tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs', 'tests/test_release_pipeline.py',
-        'tools/ci.py', 'tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js')}
+        'tools/ci.py', 'tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js')}
     for path in sorted(checked(repo / 'src').rglob('*')):
         checked(path)
         if path.is_dir():

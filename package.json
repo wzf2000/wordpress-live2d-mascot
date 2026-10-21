@@ -4,7 +4,8 @@
   "scripts": {
     "check": "python3 tools/ci.py",
     "test": "python3 -m unittest discover -s tests -p 'test_*.py'",
-    "test:browser": "node tests/frontend-browser.cjs"
+    "test:browser": "node tests/frontend-browser.cjs",
+    "test:dialogue-browser": "node tests/dialogue-browser.cjs"
   },
   "devDependencies": {
     "esbuild": "0.25.12",

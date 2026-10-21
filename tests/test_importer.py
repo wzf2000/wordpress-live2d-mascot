@@ -396,6 +396,7 @@ class ImporterTests(unittest.TestCase):
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function esc_attr($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
         function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
+        function esc_textarea($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
         function wp_unslash($s){return $s;}
         function add_query_arg($k,$v,$s){return $s.'&'.$k.'='.urlencode($v);}
         function wp_nonce_field(...$x){echo '<input type="hidden" name="nonce" value="stub">';}

@@ -122,6 +122,9 @@ msgstr "Administrator-imported resources"
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 
+msgid "Afternoon"
+msgstr "Afternoon"
+
 msgid "All"
 msgstr "All"
 
@@ -133,6 +136,9 @@ msgstr "Allow readers to opt in to the mascot in mobile browsers"
 
 msgid "Allow the mascot on the frontend"
 msgstr "Allow the mascot on the frontend"
+
+msgid "Alternative lines"
+msgstr "Alternative lines"
 
 msgid "Another request changed the resource configuration. Refresh before editing again."
 msgstr "Another request changed the resource configuration. Refresh before editing again."
@@ -172,6 +178,9 @@ msgstr "Arms open · smile with eyes closed"
 
 msgid "Arms slightly open"
 msgstr "Arms slightly open"
+
+msgid "Automatic dialogue"
+msgstr "Automatic dialogue"
 
 msgid "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
 msgstr "Automatic recovery cannot prove that this task ended. Ask an administrator to inspect active PHP tasks, resource storage and the legacy lock. Do not delete a lock based on its age."
@@ -295,6 +304,9 @@ msgstr "Character configuration is invalid."
 
 msgid "Character configuration structure is invalid."
 msgstr "Character configuration structure is invalid."
+
+msgid "Character dialogue"
+msgstr "Character dialogue"
 
 msgid "Character history configuration is invalid."
 msgstr "Character history configuration is invalid."
@@ -425,6 +437,9 @@ msgstr "Clear filters"
 msgid "Clear thumbnail reference (retain file)"
 msgstr "Clear thumbnail reference (retain file)"
 
+msgid "Click"
+msgstr "Click"
+
 msgid "Close interaction"
 msgstr "Close interaction"
 
@@ -463,6 +478,9 @@ msgstr "Continuous sampling: window %1$s of 3. Hiding or switching stops the seq
 
 msgid "Control whether this account allows the mascot to appear on the frontend."
 msgstr "Control whether this account allows the mascot to appear on the frontend."
+
+msgid "Cooldown (seconds)"
+msgstr "Cooldown (seconds)"
 
 msgid "Core SHA256 does not match the required Web 5 R5 file."
 msgstr "Core SHA256 does not match the required Web 5 R5 file."
@@ -505,6 +523,21 @@ msgstr "Default size (pixels)"
 
 msgid "Diagnostics are not enabled."
 msgstr "Diagnostics are not enabled."
+
+msgid "Dialogue cooldown must be 15–3600 seconds."
+msgstr "Dialogue cooldown must be 15–3600 seconds."
+
+msgid "Dialogue mode"
+msgstr "Dialogue mode"
+
+msgid "Dialogue preferences"
+msgstr "Dialogue preferences"
+
+msgid "Dialogue settings are invalid."
+msgstr "Dialogue settings are invalid."
+
+msgid "Dialogue settings saved."
+msgstr "Dialogue settings saved."
 
 msgid "Directory protection file"
 msgstr "Directory protection file"
@@ -563,6 +596,9 @@ msgstr "Edit display information and motion references; model files stay in plac
 msgid "Enable character"
 msgstr "Enable character"
 
+msgid "Enable dialogue"
+msgstr "Enable dialogue"
+
 msgid "Enable local diagnostics"
 msgstr "Enable local diagnostics"
 
@@ -571,6 +607,9 @@ msgstr "Encrypted ZIP files are not supported."
 
 msgid "Engine"
 msgstr "Engine"
+
+msgid "Evening"
+msgstr "Evening"
 
 msgid "Existing resource configuration is invalid."
 msgstr "Existing resource configuration is invalid."
@@ -803,6 +842,9 @@ msgstr "Model validation failed"
 msgid "Model: %s"
 msgstr "Model: %s"
 
+msgid "Morning"
+msgstr "Morning"
+
 msgid "Motion"
 msgstr "Motion"
 
@@ -890,6 +932,9 @@ msgstr "Official samples"
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 
+msgid "Only on interaction"
+msgstr "Only on interaction"
+
 msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
 msgstr "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
 
@@ -898,6 +943,9 @@ msgstr "Open mouth · frown"
 
 msgid "Open palms · head tilt"
 msgstr "Open palms · head tilt"
+
+msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgstr "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 
 msgid "Partial: %s observed bytes"
 msgstr "Partial: %s observed bytes"
@@ -1049,6 +1097,9 @@ msgstr "Restore the configured site terms file or its configuration backup. Shar
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 
+msgid "Return after absence"
+msgstr "Return after absence"
+
 msgid "Returned to the original character"
 msgstr "Returned to the original character"
 
@@ -1103,6 +1154,9 @@ msgstr "Sampling; hiding, reading suspension or character switching will interru
 msgid "Save character settings"
 msgstr "Save character settings"
 
+msgid "Save dialogue settings"
+msgstr "Save dialogue settings"
+
 msgid "Save mobile settings"
 msgstr "Save mobile settings"
 
@@ -1150,6 +1204,9 @@ msgstr "Showing"
 
 msgid "Showing %1$s of %2$s characters"
 msgstr "Showing %1$s of %2$s characters"
+
+msgid "Silent"
+msgstr "Silent"
 
 msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
 msgstr "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
@@ -1493,6 +1550,9 @@ msgstr "Upload failed."
 msgid "Use this character"
 msgstr "Use this character"
 
+msgid "Use up to 8 plain-text lines per event, each at most 300 bytes."
+msgstr "Use up to 8 plain-text lines per event, each at most 300 bytes."
+
 msgid "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
 msgstr "Used for candidate previews; no images are automatically generated or fetched. PNG/JPEG/WebP up to 4 MiB, dimensions up to 2048 (4M pixels). Decoded images are resized to a maximum edge of 512 and re-encoded as PNG, removing metadata and trailing content. Stored separately; model updates and rollbacks do not change it."
 
@@ -1513,6 +1573,9 @@ msgstr "View character entry status"
 
 msgid "View character sources, terms and notices"
 msgstr "View character sources, terms and notices"
+
+msgid "Welcome"
+msgstr "Welcome"
 
 msgid "Welcome motion (first display)"
 msgstr "Welcome motion (first display)"

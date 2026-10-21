@@ -37,6 +37,11 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Dialogue mode'=>__('Dialogue mode', 'live2d-show'),
+        'Automatic dialogue'=>__('Automatic dialogue', 'live2d-show'),
+        'Only on interaction'=>__('Only on interaction', 'live2d-show'),
+        'Silent'=>__('Silent', 'live2d-show'),
+        'Dialogue preferences'=>__('Dialogue preferences', 'live2d-show'),
         'Continuous sampling complete: 3 of 3 windows saved.'=>__('Continuous sampling complete: 3 of 3 windows saved.', 'live2d-show'),
         'Continuous sampling stopped. No further windows will start automatically.'=>__('Continuous sampling stopped. No further windows will start automatically.', 'live2d-show'),
         'Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence.'=>__('Continuous sampling: window %1$s of 3. Hiding or switching stops the sequence.', 'live2d-show'),

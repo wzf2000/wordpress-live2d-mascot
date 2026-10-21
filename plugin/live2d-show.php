@@ -71,6 +71,7 @@ function wzf_haru_output() {
         foreach ($available as $id=>$c) {
             try { $root = wzf_mascot_character_display_check($id, $c, $uploads); }
             catch (Throwable $e) { continue; }
+            $c['dialogue'] = wzf_mascot_dialogue($c['dialogue'] ?? []);
             $thumbnail = wzf_mascot_thumbnail_url($c);
             unset($c['status'], $c['restoreStatus'], $c['thumbnail']);
             if ($thumbnail !== null) $c['thumbnail'] = $thumbnail;

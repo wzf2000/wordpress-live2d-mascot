@@ -195,7 +195,7 @@ def main():
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -288,6 +288,19 @@ def main():
         assert resource_hashes == {p.relative_to(uploads).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in uploads.rglob('*') if p.is_file()}
         assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         record('real overwrite upgrade preserves full synthetic resources/options and user profile preference')
+        data = form('wzf_mascot_interaction'); stale_dialogue = dict(data)
+        for event in ['welcome','click','morning','afternoon','evening','return']:
+            data['dialogue[' + event + '][lines]'] = 'Hello local reader\nAnother local line' if event == 'welcome' else ''
+            data['dialogue[' + event + '][cooldown]'] = '15'
+        data['dialogue[welcome][enabled]'] = '1'
+        post(data); dialogue_state = state()['config']
+        assert dialogue_state['characters']['legacy_character']['dialogue']['welcome']['lines'] == ['Hello local reader','Another local line']
+        assert front()['characters']['legacy_character']['dialogue']['welcome']['enabled']
+        post(stale_dialogue); assert state()['config'] == dialogue_state
+        bad = form('wzf_mascot_interaction'); bad.update(data); bad['version'] = state()['version']; bad['dialogue[welcome][lines]'] = '<script>bad</script>'
+        post(bad); assert state()['config'] == dialogue_state
+        wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == dialogue_state
+        record('real dialogue save, stale version, invalid text and upgrade preservation')
         data = form('wzf_mascot_settings'); stale = dict(data)
         data.update(name='Updated synthetic', credit='Synthetic credit', size='200', offset='6.5', idle='motion-1', welcome='01_extra', **{'greetings[]': '01_extra'})
         post(data); updated = state()['config']; c = updated['characters']['legacy_character']; old = original['characters']['legacy_character']
@@ -353,7 +366,7 @@ def main():
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 16, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 17, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

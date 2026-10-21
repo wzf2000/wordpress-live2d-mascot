@@ -86,6 +86,47 @@
         if (old && typeof old === 'object') layouts.haru = old;
       }
     } catch {}
+    let dialogueMode = 'auto';
+    try {
+      const saved = localStorage.getItem('wzf-mascot-dialogue-v1');
+      if (['auto', 'active', 'silent'].includes(saved)) dialogueMode = saved;
+    } catch {}
+    const dialogueShown = new Map();
+    let bubble = null, bubbleTimer = null, dialogueWelcomeConsumed = false,
+      lastDialogue = -Infinity, awayAt = null;
+    const clearDialogue = () => {
+      clearTimeout(bubbleTimer);
+      bubbleTimer = null;
+      if (bubble) { bubble.textContent = ''; bubble.hidden = true; }
+    };
+    const showLine = (line, proactive = false) => {
+      if (!allowed() || !engine || loading || dialogueMode === 'silent' ||
+          (proactive && (dialogueMode !== 'auto' || preview))) return false;
+      if (typeof line !== 'string' || !line.trim() || new TextEncoder().encode(line).length > 300 || /[\u0000-\u001f\u007f]/.test(line)) return false;
+      clearDialogue();
+      if (!bubble) return false;
+      bubble.textContent = line;
+      bubble.hidden = false;
+      bubbleTimer = setTimeout(clearDialogue, 4500);
+      return true;
+    };
+    const speak = (event, proactive = false) => {
+      const rule = characters[active].dialogue?.[event];
+      if (!rule || rule.enabled !== true || !Array.isArray(rule.lines)) return false;
+      const lines = rule.lines.filter((line) => typeof line === 'string' && line.trim() && new TextEncoder().encode(line).length <= 300);
+      const cooldown = Number.isInteger(rule.cooldown) && rule.cooldown >= 15 && rule.cooldown <= 3600 ? rule.cooldown * 1000 : 60000;
+      const now = performance.now(), key = active + ':' + event;
+      if (!lines.length || now - lastDialogue < 15000 || now - (dialogueShown.get(key) ?? -Infinity) < cooldown) return false;
+      if (!showLine(lines[Math.floor(Math.random() * lines.length)], proactive)) return false;
+      dialogueShown.set(key, now); lastDialogue = now;
+      return true;
+    };
+    const welcomeDialogue = () => {
+      if (dialogueWelcomeConsumed || preview || !allowed() || !engine || loading) return;
+      dialogueWelcomeConsumed = true;
+      const hour = new Date().getHours();
+      if (!speak('welcome', true)) speak(hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening', true);
+    };
     active = committed;
     let position = 'right',
       size = 180;
@@ -111,6 +152,7 @@
       welcomeTarget = null;
     };
     const scheduleWelcome = () => {
+      welcomeDialogue();
       if (welcomeConsumed || preview || !allowed() || !engine) return;
       welcomeConsumed = true;
       const target = engine,
@@ -681,14 +723,30 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const dialogueChoice = make('select');
+    dialogueChoice.setAttribute('aria-label', t("Dialogue mode"));
+    for (const [value, caption] of [['auto', t("Automatic dialogue")], ['active', t("Only on interaction")], ['silent', t("Silent")]]) {
+      const option = make('option', caption); option.value = value; dialogueChoice.append(option);
+    }
+    dialogueChoice.value = dialogueMode;
+    dialogueChoice.onchange = () => {
+      dialogueMode = dialogueChoice.value;
+      clearDialogue();
+      dialogueWelcomeConsumed = true;
+      try { localStorage.setItem('wzf-mascot-dialogue-v1', dialogueMode); } catch {}
+      paint();
+    };
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
     credit.rel = 'noopener';
+    const searchRow = make('div', '', 'wzf-haru-search-row');
+    searchRow.append(characterSearch, clearSearch);
+    const dialogueSettings = make('details', '', 'wzf-haru-layout');
+    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice);
     panel.append(
       label,
-      characterSearch,
-      clearSearch,
+      searchRow,
       searchResults,
       characterSelect,
       candidatePreview,
@@ -704,6 +762,7 @@
       expression,
       face,
       resetFace,
+      dialogueSettings,
       credit,
       state,
     );
@@ -771,6 +830,7 @@
         host.style.transform = 'translateY(' + characters[active].offset + '%)';
         host.style.right = position === 'right' ? 'max(6px, env(safe-area-inset-right))' : 'auto';
         host.style.left = position === 'left' ? 'max(6px, env(safe-area-inset-left))' : 'auto';
+        if (bubble) { bubble.style.right = position === 'right' ? '0' : 'auto'; bubble.style.left = position === 'left' ? '0' : 'auto'; }
       }
       settings.hidden = !desktop.matches;
       mobileSize.hidden = desktop.matches;
@@ -840,6 +900,7 @@
       layout();
       const run = allowed();
       if (!run) {
+        clearDialogue();
         cancelWelcome();
         cancelExternal();
       }
@@ -870,7 +931,7 @@
       if (host) {
         host.hidden = !(run && engine && !loading);
         const touch = host.querySelector('button');
-        const hasGreetings = !!characters[active].greetings?.length;
+        const hasGreetings = !!characters[active].greetings?.length || (dialogueMode !== 'silent' && characters[active].dialogue?.click?.enabled === true);
         touch.hidden = !hasGreetings;
         touch.disabled = !hasGreetings || !run || !engine || loading;
       }
@@ -1146,6 +1207,7 @@
       state.textContent = t("Loading cancelled");
     };
     const beginLoad = (id = committed) => {
+      clearDialogue();
       interruptDiagnostics('load-started');
       if (diagnosticsEnabled) {
         diagnosticReport.characterId = id;
@@ -1168,6 +1230,7 @@
       paint();
     };
     const destroy = () => {
+      clearDialogue();
       cancelWelcome();
       cancelExternal();
       interruptDiagnostics('engine-replaced');
@@ -1214,7 +1277,10 @@
         const touch = make('button', '', 'wzf-haru-touch');
         touch.title = t("Tap to greet");
         touch.onclick = greet;
-        host.append(canvas, touch);
+        bubble = make('div', '', 'wzf-haru-bubble');
+        bubble.hidden = true;
+        bubble.setAttribute('aria-live', 'polite');
+        host.append(canvas, touch, bubble);
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
@@ -1419,9 +1485,12 @@
     stopMotion.onclick = () => restore('motion');
     resetFace.onclick = () => restore('expression');
     const greet = async () => {
-      if (!characters[active].greetings?.length) return;
+      if (!allowed() || !engine || loading) return;
       welcomeConsumed = true;
+      dialogueWelcomeConsumed = true;
       cancelWelcome();
+      speak('click');
+      if (!characters[active].greetings?.length) return;
       if (
         !allowed() ||
         !engine ||
@@ -1643,6 +1712,8 @@
       if (suspended) {
         suspensions.add(source);
         // Opening reading UI consumes even a welcome that has not been scheduled yet.
+        dialogueWelcomeConsumed = true;
+        clearDialogue();
         welcomeConsumed = true;
         cancelWelcome();
       } else suspensions.delete(source);
@@ -1737,7 +1808,15 @@
       apply();
     });
     reduce.addEventListener('change', apply);
-    document.addEventListener('visibilitychange', apply);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { awayAt = performance.now(); clearDialogue(); }
+      apply();
+      if (!document.hidden) {
+        const absent = awayAt === null ? 0 : performance.now() - awayAt;
+        awayAt = null;
+        if (absent >= 60000) speak('return', true);
+      }
+    });
     window.addEventListener('pagehide', () => {
       pageHidden = true;
       apply();
@@ -1760,6 +1839,8 @@
       touchCount,
       welcomeCount,
       welcomeConsumed,
+      dialogueMode,
+      dialogueWelcomeConsumed,
       character: active,
       committed,
       preview,
