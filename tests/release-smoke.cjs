@@ -200,6 +200,10 @@ const apiCode = loader.slice(loader.indexOf('let externalPending ='), loader.ind
 const exerciseAPI = new Function('assert', 'performance', 'setTimeout', 'clearTimeout', `
   let permitted=false, engine=null, loading=false, touchPending=false, active='test', generation=1, operation=0, welcomeConsumed=false;
   const manualPending=new Set(), window={}, state={}, calls=[];
+  // The extracted legacy command boundary now also installs semantic/help hooks.
+  // Their full behavior is covered by the whole-page dialogue browser suite.
+  const helpButton={addEventListener:()=>{}},document={addEventListener:()=>{}};
+  const pendingPreset=null,cancelPreset=()=>{},clearDialogue=()=>{};
   const allowed=()=>permitted, cancelWelcome=()=>{};
   let resolvePlay=null, asyncPlay=false;
   const target={state:()=>({paused:false}), catalog:{motions:[{id:'01'}], expressions:[{id:'smile'}]},
