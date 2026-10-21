@@ -275,3 +275,17 @@
   .wzf-mascot-admin .wzf-mascot-field select,
   .wzf-mascot-admin .wzf-mascot-field textarea { min-height: 40px; }
 }
+
+.wzf-mascot-admin .wzf-mascot-template > summary { cursor: pointer; font-weight: 600; font-size: 1.15em; }
+.wzf-mascot-admin .wzf-mascot-template input[type='file'] { margin-inline: 0; }
+.wzf-mascot-admin .wzf-mascot-template-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.wzf-mascot-admin .wzf-mascot-template pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 12px; background: #f6f7f7; }
+.wzf-mascot-admin .wzf-mascot-template code { overflow-wrap: anywhere; }
+.wzf-mascot-admin .wzf-mascot-template-change { margin-top: 12px; }
+.wzf-mascot-admin .wzf-mascot-template-preset { margin: 0; overflow-wrap: anywhere; }
+.wzf-mascot-admin .wzf-mascot-template-preset dt { margin-top: 12px; font-weight: 600; }
+.wzf-mascot-admin .wzf-mascot-template-preset dd { margin: 4px 0 0; white-space: pre-wrap; }
+.wzf-mascot-admin .wzf-mascot-template h5 { font-size: 1em; margin: 12px 0; }
+@media (max-width: 782px) {
+  .wzf-mascot-admin .wzf-mascot-template-columns { grid-template-columns: minmax(0, 1fr); }
+}

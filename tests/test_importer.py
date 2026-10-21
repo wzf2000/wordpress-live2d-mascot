@@ -399,7 +399,7 @@ class ImporterTests(unittest.TestCase):
         function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
         function esc_textarea($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
         function wp_unslash($s){return $s;}
-        function add_query_arg($k,$v,$s){return $s.'&'.$k.'='.urlencode($v);}
+        function add_query_arg($k,$v,$s=null){return is_array($k)?$v.'?'.http_build_query($k):$s.'&'.$k.'='.urlencode($v);}
         function wp_nonce_field(...$x){echo '<input type="hidden" name="nonce" value="stub">';}
         function submit_button($s){echo '<button>'.$s.'</button>';}
         function selected($a,$b,$echo){return $a===$b?'selected':'';}

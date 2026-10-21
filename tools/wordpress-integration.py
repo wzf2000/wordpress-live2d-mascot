@@ -236,7 +236,7 @@ def main():
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -366,6 +366,87 @@ def main():
         post(bad); assert state()['config'] == preset_state
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == preset_state
         record('real preset save, invalid catalog, stale version and upgrade preservation')
+        template_base = state()
+        template_files = {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        export_form = form('wzf_mascot_template_export')
+        code, body, headers = request(admin, '/wp-admin/admin-post.php', export_form, with_headers=True)
+        template = json.loads(body)
+        assert code == 200 and 'attachment' in headers.get('Content-Disposition', '')
+        assert set(template) == {'type', 'schema', 'dialogue', 'presets'}
+        assert template['type'] == 'wzf-mascot-interactions' and template['schema'] == 1
+        assert template['presets'][0]['motionFile'] == 'motion/extra.motion3.json'
+        assert 'root' not in body and str(site) not in body and state() == template_base
+        preview_url = inventory_url + '&character=23&mascot_template_preview=1'
+
+        def template_preview(raw, presets=False, actor=None, invalid_nonce=False):
+            code, page = request(admin, inventory_url + '&character=23')
+            assert code == 200
+            fields = next(f for f in Forms(page).forms if 'action' not in f and f.get('character') == '23')
+            if presets: fields['include_presets'] = '1'
+            if invalid_nonce: fields['_wpnonce'] = 'invalid'
+            return request(actor or admin, preview_url, fields, {'template': ('interactions.json', raw)})
+
+        # Preserve literal HTML entity text through WordPress attribute escaping
+        # and the browser's one-pass entity decoding before native submission.
+        template['dialogue']['click']['lines'] = ['Literal &amp; &quot; &copy; "reader" 中文 ✨']
+        raw_template = json.dumps(template, ensure_ascii=False).encode()
+        assert template_preview(raw_template, actor=reader)[0] == 403
+        assert template_preview(raw_template, invalid_nonce=True)[0] == 403
+        code, page = template_preview(raw_template)
+        assert code == 200 and 'Nothing has been saved.' in page and state() == template_base
+        apply_form = next(f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_template_apply')
+        assert apply_form['scope'] == 'dialogue'
+        # Native HTML form submission normalizes line endings even in hidden
+        # fields. Model that transport instead of only urllib's literal bytes.
+        apply_form['payload'] = re.sub(r'\r\n|\r|\n', '\r\n', apply_form['payload'])
+        post(apply_form); assert state() == template_base  # Separate confirmation is required.
+        changed = json.loads(apply_form['payload'])
+        changed['dialogue']['welcome']['lines'] = ['Not the reviewed text']
+        post(dict(apply_form, confirm='1', payload=json.dumps(changed)))
+        assert state() == template_base
+        post(dict(apply_form, confirm='1'))
+        applied = state()
+        expected = json.loads(json.dumps(template_base['config']))
+        expected['characters']['23']['dialogue'] = json.loads(json.dumps(template['dialogue']))
+        expected['characters']['23']['dialogue']['idle']['enabled'] = False
+        assert applied['config'] == expected and applied['lock'] is False
+        assert not applied['config']['characters']['23']['dialogue']['idle']['enabled']
+        post(dict(apply_form, confirm='1')); assert state() == applied  # Stale reviewed version.
+        code, bad_page = template_preview(json.dumps(dict(template, core='not-allowed')).encode())
+        assert code == 200 and not any(f.get('action') == 'wzf_mascot_template_apply' for f in Forms(bad_page).forms)
+        assert state() == applied
+        for field in ('enabled', 'cooldown'):
+            invalid_rule = json.loads(raw_template)
+            invalid_rule['dialogue']['welcome'][field] = None
+            code, bad_page = template_preview(json.dumps(invalid_rule).encode())
+            assert code == 200 and not any(f.get('action') == 'wzf_mascot_template_apply' for f in Forms(bad_page).forms)
+            assert state() == applied
+        code, bad_page = template_preview(b'x' * 65537)
+        assert code == 200 and '64 KiB' in bad_page and state() == applied
+        record('real interaction JSON export, read-only signed preview, explicit confirmation and dialogue-only apply retain scoped data')
+        code, page = template_preview(raw_template, presets=True)
+        assert code == 200 and 'motion/extra.motion3.json' in page
+        apply_form = next(f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_template_apply')
+        assert apply_form['scope'] == 'dialogue-presets'
+        apply_form['payload'] = re.sub(r'\r\n|\r|\n', '\r\n', apply_form['payload'])
+        post(dict(apply_form, confirm='1'))
+        expected['characters']['23']['presets'] = template_base['config']['characters']['legacy_character']['presets']
+        assert state()['config'] == expected
+        data = form('wzf_mascot_hits', character='23')
+        data.update({'hitBindings[0][area]': 'Head [synthetic]', 'hitBindings[0][preset]': 'hello'})
+        post(data); bound = state()
+        assert bound['config']['characters']['23']['hitBindings'] == [{'area': 'Head [synthetic]', 'preset': 'hello'}]
+        code, page = template_preview(raw_template, presets=True)
+        assert code == 200 and 'This character has hit-area bindings.' in page
+        assert not any(f.get('action') == 'wzf_mascot_template_apply' for f in Forms(page).forms)
+        assert state() == bound
+        code, page = template_preview(raw_template)
+        assert code == 200 and any(f.get('action') == 'wzf_mascot_template_apply' for f in Forms(page).forms)
+        assert state() == bound
+        assert {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()} == template_files
+        wp('option', 'update', 'wzf_mascot_resources_v1', json.dumps(template_base['config']), '--format=json')
+        assert state() == template_base
+        record('real preset template maps existing paths, rejects bound hit areas and preserves all resource bytes')
         data = form('wzf_mascot_hits'); data.update({'hitBindings[0][area]':'Head [synthetic]','hitBindings[0][preset]':'hello'})
         post(data); hit_state = state()['config']; assert hit_state['characters']['legacy_character']['hitBindings'] == [{'area':'Head [synthetic]','preset':'hello'}]
         bad = dict(data); bad['version'] = state()['version']; bad['hitBindings[0][area]']='Missing'
@@ -472,8 +553,8 @@ def main():
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 23:
-            raise RuntimeError(f'Expected 23 completed integration groups, got {len(checks)}')
+        if len(checks) != 25:
+            raise RuntimeError(f'Expected 25 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

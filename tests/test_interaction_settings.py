@@ -203,3 +203,182 @@ class InteractionTests(unittest.TestCase):
         wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),'rollback');
         echo json_encode(['replaced'=>$replaced,'rolled'=>$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['captureAllowed']]);""")
         self.assertFalse(result['replaced']);self.assertFalse(result['rolled'])
+
+    def transfer_setup(self):
+        return '''
+        function get_current_user_id(){return 7;}
+        function get_current_blog_id(){return 1;}
+        $template=['type'=>'wzf-mascot-interactions','schema'=>1,'dialogue'=>wzf_mascot_dialogue([],true),'presets'=>[]];
+        $template['dialogue']['welcome']=['enabled'=>true,'cooldown'=>15,'lines'=>['New welcome']];
+        $template['dialogue']['idle']=['enabled'=>true,'cooldown'=>120,'lines'=>['New chatter']];
+        $raw=json_encode($template);
+        '''
+
+    def test_template_export_preview_do_not_write_or_create_guard(self):
+        result=self.php(self.transfer_setup()+'''
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/','marker'=>42,'presets'=>[['id'=>'hello','name'=>'Hello','motion'=>'','expression'=>'','line'=>'Hello']]]],'marker'=>17];
+        $before=$options;$version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $export=wzf_mascot_template_export($options[WZF_MASCOT_OPTION],'text',$version);
+        $review=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+        echo json_encode(['export'=>json_decode($export,true),'same'=>$before===$options,'guard'=>file_exists(wzf_mascot_uploads()['path'].'/'.WZF_MASCOT_GUARD_FILE),'review'=>$review]);
+        ''')
+        self.assertTrue(result['same']);self.assertFalse(result['guard'])
+        self.assertEqual(set(result['export']),{'type','schema','dialogue','presets'})
+        self.assertEqual(result['export']['presets'][0]['motionFile'],'')
+        self.assertNotIn('missing/',str(result['export']))
+        self.assertFalse(result['review']['plan']['after']['dialogue']['idle']['enabled'])
+
+    def test_template_strict_schema_all_levels_and_types(self):
+        mutations=["$template['extra']=1;", "$template['type']='other';", "$template['schema']='1';",
+                   "$template['dialogue']['extra']=[];", "unset($template['dialogue']['click']);",
+                   "$template['dialogue']['click']['extra']=true;", "$template['dialogue']['click']['lines']=(object)[];",
+                   "$template['dialogue']['click']['enabled']=1;", "$template['dialogue']['click']['enabled']=null;",
+                   "$template['dialogue']['click']['cooldown']=null;", "$template['dialogue']['idle']['cooldown']=89;",
+                   "$template['dialogue']['welcome']['lines']=['<b>bad</b>'];", "$template['dialogue']['welcome']['lines']=[\"a\\nb\"];",
+                   "$template['dialogue']['welcome']['lines']=array_fill(0,9,'x');", "$template['dialogue']['welcome']['lines']=[str_repeat('a',301)];",
+                   "$template['presets']=(object)[];", "$template['presets']=[(object)['id'=>'a']];"]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                result=self.php(self.transfer_setup()+mutation+"wzf_mascot_template_decode(json_encode($template));echo json_encode(['ok'=>true]);")
+                self.assertFalse(result['ok'])
+
+    def test_template_rejects_malformed_utf8_duplicate_keys_depth_and_size(self):
+        for value in ["str_repeat('x',65537)", "'{}'", "'['.str_repeat('[',20).'0'.str_repeat(']',20).']'", "chr(255)",
+                      "str_replace('\"schema\":1','\"schema\":1,\"schema\":1',$raw)",
+                      "str_replace('\"schema\":1','\"schema\":1,\"sche\\\\u006da\":1',$raw)",
+                      "str_replace('\"enabled\":true','\"enabled\":true,\"enabled\":false',$raw)"]:
+            with self.subTest(value=value):
+                result=self.php(self.transfer_setup()+f"wzf_mascot_template_decode({value});echo json_encode(['ok'=>true]);")
+                self.assertFalse(result['ok'])
+
+    def test_template_paths_and_preset_limits(self):
+        for path in ['../escape.motion3.json','/a.motion3.json','https://example.invalid/a.motion3.json','a%2fb.motion3.json','a\\b.motion3.json','C:/a.motion3.json','bad.php.motion3.json','x.exp3.json']:
+            result=self.php(self.transfer_setup()+"$template['presets']=[['id'=>'hello','name'=>'Hello','motionFile'=>"+__import__('json').dumps(path)+",'expressionFile'=>'','line'=>'Hello']];wzf_mascot_template_decode(json_encode($template));echo json_encode(['ok'=>true]);")
+            self.assertFalse(result['ok'],path)
+        for mutation in ["$template['presets'][0]['extra']=1;", "$template['presets'][0]['name']=str_repeat('a',81);", "$template['presets'][0]['line']='';", "$template['presets'][]=$template['presets'][0];", "$template['presets']=array_fill(0,9,$template['presets'][0]);", "unset($template['presets'][0]['motionFile']);"]:
+            result=self.php(self.transfer_setup()+"$template['presets']=[['id'=>'hello','name'=>'Hello','motionFile'=>'','expressionFile'=>'','line'=>'Text']];"+mutation+"wzf_mascot_template_decode(json_encode($template));echo json_encode(['ok'=>true]);")
+            self.assertFalse(result['ok'],mutation)
+
+    def test_template_apply_only_selected_fields_preserves_chatter_and_other_data(self):
+        result=self.php(self.helper.settings_setup()+self.transfer_setup()+'''
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['captureAllowed']=true;
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['hitBindings']=[['area'=>'Head','preset'=>'hello']];
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['presets']=[['id'=>'hello','name'=>'Old','motion'=>'01','expression'=>'','line'=>'Old']];
+        $options[WZF_MASCOT_OPTION]['history']=['unchanged'=>'sentinel'];$options['account-sentinel']=['private'=>'same'];
+        $before=$options;$version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $r=wzf_mascot_template_preview('legacy_character',$version,$raw,'dialogue');
+        wzf_mascot_template_apply('legacy_character',$version,$r['payload'],$r['scope'],$r['issued'],$r['signature'],'1');
+        $saved=$options;$rules=$saved[WZF_MASCOT_OPTION]['characters']['legacy_character']['dialogue'];
+        unset($saved[WZF_MASCOT_OPTION]['characters']['legacy_character']['dialogue']);
+        echo json_encode(['rules'=>$rules,'same'=>$saved===$before,'lock'=>get_option(WZF_MASCOT_LOCK)]);
+        ''')
+        self.assertTrue(result['same']);self.assertFalse(result['lock']);self.assertEqual(result['rules']['welcome']['lines'],['New welcome'])
+        self.assertFalse(result['rules']['idle']['enabled'])
+        for enabled,lines,expected in [(True,['x'],True),(True,[],False),(False,['x'],False)]:
+            result=self.php(self.transfer_setup()+"$config=['characters'=>['text'=>['dialogue'=>['idle'=>['enabled'=>"+('true' if enabled else 'false')+",'cooldown'=>120,'lines'=>['old']]]]]];$template['dialogue']['idle']['lines']="+__import__('json').dumps(lines)+";$plan=wzf_mascot_template_plan($config,'text',wzf_mascot_config_version($config),json_encode($template),'dialogue');echo json_encode($plan['after']['dialogue']['idle']);")
+            self.assertEqual(result['enabled'],expected)
+
+    def test_template_resource_mapping_export_and_ambiguity(self):
+        result=self.php(self.helper.settings_setup()+self.transfer_setup()+'''
+        $root=$u['path'].'/'.$c['root'];mkdir($root.'expression');file_put_contents($root.'expression/a.exp3.json','{}');
+        $cat=json_decode(file_get_contents($root.'catalog.json'),true);$cat['expressions']=[['id'=>'smile','file'=>'expression/a.exp3.json']];file_put_contents($root.'catalog.json',json_encode($cat));
+        $template['presets']=[['id'=>'hello','name'=>'Hello','motionFile'=>'motion/greet.motion3.json','expressionFile'=>'expression/a.exp3.json','line'=>'Hello']];
+        $raw=json_encode($template);$r=wzf_mascot_template_preview('legacy_character',$version,$raw,'dialogue-presets');
+        wzf_mascot_template_apply('legacy_character',$version,$r['payload'],$r['scope'],$r['issued'],$r['signature'],'1');
+        $config=$options[WZF_MASCOT_OPTION];$export=json_decode(wzf_mascot_template_export($config,'legacy_character',wzf_mascot_config_version($config)),true);
+        $cat['motions'][]=['id'=>'duplicate-file','file'=>'motion/greet.motion3.json'];file_put_contents($root.'catalog.json',json_encode($cat));
+        $duplicate=false;try{wzf_mascot_template_plan($config,'legacy_character',wzf_mascot_config_version($config),$raw,'dialogue-presets');}catch(Throwable $e){$duplicate=true;}
+        $export_duplicate=false;try{wzf_mascot_template_export($config,'legacy_character',wzf_mascot_config_version($config));}catch(Throwable $e){$export_duplicate=true;}
+        echo json_encode(['mapping'=>$r['plan']['mapping'],'presets'=>$config['characters']['legacy_character']['presets'],'export'=>$export,'duplicate'=>$duplicate,'exportDuplicate'=>$export_duplicate]);
+        ''')
+        self.assertTrue(result['duplicate']);self.assertTrue(result['exportDuplicate']);self.assertEqual(result['presets'][0]['motion'],'01');self.assertEqual(result['presets'][0]['expression'],'smile')
+        self.assertEqual(result['export']['presets'][0]['expressionFile'],'expression/a.exp3.json');self.assertEqual(len(result['mapping']),2)
+
+    def test_template_missing_mapping_and_bound_hits_reject_without_mutation(self):
+        for mutation in ["$template['presets']=[['id'=>'hello','name'=>'Hello','motionFile'=>'missing.motion3.json','expressionFile'=>'','line'=>'Hello']];",
+                         "$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['hitBindings']=[['area'=>'Head','preset'=>'hello']];"]:
+            result=self.php(self.helper.settings_setup()+self.transfer_setup()+mutation+'''
+            $before=$options;$failed=false;try{wzf_mascot_template_preview('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),json_encode($template),'dialogue-presets');}catch(Throwable $e){$failed=true;}
+            echo json_encode(['failed'=>$failed,'same'=>$before===$options]);
+            ''')
+            self.assertTrue(result['failed']);self.assertTrue(result['same'])
+
+    def test_template_signature_scope_payload_id_time_confirmation_and_version(self):
+        mutations=["$r['payload'].=' ';", "$r['scope']='dialogue-presets';", "$r['character']='other';", "$r['issued']=(string)(time()-901);$r['signature']=wzf_mascot_template_signature($r['character'],$r['version'],$r['payload'],$r['scope'],$r['issued']);",
+                   "$r['issued']=(string)(time()+5);$r['signature']=wzf_mascot_template_signature($r['character'],$r['version'],$r['payload'],$r['scope'],$r['issued']);", "$confirm='';", "$allowed=false;", "$options[WZF_MASCOT_OPTION]['marker']='concurrent';"]
+        for mutation in mutations:
+            result=self.php(self.transfer_setup()+'''
+            $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];$version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+            $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');$confirm='1';
+            '''+mutation+'''
+            $before=$options;$failed=false;try{wzf_mascot_template_apply($r['character'],$r['version'],$r['payload'],$r['scope'],$r['issued'],$r['signature'],$confirm);}catch(Throwable $e){$failed=true;}
+            echo json_encode(['failed'=>$failed,'same'=>$before===$options,'guard'=>file_exists(wzf_mascot_uploads()['path'].'/'.WZF_MASCOT_GUARD_FILE)]);
+            ''')
+            self.assertTrue(result['failed'],mutation);self.assertTrue(result['same']);self.assertFalse(result['guard'])
+
+    def test_template_fresh_revalidation_busy_guard_and_failed_write(self):
+        for mutation in ["$write_fail=true;", "$guard=wzf_mascot_task_guard(true);flock($guard,LOCK_EX);", "$database_before_read=function($n){global $options;if($n===3)$options[WZF_MASCOT_OPTION]['marker']='changed-under-lock';};$wpdb->reads=0;"]:
+            result=self.php(self.transfer_setup()+'''
+            $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];$version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+            $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+            '''+mutation+'''
+            $failed=false;try{wzf_mascot_template_apply('text',$version,$r['payload'],$r['scope'],$r['issued'],$r['signature'],'1');}catch(Throwable $e){$failed=true;}
+            echo json_encode(['failed'=>$failed,'unchanged'=>!isset($options[WZF_MASCOT_OPTION]['characters']['text']['dialogue'])]);
+            ''')
+            self.assertTrue(result['failed'],mutation);self.assertTrue(result['unchanged'])
+
+    def test_template_http_handlers_require_nonce_and_permissions(self):
+        for handler in ['wzf_mascot_template_export_post','wzf_mascot_template_apply_post','wzf_mascot_template_preview_gate']:
+            setup="$_GET=['page'=>'wzf-mascot','mascot_template_preview'=>'1'];"
+            for denied in ['', '$allowed=false;']:
+                result=self.php(setup+denied+handler+'();')
+                self.assertFalse(result['ok'])
+
+
+    def test_template_signed_payload_survives_native_form_newline_normalization(self):
+        result=self.php(self.transfer_setup()+'''
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $export=wzf_mascot_template_export($options[WZF_MASCOT_OPTION],'text',$version);
+        $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+        $posted=preg_replace("/\\r\\n|\\r|\\n/", "\\r\\n", $r['payload']);
+        wzf_mascot_template_apply('text',$version,$posted,$r['scope'],$r['issued'],$r['signature'],'1');
+        echo json_encode(['sameBytes'=>$posted===$r['payload'],'compact'=>strpos($r['payload'],"\\n")===false && strpos($r['payload'],"\\r")===false,'readableExport'=>strpos($export,"\\n")!==false,'saved'=>$options[WZF_MASCOT_OPTION]['characters']['text']['dialogue']['welcome']['lines']]);
+        ''')
+        self.assertTrue(result['sameBytes']);self.assertTrue(result['compact']);self.assertTrue(result['readableExport'])
+        self.assertEqual(result['saved'],['New welcome'])
+
+
+    def test_template_hidden_payload_preserves_literal_entities_with_wordpress_escaping(self):
+        result=self.php(self.transfer_setup()+'''
+        function esc_attr($value){return htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8',false);}
+        $line='Literal &amp; &quot; "quotes" 中文 & café';
+        $template['dialogue']['welcome']['lines']=[$line];$raw=json_encode($template);
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+        ob_start();wzf_mascot_template_hidden(['payload'=>$r['payload']]);$html=ob_get_clean();
+        preg_match('/name="payload" value="([^"]*)"/',$html,$matches);
+        $posted=html_entity_decode($matches[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
+        wzf_mascot_template_apply('text',$version,$posted,$r['scope'],$r['issued'],$r['signature'],'1');
+        echo json_encode(['sameBytes'=>$posted===$r['payload'],'saved'=>$options[WZF_MASCOT_OPTION]['characters']['text']['dialogue']['welcome']['lines']]);
+        ''')
+        self.assertTrue(result['sameBytes'])
+        self.assertEqual(result['saved'],['Literal &amp; &quot; "quotes" 中文 & café'])
+
+
+    def test_template_preview_user_text_roundtrips_literal_entities(self):
+        result=self.php(self.transfer_setup()+'''
+        function esc_html($value){return htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8',false);}
+        $line='Literal &amp; &quot; &copy; "quotes" 中文 & café';
+        $template['dialogue']['welcome']['lines']=[$line];
+        $template['presets']=[['id'=>'hello','name'=>$line,'motionFile'=>'','expressionFile'=>'','line'=>$line]];
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $r=wzf_mascot_template_preview('text',$version,json_encode($template),'dialogue-presets');
+        ob_start();wzf_mascot_template_diff($r);$html=ob_get_clean();
+        $display=html_entity_decode(strip_tags($html),ENT_QUOTES|ENT_HTML5,'UTF-8');
+        echo json_encode(['exactOccurrences'=>substr_count($display,$line),'canonicalLine'=>$r['plan']['after']['dialogue']['welcome']['lines'][0]]);
+        ''')
+        self.assertEqual(result['exactOccurrences'],4)
+        self.assertEqual(result['canonicalLine'],'Literal &amp; &quot; &copy; "quotes" 中文 & café')
