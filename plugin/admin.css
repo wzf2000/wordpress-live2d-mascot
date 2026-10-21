@@ -73,10 +73,22 @@
   font-weight: 600;
   margin-bottom: 8px;
 }
-.wzf-mascot-admin .wzf-mascot-field input:not([type='file']),
-.wzf-mascot-admin .wzf-mascot-field select {
+.wzf-mascot-admin .wzf-mascot-field input:not([type]),
+.wzf-mascot-admin .wzf-mascot-field input[type='text'],
+.wzf-mascot-admin .wzf-mascot-field input[type='number'],
+.wzf-mascot-admin .wzf-mascot-field select,
+.wzf-mascot-admin .wzf-mascot-field textarea {
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
+}
+.wzf-mascot-admin .wzf-mascot-field textarea {
+  font-weight: 400;
+}
+.wzf-mascot-admin .wzf-mascot-field input[type='checkbox'],
+.wzf-mascot-admin .wzf-mascot-field input[type='radio'] {
+  vertical-align: middle;
+  margin: 0 6px 0 0;
 }
 .wzf-mascot-admin .wzf-mascot-field input[type='file'] {
   width: 100%;
@@ -130,9 +142,17 @@
   .wzf-mascot-profile {
     padding: 18px 16px;
   }
-  .wzf-mascot-admin .wzf-mascot-field input,
-  .wzf-mascot-admin .wzf-mascot-field select {
+  .wzf-mascot-admin .wzf-mascot-field input:not([type]),
+  .wzf-mascot-admin .wzf-mascot-field input[type='text'],
+  .wzf-mascot-admin .wzf-mascot-field input[type='number'],
+  .wzf-mascot-admin .wzf-mascot-field select,
+  .wzf-mascot-admin .wzf-mascot-field textarea {
     min-height: 40px;
+  }
+  .wzf-mascot-admin .wzf-mascot-field input[type='checkbox'],
+  .wzf-mascot-admin .wzf-mascot-field input[type='radio'] {
+    width: 24px;
+    height: 24px;
   }
   .wzf-mascot-admin .wzf-mascot-checks label {
     padding: 9px 0;
