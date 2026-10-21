@@ -37,6 +37,8 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Some interactions could not load. Try again.'=>__('Some interactions could not load. Try again.', 'live2d-show'),
+        'Quick interactions'=>__('Quick interactions', 'live2d-show'),
         'Dialogue mode'=>__('Dialogue mode', 'live2d-show'),
         'Automatic dialogue'=>__('Automatic dialogue', 'live2d-show'),
         'Only on interaction'=>__('Only on interaction', 'live2d-show'),

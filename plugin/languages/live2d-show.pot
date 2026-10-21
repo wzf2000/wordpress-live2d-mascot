@@ -92,6 +92,9 @@ msgstr ""
 msgid "A motion catalog entry is invalid."
 msgstr ""
 
+msgid "A preset needs a name and at least one motion, expression or line."
+msgstr ""
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr ""
 
@@ -617,6 +620,12 @@ msgstr ""
 msgid "Expression"
 msgstr ""
 
+msgid "Expression catalog is invalid."
+msgstr ""
+
+msgid "Expression catalog is too large."
+msgstr ""
+
 msgid "Expression is invalid."
 msgstr ""
 
@@ -738,6 +747,12 @@ msgid "Inspect disk usage"
 msgstr ""
 
 msgid "Interact"
+msgstr ""
+
+msgid "Interaction preset is invalid."
+msgstr ""
+
+msgid "Interaction presets saved."
 msgstr ""
 
 msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
@@ -878,6 +893,9 @@ msgstr ""
 msgid "Network connection failed. Check your connection and retry."
 msgstr ""
 
+msgid "New preset %s"
+msgstr ""
+
 msgid "New single-model runtime ZIP"
 msgstr ""
 
@@ -909,6 +927,9 @@ msgid "No resource or settings task is currently detected. Recovery removes only
 msgstr ""
 
 msgid "No selectable character"
+msgstr ""
+
+msgid "None"
 msgstr ""
 
 msgid "Not imported"
@@ -965,6 +986,21 @@ msgstr ""
 msgid "Position and size"
 msgstr ""
 
+msgid "Preset expression"
+msgstr ""
+
+msgid "Preset line"
+msgstr ""
+
+msgid "Preset motion"
+msgstr ""
+
+msgid "Preset motion or expression is not in the current catalog."
+msgstr ""
+
+msgid "Preset name"
+msgstr ""
+
 msgid "Preview character"
 msgstr ""
 
@@ -987,6 +1023,9 @@ msgid "Previous thumbnail"
 msgstr ""
 
 msgid "Pursed lips"
+msgstr ""
+
+msgid "Quick interactions"
 msgstr ""
 
 msgid "Raise hand to greet"
@@ -1157,6 +1196,9 @@ msgstr ""
 msgid "Save dialogue settings"
 msgstr ""
 
+msgid "Save interaction presets"
+msgstr ""
+
 msgid "Save mobile settings"
 msgstr ""
 
@@ -1230,6 +1272,12 @@ msgid "Smile"
 msgstr ""
 
 msgid "Smile with eyes closed"
+msgstr ""
+
+msgid "Some interactions could not load. Try again."
+msgstr ""
+
+msgid "Some presets are invalid or could not follow the resource update and were skipped. Review and save valid presets. The character remains available."
 msgstr ""
 
 msgid "Sound references are not supported."
@@ -1535,6 +1583,9 @@ msgstr ""
 msgid "Unreferenced / preserve"
 msgstr ""
 
+msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
+msgstr ""
+
 msgid "Update character resources"
 msgstr ""
 
@@ -1548,6 +1599,9 @@ msgid "Upload failed."
 msgstr ""
 
 msgid "Use this character"
+msgstr ""
+
+msgid "Use up to 8 interaction presets."
 msgstr ""
 
 msgid "Use up to 8 plain-text lines per event, each at most 300 bytes."

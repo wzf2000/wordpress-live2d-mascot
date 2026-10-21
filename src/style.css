@@ -410,3 +410,7 @@
 .wzf-haru-search-row { grid-column: 1 / -1; display: flex; gap: 7px; }
 .wzf-haru-search-row input[type='search'] { flex: 1; min-width: 0; width: 0; }
 .wzf-haru-search-row button { flex: 0 0 auto; }
+
+.wzf-haru-presets { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.wzf-haru-presets[hidden] { display: none; }
+.wzf-haru-presets button { max-width: 100%; overflow-wrap: anywhere; }

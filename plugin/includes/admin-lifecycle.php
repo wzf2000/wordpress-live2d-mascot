@@ -39,6 +39,10 @@ function wzf_mascot_manage_character($id, $version, $operation) {
             if (!is_array($previous)) throw new RuntimeException(__('No previous character resources are available for rollback.', 'live2d-show'));
             // Roll back resources and their motion references, retaining current presentation/state.
             $rollback = array_replace($c, array_intersect_key($previous, array_flip(['root','file','idle','welcome','greetings'])));
+            if (array_key_exists('presets', $previous)) {
+                $rollback['presets'] = wzf_mascot_current_presets($previous);
+                $rollback['presetWarnings'] = is_array($previous['presets']) ? max(0, count($previous['presets']) - count($rollback['presets'])) : 1;
+            } else { unset($rollback['presets'], $rollback['presetWarnings']); }
             wzf_mascot_character_runtime_files($rollback);
             wzf_mascot_character_catalog($rollback);
             $config['history'][$id] = $c; $c = $rollback;
@@ -79,8 +83,10 @@ function wzf_mascot_replace_resource($file, $id, $version, $reset = false) {
         if (!in_array(wzf_mascot_character_status($c), ['active','disabled'], true)) throw new RuntimeException(__('Restore the character to a valid status before updating resources.', 'live2d-show'));
         if (isset($config['history']) && !is_array($config['history'])) throw new RuntimeException(__('Character history configuration is invalid.', 'live2d-show'));
         $old = wzf_mascot_character_catalog($c);
-        $new = wzf_mascot_json($model['files']['catalog.json'])['motions'];
+        $new_catalog = wzf_mascot_json($model['files']['catalog.json']);
+        $new = $new_catalog['motions'];
         $mapped = wzf_mascot_remap_motions($c, $old, $new, $model['idle'], $reset);
+        $mapped = array_replace($mapped, wzf_mascot_remap_presets($c, $old, $new_catalog));
         $u = wzf_mascot_uploads(true);
         $dirname = 'model-' . $token;
         $stage = $u['path'] . '/stage-' . $token; $final = $u['path'] . '/' . $dirname;

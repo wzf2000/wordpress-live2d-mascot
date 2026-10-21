@@ -89,6 +89,9 @@ msgstr "模型运行引用缺失、越界或大小无效。"
 msgid "A motion catalog entry is invalid."
 msgstr "动作目录条目无效。"
 
+msgid "A preset needs a name and at least one motion, expression or line."
+msgstr "预设需要名称，并至少包含动作、表情或台词中的一项。"
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "资源或设置任务正在进行。请先检查任务状态，再重试。"
 
@@ -614,6 +617,12 @@ msgstr "现有资源配置无效。"
 msgid "Expression"
 msgstr "表情"
 
+msgid "Expression catalog is invalid."
+msgstr "表情目录无效。"
+
+msgid "Expression catalog is too large."
+msgstr "表情目录过大。"
+
 msgid "Expression is invalid."
 msgstr "Expression 无效。"
 
@@ -736,6 +745,12 @@ msgstr "盘点磁盘用量"
 
 msgid "Interact"
 msgstr "互动"
+
+msgid "Interaction preset is invalid."
+msgstr "互动预设无效。"
+
+msgid "Interaction presets saved."
+msgstr "互动预设已保存。"
 
 msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
 msgstr "已移除中断的任务记录，资源和配置均已保留。重试原任务前请检查已安装资源。"
@@ -875,6 +890,9 @@ msgstr "需处理"
 msgid "Network connection failed. Check your connection and retry."
 msgstr "网络连接失败，请检查网络后重试"
 
+msgid "New preset %s"
+msgstr "新增预设 %s"
+
 msgid "New single-model runtime ZIP"
 msgstr "新单模型运行 ZIP"
 
@@ -907,6 +925,9 @@ msgstr "未检测到进行中的资源或设置任务。恢复仅移除此条中
 
 msgid "No selectable character"
 msgstr "当前没有可选角色"
+
+msgid "None"
+msgstr "无"
 
 msgid "Not imported"
 msgstr "尚未导入"
@@ -962,6 +983,21 @@ msgstr "姿态"
 msgid "Position and size"
 msgstr "位置与大小"
 
+msgid "Preset expression"
+msgstr "预设表情"
+
+msgid "Preset line"
+msgstr "预设台词"
+
+msgid "Preset motion"
+msgstr "预设动作"
+
+msgid "Preset motion or expression is not in the current catalog."
+msgstr "预设动作或表情不在当前目录中。"
+
+msgid "Preset name"
+msgstr "预设名称"
+
 msgid "Preview character"
 msgstr "预览角色"
 
@@ -985,6 +1021,9 @@ msgstr "上一版缩略图"
 
 msgid "Pursed lips"
 msgstr "抿嘴"
+
+msgid "Quick interactions"
+msgstr "快捷互动"
 
 msgid "Raise hand to greet"
 msgstr "举手招呼"
@@ -1154,6 +1193,9 @@ msgstr "保存角色设置"
 msgid "Save dialogue settings"
 msgstr "保存台词设置"
 
+msgid "Save interaction presets"
+msgstr "保存互动预设"
+
 msgid "Save mobile settings"
 msgstr "保存移动端设置"
 
@@ -1228,6 +1270,12 @@ msgstr "微笑"
 
 msgid "Smile with eyes closed"
 msgstr "闭眼笑"
+
+msgid "Some interactions could not load. Try again."
+msgstr "部分互动暂时无法加载，请重试。"
+
+msgid "Some presets are invalid or could not follow the resource update and were skipped. Review and save valid presets. The character remains available."
+msgstr "部分预设无效或无法跟随资源更新，已跳过。请检查并保存有效预设，角色仍然可用。"
 
 msgid "Sound references are not supported."
 msgstr "不支持声音引用。"
@@ -1532,6 +1580,9 @@ msgstr "未知动作"
 msgid "Unreferenced / preserve"
 msgstr "未引用／保留"
 
+msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
+msgstr "最多 8 个命名组合，可选择动作、表情、纯文本台词或将其组合。全部留空可移除预设。名称最多 80 字节，台词最多 300 字节。仅在访客主动操作时播放。"
+
 msgid "Update character resources"
 msgstr "更新角色资源"
 
@@ -1546,6 +1597,9 @@ msgstr "上传失败。"
 
 msgid "Use this character"
 msgstr "使用这个角色"
+
+msgid "Use up to 8 interaction presets."
+msgstr "最多添加 8 个互动预设。"
 
 msgid "Use up to 8 plain-text lines per event, each at most 300 bytes."
 msgstr "每个事件最多 8 条纯文本台词，每条不超过 300 字节。"

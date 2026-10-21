@@ -48,6 +48,45 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
       }
       await page.setViewportSize({width:1440,height:900});
     } checks++;
+    await page.goto(fixture.origin+'/?presets=1&mobile=1'); await ready(page);
+    await page.getByRole('button',{name:'Interact',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Invalid preset',exact:true}).count(),0);
+    await page.evaluate(() => {window.__mascotFixture.holdPlay=true;});
+    await page.getByRole('button',{name:'Quick greeting',exact:true}).click();
+    assert.equal(await bubble(page).textContent(),'alpha preset line');
+    await page.waitForFunction(() => window.__mascotFixture.pendingPlays.length===1);
+    const starts=await page.evaluate(() => window.__mascotFixture.events.filter((e)=>e.type==='play-start').map((e)=>e.channel));
+    assert.deepEqual(starts,['motion','expression']);
+    await page.waitForFunction(() => window.__mascotFixture.events.some((e)=>e.type==='play-complete'));
+    await page.getByRole('button',{name:'Text only',exact:true}).click();
+    assert.equal(await bubble(page).textContent(),'alpha text only');
+    await page.evaluate(() => window.__mascotFixture.pendingPlays.splice(0).forEach((fn)=>fn()));
+    await page.clock.runFor(20); assert.equal(await bubble(page).textContent(),'alpha text only'); checks++;
+    await page.getByRole('button',{name:'Reset expression',exact:true}).click();
+    await page.evaluate(() => {window.__mascotFixture.holdPlay=true;window.__mascotFixture.holdPlayChannel='expression';});
+    await page.getByRole('button',{name:'Quick greeting',exact:true}).click();
+    await page.waitForFunction(() => window.__mascotFixture.pendingPlays.length===1);
+    await page.getByRole('button',{name:'Text only',exact:true}).click();
+    await page.evaluate(() => window.__mascotFixture.pendingPlays.splice(0).forEach((fn)=>fn()));
+    await page.clock.runFor(30); assert.equal(await page.evaluate(()=>window.WZFHaruStatus().activeExpression),null);
+    assert.equal(await bubble(page).textContent(),'alpha text only');
+    await page.route('**/expression/smile.json',route=>route.fulfill({status:503,body:'Synthetic failure'}));
+    await page.getByRole('button',{name:'Quick greeting',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('.wzf-haru-state').textContent==='Some interactions could not load. Try again.');
+    assert.equal(await bubble(page).textContent(),'alpha preset line');
+    await page.unroute('**/expression/smile.json'); checks++;
+    await page.getByLabel('Choose character',{exact:true}).selectOption('beta');
+    await page.getByRole('button',{name:'Preview character',exact:true}).click(); await page.waitForFunction(()=>window.WZFHaruStatus?.().character==='beta'&&!window.WZFHaruStatus().loading);
+    assert.equal(await bubble(page).textContent(),'');
+    await page.getByRole('button',{name:'Quick greeting',exact:true}).click(); assert.equal(await bubble(page).textContent(),'beta preset line');
+    for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+      await page.setViewportSize(viewport);
+      if(output) await page.screenshot({path:path.join(output,'presets-'+viewport.width+'.png')});
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    }
+    await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'preset-test',suspended:true}})));
+    assert.equal(await bubble(page).textContent(),'');
+    assert.equal(await page.getByRole('button',{name:'Quick greeting',exact:true}).isVisible(),false); checks++;
     console.log(JSON.stringify({complete:true,checks,syntheticOnly:true,realRenderingTested:false}));
   } finally {await context.close();await browser.close();await fixture.close();}
 })().catch((e)=>{console.error(e);process.exitCode=1;});

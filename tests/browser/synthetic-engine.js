@@ -48,7 +48,7 @@
             if (!response.ok) throw new Error('Synthetic resource unavailable');
             return response.json();
           });
-          if (fixture.holdPlay) {
+          if (fixture.holdPlay && (!fixture.holdPlayChannel || fixture.holdPlayChannel === type)) {
             fixture.holdPlay = false;
             await new Promise((resolve) => fixture.pendingPlays.push(resolve));
           }

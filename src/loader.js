@@ -135,6 +135,19 @@
       welcomeTimer = null,
       welcomeEnd = null,
       welcomeTarget = null;
+    let pendingPreset = null;
+    const cancelPreset = () => {
+      const pending = pendingPreset;
+      pendingPreset = null;
+      if (!pending || pending.target !== engine || pending.g !== generation) return;
+      operation++;
+      for (const [type, channel] of pending.channels) {
+        if (interactions[type] !== channel) continue;
+        engine.cancelPending(type);
+        interactions[type]++;
+        manualPending.delete(type);
+      }
+    };
     const cancelWelcome = (preserveActiveMotion = false) => {
       clearTimeout(welcomeTimer);
       welcomeTimer = null;
@@ -723,6 +736,8 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const presetControls = make('div', '', 'wzf-haru-presets');
+    presetControls.setAttribute('aria-label', t("Quick interactions"));
     const dialogueChoice = make('select');
     dialogueChoice.setAttribute('aria-label', t("Dialogue mode"));
     for (const [value, caption] of [['auto', t("Automatic dialogue")], ['active', t("Only on interaction")], ['silent', t("Silent")]]) {
@@ -756,6 +771,7 @@
       favoritesState,
       commitButton,
       cancelPreview,
+      presetControls,
       motion,
       play,
       stopMotion,
@@ -901,6 +917,7 @@
       const run = allowed();
       if (!run) {
         clearDialogue();
+        cancelPreset();
         cancelWelcome();
         cancelExternal();
       }
@@ -940,6 +957,7 @@
         face.disabled =
         resetFace.disabled =
           !(run && engine && !loading);
+      for (const button of presetControls.querySelectorAll('button')) button.disabled = !(run && engine && !loading);
       face.disabled = face.disabled || !expression.options.length;
       expression.hidden = face.hidden = resetFace.hidden = !expression.options.length;
       resetFace.disabled = resetFace.disabled || !expression.options.length;
@@ -1230,6 +1248,7 @@
       paint();
     };
     const destroy = () => {
+      cancelPreset();
       clearDialogue();
       cancelWelcome();
       cancelExternal();
@@ -1241,7 +1260,26 @@
       engine?.destroy();
       engine = null;
     };
+    const populatePresets = () => {
+      presetControls.replaceChildren();
+      const rows = characters[active].presets;
+      if (!Array.isArray(rows)) { presetControls.hidden = true; return; }
+      for (const row of rows.slice(0, 8)) {
+        if (!row || typeof row !== 'object' || typeof row.name !== 'string' || !row.name.trim() || new TextEncoder().encode(row.name).length > 80) continue;
+        if (!['motion','expression','line'].every((key) => typeof row[key] === 'string') ||
+            (!row.motion && !row.expression && !row.line.trim()) ||
+            (row.motion && !engine.catalog.motions.some((item) => item.id === row.motion)) ||
+            (row.expression && !engine.catalog.expressions.some((item) => item.id === row.expression)) ||
+            new TextEncoder().encode(row.line).length > 300) continue;
+        const button = make('button', row.name);
+        button.dataset.presetId = row.id;
+        button.onclick = () => performPreset(row);
+        presetControls.append(button);
+      }
+      presetControls.hidden = !presetControls.children.length;
+    };
     const populate = () => {
+      populatePresets();
       for (const [select, items] of [
         [motion, engine.catalog.motions],
         [expression, engine.catalog.expressions],
@@ -1434,6 +1472,7 @@
     };
     const perform = async (type, id) => {
       if (!allowed() || !engine || loading) return;
+      cancelPreset();
       cancelExternal();
       welcomeConsumed = true;
       cancelWelcome();
@@ -1461,9 +1500,45 @@
         if (channel === interactions[type] && g === generation) manualPending.delete(type);
       }
     };
+    const performPreset = async (preset) => {
+      if (!allowed() || !engine || loading || engine.state().paused) return false;
+      cancelPreset(); clearDialogue(); cancelExternal();
+      welcomeConsumed = true; dialogueWelcomeConsumed = true; cancelWelcome();
+      const n = ++operation, g = generation, target = engine;
+      const pending = { target, g, channels: new Map() };
+      pendingPreset = pending;
+      const jobs = [];
+      for (const type of ['motion', 'expression']) {
+        if (!preset[type]) continue;
+        const channel = ++interactions[type];
+        manualPending.add(type);
+        pending.channels.set(type, channel);
+        if (type === 'motion') { touchPending = false; nextTouch = 0; }
+        // The calls start synchronously before collecting either result.
+        jobs.push((async () => target.play(type, preset[type]))().then(
+          (done) => ({ type, done }),
+          (error) => ({ type, error }),
+        ).finally(() => {
+          pending.channels.delete(type);
+          if (g === generation && channel === interactions[type]) manualPending.delete(type);
+        }));
+      }
+      if (preset.line) showLine(preset.line);
+      const results = await Promise.allSettled(jobs);
+      if (pendingPreset === pending) pendingPreset = null;
+      if (n !== operation || g !== generation || target !== engine || !allowed()) return false;
+      const values = results.map((result) => result.status === 'fulfilled' ? result.value : {error:result.reason});
+      const errors = values.filter((value) => value.error && value.error.name !== 'AbortError');
+      for (const value of errors) diagnosticError(value.error, value.type);
+      if (errors.length) state.textContent = t("Some interactions could not load. Try again.");
+      else if (values.some((value) => !value.done)) state.textContent = t("Cancelled");
+      else state.textContent = t("Previewing: %1$s", preset.name);
+      return !errors.length;
+    };
     const restore = (type) => {
       if (!allowed() || !engine || loading || (type === 'expression' && !expression.options.length))
         return;
+      cancelPreset();
       cancelExternal();
       welcomeConsumed = true;
       cancelWelcome(type === 'expression');
@@ -1489,6 +1564,7 @@
       welcomeConsumed = true;
       dialogueWelcomeConsumed = true;
       cancelWelcome();
+      cancelPreset();
       speak('click');
       if (!characters[active].greetings?.length) return;
       if (

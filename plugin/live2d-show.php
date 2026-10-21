@@ -72,6 +72,9 @@ function wzf_haru_output() {
             try { $root = wzf_mascot_character_display_check($id, $c, $uploads); }
             catch (Throwable $e) { continue; }
             $c['dialogue'] = wzf_mascot_dialogue($c['dialogue'] ?? []);
+            // Keep the HTTP entry cheap: catalog filtering happens after the loader loads it.
+            $c['presets'] = wzf_mascot_presets($c['presets'] ?? [], null, null);
+            unset($c['presetWarnings']);
             $thumbnail = wzf_mascot_thumbnail_url($c);
             unset($c['status'], $c['restoreStatus'], $c['thumbnail']);
             if ($thumbnail !== null) $c['thumbnail'] = $thumbnail;

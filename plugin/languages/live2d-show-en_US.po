@@ -92,6 +92,9 @@ msgstr "A model runtime reference is missing, outside the allowed directory or h
 msgid "A motion catalog entry is invalid."
 msgstr "A motion catalog entry is invalid."
 
+msgid "A preset needs a name and at least one motion, expression or line."
+msgstr "A preset needs a name and at least one motion, expression or line."
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "A resource or settings task is in progress. Inspect task status before retrying."
 
@@ -617,6 +620,12 @@ msgstr "Existing resource configuration is invalid."
 msgid "Expression"
 msgstr "Expression"
 
+msgid "Expression catalog is invalid."
+msgstr "Expression catalog is invalid."
+
+msgid "Expression catalog is too large."
+msgstr "Expression catalog is too large."
+
 msgid "Expression is invalid."
 msgstr "Expression is invalid."
 
@@ -739,6 +748,12 @@ msgstr "Inspect disk usage"
 
 msgid "Interact"
 msgstr "Interact"
+
+msgid "Interaction preset is invalid."
+msgstr "Interaction preset is invalid."
+
+msgid "Interaction presets saved."
+msgstr "Interaction presets saved."
 
 msgid "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
 msgstr "Interrupted task record removed. Resources and configuration were retained. Inspect installed resources before retrying the original task."
@@ -878,6 +893,9 @@ msgstr "Needs attention"
 msgid "Network connection failed. Check your connection and retry."
 msgstr "Network connection failed. Check your connection and retry."
 
+msgid "New preset %s"
+msgstr "New preset %s"
+
 msgid "New single-model runtime ZIP"
 msgstr "New single-model runtime ZIP"
 
@@ -910,6 +928,9 @@ msgstr "No resource or settings task is currently detected. Recovery removes onl
 
 msgid "No selectable character"
 msgstr "No selectable character"
+
+msgid "None"
+msgstr "None"
 
 msgid "Not imported"
 msgstr "Not imported"
@@ -965,6 +986,21 @@ msgstr "Pose"
 msgid "Position and size"
 msgstr "Position and size"
 
+msgid "Preset expression"
+msgstr "Preset expression"
+
+msgid "Preset line"
+msgstr "Preset line"
+
+msgid "Preset motion"
+msgstr "Preset motion"
+
+msgid "Preset motion or expression is not in the current catalog."
+msgstr "Preset motion or expression is not in the current catalog."
+
+msgid "Preset name"
+msgstr "Preset name"
+
 msgid "Preview character"
 msgstr "Preview character"
 
@@ -988,6 +1024,9 @@ msgstr "Previous thumbnail"
 
 msgid "Pursed lips"
 msgstr "Pursed lips"
+
+msgid "Quick interactions"
+msgstr "Quick interactions"
 
 msgid "Raise hand to greet"
 msgstr "Raise hand to greet"
@@ -1157,6 +1196,9 @@ msgstr "Save character settings"
 msgid "Save dialogue settings"
 msgstr "Save dialogue settings"
 
+msgid "Save interaction presets"
+msgstr "Save interaction presets"
+
 msgid "Save mobile settings"
 msgstr "Save mobile settings"
 
@@ -1231,6 +1273,12 @@ msgstr "Smile"
 
 msgid "Smile with eyes closed"
 msgstr "Smile with eyes closed"
+
+msgid "Some interactions could not load. Try again."
+msgstr "Some interactions could not load. Try again."
+
+msgid "Some presets are invalid or could not follow the resource update and were skipped. Review and save valid presets. The character remains available."
+msgstr "Some presets are invalid or could not follow the resource update and were skipped. Review and save valid presets. The character remains available."
 
 msgid "Sound references are not supported."
 msgstr "Sound references are not supported."
@@ -1535,6 +1583,9 @@ msgstr "Unknown motion"
 msgid "Unreferenced / preserve"
 msgstr "Unreferenced / preserve"
 
+msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
+msgstr "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
+
 msgid "Update character resources"
 msgstr "Update character resources"
 
@@ -1549,6 +1600,9 @@ msgstr "Upload failed."
 
 msgid "Use this character"
 msgstr "Use this character"
+
+msgid "Use up to 8 interaction presets."
+msgstr "Use up to 8 interaction presets."
 
 msgid "Use up to 8 plain-text lines per event, each at most 300 bytes."
 msgstr "Use up to 8 plain-text lines per event, each at most 300 bytes."
