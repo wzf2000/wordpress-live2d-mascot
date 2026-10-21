@@ -37,6 +37,15 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Download transparent PNG'=>__('Download transparent PNG', 'live2d-show'),
+        'Character PNG'=>__('Character PNG', 'live2d-show'),
+        'Save only the current character canvas on a transparent background.'=>__('Save only the current character canvas on a transparent background.', 'live2d-show'),
+        'Preparing PNG…'=>__('Preparing PNG…', 'live2d-show'),
+        'PNG download started.'=>__('PNG download started.', 'live2d-show'),
+        'PNG capture cancelled.'=>__('PNG capture cancelled.', 'live2d-show'),
+        'PNG capture failed. Try again.'=>__('PNG capture failed. Try again.', 'live2d-show'),
+        'PNG download is not enabled for this character.'=>__('PNG download is not enabled for this character.', 'live2d-show'),
+        'PNG capture is unavailable for this character.'=>__('PNG capture is unavailable for this character.', 'live2d-show'),
         'Random favorite candidate'=>__('Random favorite candidate', 'live2d-show'),
         'Recent confirmed characters'=>__('Recent confirmed characters', 'live2d-show'),
         'Recent characters'=>__('Recent characters', 'live2d-show'),

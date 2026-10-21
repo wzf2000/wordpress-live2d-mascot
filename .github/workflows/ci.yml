@@ -125,6 +125,7 @@ jobs:
           node tests/movement-browser.cjs build/browser/movement
           node tests/account-browser.cjs build/browser/account
           node tests/selection-browser.cjs build/browser/selection
+          node tests/capture-browser.cjs build/browser/capture
       - name: Preserve synthetic browser summary and selected screenshots only
         if: always()
         uses: actions/upload-artifact@v4

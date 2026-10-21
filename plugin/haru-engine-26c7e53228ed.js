@@ -15480,6 +15480,7 @@
       __publicField(this, "textures", []);
       __publicField(this, "abort", new AbortController());
       __publicField(this, "sequences", { motion: 0, expression: 0 });
+      __publicField(this, "captureRequest", null);
       __publicField(this, "gazeParameters", /* @__PURE__ */ new Map());
       __publicField(this, "hitAreas", []);
       __publicField(this, "gazeTarget", { x: 0, y: 0 });
@@ -15493,11 +15494,13 @@
       this.gl = canvas.getContext("webgl2", {
         alpha: true,
         premultipliedAlpha: true,
-        antialias: true
+        antialias: true,
+        preserveDrawingBuffer: false
       }) || canvas.getContext("webgl", {
         alpha: true,
         premultipliedAlpha: true,
-        antialias: true
+        antialias: true,
+        preserveDrawingBuffer: false
       });
       if (!this.gl) throw new ResourceError("webgl", "This browser does not support WebGL; the mascot cannot be displayed.", "webgl");
       if (options.webgl2 && (typeof WebGL2RenderingContext === "undefined" || !(this.gl instanceof WebGL2RenderingContext)))
@@ -15719,7 +15722,62 @@
     cancelPending(type) {
       if (type === "motion" || type === "expression") this.sequences[type]++;
     }
+    captureFrame() {
+      if (this.disposed || this.stopped || !this.isInitialized() || this.options.captureAllowed !== true || this.captureRequest) return Promise.reject(new Error("PNG capture is unavailable for this character."));
+      return new Promise((resolve, reject) => {
+        const request = { resolve, reject, copy: null, timer: null };
+        this.captureRequest = request;
+        request.timer = setTimeout(() => {
+          if (this.captureRequest === request) this.cancelCapture();
+        }, 5e3);
+      });
+    }
+    cancelCapture() {
+      const request = this.captureRequest;
+      if (!request) return false;
+      this.captureRequest = null;
+      clearTimeout(request.timer);
+      if (request.copy) {
+        request.copy.width = 0;
+        request.copy.height = 0;
+      }
+      request.reject(cancelled());
+      return true;
+    }
+    copyCaptureFrame() {
+      const request = this.captureRequest;
+      if (!request || request.copy) return;
+      try {
+        const copy = document.createElement("canvas");
+        copy.width = this.canvas.width;
+        copy.height = this.canvas.height;
+        const context = copy.getContext("2d", { alpha: true });
+        if (!context) throw new Error("PNG capture failed. Try again.");
+        request.copy = copy;
+        context.drawImage(this.canvas, 0, 0);
+        copy.toBlob((blob) => {
+          if (this.captureRequest !== request) return;
+          this.captureRequest = null;
+          clearTimeout(request.timer);
+          copy.width = 0;
+          copy.height = 0;
+          if (!blob || blob.type !== "image/png" || blob.size > 16 * 1024 * 1024) request.reject(new Error("PNG capture failed. Try again."));
+          else request.resolve(blob);
+        }, "image/png");
+      } catch (error) {
+        if (this.captureRequest === request) {
+          this.captureRequest = null;
+          clearTimeout(request.timer);
+          if (request.copy) {
+            request.copy.width = 0;
+            request.copy.height = 0;
+          }
+          request.reject(error);
+        }
+      }
+    }
     pause() {
+      this.cancelCapture();
       this.resetGaze();
       this.stopped = true;
       this.sequences.motion++;
@@ -15771,6 +15829,7 @@
         this.getRenderer().setMvpMatrix(matrix);
         this.getRenderer().setRenderState(null, [0, 0, this.canvas.width, this.canvas.height]);
         this.getRenderer().drawModel(this.shaderRoot);
+        this.copyCaptureFrame();
         this.frames++;
         const cost = performance.now() - renderStart;
         this.renderTotal += cost;

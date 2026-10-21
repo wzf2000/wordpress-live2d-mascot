@@ -167,6 +167,9 @@ msgstr ""
 msgid "Allow the mascot on the frontend"
 msgstr ""
 
+msgid "Allow transparent PNG download for this character"
+msgstr ""
+
 msgid "Alternative lines"
 msgstr ""
 
@@ -330,6 +333,12 @@ msgid "Character ID or configuration structure is invalid."
 msgstr ""
 
 msgid "Character ID, name or credit is invalid."
+msgstr ""
+
+msgid "Character PNG"
+msgstr ""
+
+msgid "Character PNG download"
 msgstr ""
 
 msgid "Character capacity summary"
@@ -623,6 +632,9 @@ msgstr ""
 msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
 msgstr ""
 
+msgid "Download transparent PNG"
+msgstr ""
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr ""
 
@@ -654,6 +666,9 @@ msgid "Evening"
 msgstr ""
 
 msgid "Existing resource configuration is invalid."
+msgstr ""
+
+msgid "Explicitly confirm that PNG capture is permitted for this character."
 msgstr ""
 
 msgid "Expression"
@@ -753,6 +768,9 @@ msgid "Hit area bindings are invalid."
 msgstr ""
 
 msgid "Hit area bindings saved."
+msgstr ""
+
+msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
 msgstr ""
 
 msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
@@ -1019,6 +1037,9 @@ msgstr ""
 msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
 msgstr ""
 
+msgid "Off by default for every character. Enable only when the resource terms permit readers to save a transparent character PNG. Updating or rolling back model resources disables this permission until you explicitly confirm again."
+msgstr ""
+
 msgid "Off by default. After mobile display is allowed, each browser must still consent and opt in separately. Desktop preferences never automatically enable mobile animation. Reduced motion, account display permission and reading suspension always apply."
 msgstr ""
 
@@ -1049,6 +1070,27 @@ msgstr ""
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
 msgstr ""
 
+msgid "PNG capture cancelled."
+msgstr ""
+
+msgid "PNG capture failed. Try again."
+msgstr ""
+
+msgid "PNG capture is unavailable for this character."
+msgstr ""
+
+msgid "PNG capture settings are invalid."
+msgstr ""
+
+msgid "PNG capture settings saved."
+msgstr ""
+
+msgid "PNG download is not enabled for this character."
+msgstr ""
+
+msgid "PNG download started."
+msgstr ""
+
 msgid "Partial: %s observed bytes"
 msgstr ""
 
@@ -1068,6 +1110,9 @@ msgid "Pose"
 msgstr ""
 
 msgid "Position and size"
+msgstr ""
+
+msgid "Preparing PNG…"
 msgstr ""
 
 msgid "Preset expression"
@@ -1292,6 +1337,9 @@ msgstr ""
 msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
 msgstr ""
 
+msgid "Save PNG permission"
+msgstr ""
+
 msgid "Save area bindings"
 msgstr ""
 
@@ -1308,6 +1356,9 @@ msgid "Save interaction presets"
 msgstr ""
 
 msgid "Save mobile settings"
+msgstr ""
+
+msgid "Save only the current character canvas on a transparent background."
 msgstr ""
 
 msgid "Save thumbnail"

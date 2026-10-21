@@ -195,7 +195,7 @@ def main():
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -318,6 +318,12 @@ def main():
         post(bad); assert state()['config'] == hit_state
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == hit_state
         record('real model-declared area binding, special-name value, unknown-area rejection and upgrade preservation')
+        data = form('wzf_mascot_capture'); data['capture_allowed']='1'; before_capture = state()['config']
+        post(data); assert state()['config'] == before_capture
+        data['capture_confirmed']='1'; post(data); capture_state = state()['config']; assert capture_state['characters']['legacy_character']['captureAllowed'] is True
+        assert front()['characters']['legacy_character']['captureAllowed'] is True and front()['characters']['fixture']['captureAllowed'] is False
+        wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == capture_state
+        record('real PNG permission requires explicit confirmation, is per character and survives plugin upgrade')
         account_path = '/wp-admin/admin-ajax.php'
         account_action = {'action':'wzf_mascot_preferences','operation':'bootstrap'}
         code, body, headers = request(anonymous, account_path, account_action, with_headers=True)
@@ -353,6 +359,7 @@ def main():
         data['reset_motions'] = '1'; post(data, {'resource': (z.name, z.read_bytes())})
         replaced = state()['config']; assert replaced['characters']['legacy_character']['root'] != c['root']
         assert replaced['characters']['legacy_character']['welcome'] is None
+        assert replaced['characters']['legacy_character']['captureAllowed'] is False
         assert replaced['characters']['legacy_character']['presets'] == [] and replaced['characters']['legacy_character']['presetWarnings'] == 1
         assert replaced['characters']['legacy_character']['hitBindings'] == [] and replaced['characters']['legacy_character']['hitWarnings'] == 1
         assert 'Some presets are invalid' in request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=legacy_character')[1]
@@ -360,6 +367,7 @@ def main():
         assert rolled['root'] == c['root'] and rolled['welcome'] == '01_extra' and rolled['name'] == c['name']
         assert rolled['presets'][0]['motion'] == '01_extra' and rolled['dialogue'] == c['dialogue']
         assert rolled['hitBindings'] == c['hitBindings']
+        assert rolled['captureAllowed'] is False
         for operation, status in [('disable', 'disabled'), ('trash', 'trash'), ('restore', 'disabled'), ('enable', 'active')]:
             post(form('wzf_mascot_manage', operation)); assert state()['config']['characters']['legacy_character']['status'] == status
             assert ('legacy_character' in front()['characters']) == (status == 'active')
@@ -412,7 +420,7 @@ def main():
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
     finally:
         server.terminate(); server.wait(timeout=10); logfile.close()
-        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 21, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': len(checks) == 22, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 

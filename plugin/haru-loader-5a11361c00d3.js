@@ -863,6 +863,33 @@
     panel.insertBefore(settings, credit);
     const mobileSize = make('p', '', 'wzf-haru-mobile-size');
     panel.insertBefore(mobileSize, credit);
+    const captureSettings=make('details','','wzf-haru-layout');
+    const captureButton=make('button',t("Download transparent PNG")),captureStatus=make('p');
+    captureStatus.setAttribute('role','status');
+    captureSettings.append(make('summary',t("Character PNG")),make('p',t("Save only the current character canvas on a transparent background.")),captureButton,captureStatus);
+    panel.insertBefore(captureSettings,credit);
+    let pendingCapture=null,captureSequence=0,pngURL=null,pngURLTimer=null;
+    const clearPngURL=()=>{clearTimeout(pngURLTimer);pngURLTimer=null;if(pngURL){URL.revokeObjectURL(pngURL);pngURL=null;}};
+    const cancelPNG=()=>{
+      const request=pendingCapture;pendingCapture=null;captureSequence++;
+      request?.target.cancelCapture?.();clearPngURL();if(request)captureStatus.textContent=t("PNG capture cancelled.");
+    };
+    captureButton.onclick=async()=>{
+      if(pendingCapture||!engine||!allowed()||loading||characters[active].captureAllowed!==true||typeof engine.captureFrame!=='function')return;
+      clearPngURL();
+      const request={target:engine,g:generation,id:active,token:++captureSequence};pendingCapture=request;
+      captureStatus.textContent=t("Preparing PNG…");paint();
+      const current=()=>pendingCapture===request&&captureSequence===request.token&&engine===request.target&&generation===request.g&&active===request.id&&allowed()&&!loading;
+      try{
+        const blob=await request.target.captureFrame();if(!current())return;
+        if(!(blob instanceof Blob)||blob.type!=='image/png'||blob.size>16*1024*1024)throw Error('invalid-png');
+        pngURL=URL.createObjectURL(blob);
+        const link=make('a');link.href=pngURL;link.download='mascot-'+request.id.replace(/[^A-Za-z0-9_-]/g,'').slice(0,80)+'.png';document.body.append(link);link.click();link.remove();
+        pngURLTimer=setTimeout(clearPngURL,1000);
+        captureStatus.textContent=t("PNG download started.");
+      }catch(error){if(current())captureStatus.textContent=error.name==='AbortError'?t("PNG capture cancelled."):t("PNG capture failed. Try again.");}
+      finally{if(pendingCapture===request){pendingCapture=null;paint();}}
+    };
     const accountSettings=make('details','','wzf-haru-layout');
     accountSettings.append(make('summary',t("Account preferences")),make('p',t("Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action.")));
     const accountRead=make('button',t("Read account preferences")),accountSave=make('button',t("Save browser preferences to account")),accountUse=make('button',t("Use account preferences")),accountKeep=make('button',t("Keep browser preferences")),accountStatus=make('p');
@@ -1147,11 +1174,15 @@
       const run = allowed();
       if (!run) {
         endDrag();
+        cancelPNG();
         clearDialogue();
         cancelPreset();
         cancelWelcome();
         cancelExternal();
       }
+      if(loading)cancelPNG();
+      captureButton.disabled=!!pendingCapture||!run||!engine||loading||characters[active].captureAllowed!==true||typeof engine?.captureFrame!=='function';
+      if(characters[active].captureAllowed!==true)captureStatus.textContent=t("PNG download is not enabled for this character.");
       if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
         interruptDiagnostics('hidden-suspended-or-loading');
       controlsDock.hidden = suspensions.size > 0;
@@ -1479,6 +1510,7 @@
       state.textContent = t("Loading cancelled");
     };
     const beginLoad = (id = committed) => {
+      cancelPNG();captureStatus.textContent='';
       clearDialogue();
       interruptDiagnostics('load-started');
       if (diagnosticsEnabled) {
@@ -1502,6 +1534,7 @@
       paint();
     };
     const destroy = () => {
+      cancelPNG();
       endDrag();
       cancelPreset();
       clearDialogue();

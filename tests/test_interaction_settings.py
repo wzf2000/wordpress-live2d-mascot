@@ -173,3 +173,21 @@ class InteractionTests(unittest.TestCase):
     def test_account_duplicate_metadata_rows_never_overwrite(self):
         result=self.account("""$test_metadata[7][wzf_mascot_preference_key()]=[serialize(['revision'=>1,'preferences'=>$preferences]),serialize(['revision'=>1,'preferences'=>$preferences])];wzf_mascot_save_preferences(7,1,$preferences);echo json_encode(['accepted'=>true]);""")
         self.assertFalse(result['ok']);self.assertEqual(result['error'],'account-unavailable')
+
+    def test_capture_requires_explicit_confirmation_and_admin_nonce(self):
+        result=self.php(self.helper.settings_setup()+"""$before=$options[WZF_MASCOT_OPTION];$rejected=false;
+        try{wzf_mascot_save_capture('legacy_character',$version,true,false);}catch(Throwable $e){$rejected=true;}
+        wzf_mascot_save_capture('legacy_character',$version,true,true);$enabled=$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['captureAllowed'];
+        $allowed=false;$permission=false;try{wzf_mascot_save_capture('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),false,false);}catch(Throwable $e){$permission=true;}
+        echo json_encode(['rejected'=>$rejected,'enabled'=>$enabled,'permission'=>$permission]);""")
+        self.assertTrue(result['rejected']);self.assertTrue(result['enabled']);self.assertTrue(result['permission']);self.assertFalse(self.php('wzf_mascot_capture_post();')['ok'])
+
+    def test_capture_permission_is_reset_on_replace_and_rollback(self):
+        replacement=self.helper.replacement_fixture()
+        result=self.php(self.helper.settings_setup()+"""
+        wzf_mascot_save_capture('legacy_character',$version,true,true);
+        wzf_mascot_replace_resource("""+replacement+""",'legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]));$replaced=$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['captureAllowed'];
+        wzf_mascot_save_capture('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),true,true);
+        wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),'rollback');
+        echo json_encode(['replaced'=>$replaced,'rolled'=>$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['captureAllowed']]);""")
+        self.assertFalse(result['replaced']);self.assertFalse(result['rolled'])

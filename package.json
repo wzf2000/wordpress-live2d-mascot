@@ -8,7 +8,8 @@
     "test:dialogue-browser": "node tests/dialogue-browser.cjs",
     "test:movement-browser": "node tests/movement-browser.cjs",
     "test:account-browser": "node tests/account-browser.cjs",
-    "test:selection-browser": "node tests/selection-browser.cjs"
+    "test:selection-browser": "node tests/selection-browser.cjs",
+    "test:capture-browser": "node tests/capture-browser.cjs"
   },
   "devDependencies": {
     "esbuild": "0.25.12",

@@ -76,6 +76,7 @@ function wzf_haru_output() {
             $c['presets'] = wzf_mascot_presets($c['presets'] ?? [], null, null);
             unset($c['presetWarnings'], $c['hitWarnings']);
             $c['hitBindings'] = wzf_mascot_hit_bindings($c['hitBindings'] ?? []);
+            $c['captureAllowed'] = ($c['captureAllowed'] ?? false) === true;
             $thumbnail = wzf_mascot_thumbnail_url($c);
             unset($c['status'], $c['restoreStatus'], $c['thumbnail']);
             if ($thumbnail !== null) $c['thumbnail'] = $thumbnail;

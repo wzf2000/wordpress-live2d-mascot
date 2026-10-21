@@ -1,0 +1,27 @@
+// Controller/download tests with synthetic 2D drawing only. Not real SDK transparency acceptance.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
+(async()=>{
+ const fixture=await startFixture(),browser=await chromium.launch({headless:true,executablePath:process.env.MASCOT_CHROMIUM});
+ const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true}),page=await context.newPage(),out=process.argv[2];if(out)fs.mkdirSync(out,{recursive:true});
+ await context.addInitScript(()=>{localStorage.setItem('wzfl-mascot','shown');localStorage.setItem('wzf-haru-terms','synthetic-v1');localStorage.setItem('wzf-mascot-mobile-v1','enabled');window.__pngURLs={created:[],revoked:[]};const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);URL.createObjectURL=function(blob){const url=create(blob);if(blob.type==='image/png')window.__pngURLs.created.push(url);return url;};URL.revokeObjectURL=function(url){if(window.__pngURLs.created.includes(url))window.__pngURLs.revoked.push(url);return revoke(url);};});
+ const errors=[],downloads=[];page.on('pageerror',error=>errors.push(error.message));page.on('download',download=>downloads.push(download));
+ const ready=()=>page.waitForFunction(()=>window.WZFHaruStatus?.().ready&&!window.WZFHaruStatus().loading),button=name=>page.getByRole('button',{name,exact:true}),capture=()=>button('Download transparent PNG');
+ const panel=async()=>{if(!await page.evaluate(()=>window.WZFHaruStatus().panelOpen))await button('Interact').click();await page.getByText('Character PNG',{exact:true}).click();};
+ const hold=()=>page.evaluate(()=>{window.__mascotFixture.holdCapture=true;}),pending=()=>page.waitForFunction(()=>window.__mascotFixture.pendingCaptures.length===1),release=()=>page.evaluate(()=>{window.__mascotFixture.holdCapture=false;window.__mascotFixture.pendingCaptures.splice(0).forEach(fn=>fn());});
+ const visibility=hidden=>page.evaluate(value=>{Object.defineProperty(document,'hidden',{configurable:true,value});document.dispatchEvent(new Event('visibilitychange'));},hidden);
+ let checks=0;
+ try{
+  await page.clock.install();await page.goto(fixture.origin+'/?mobile=1');await ready();await panel();assert.equal(await capture().isDisabled(),true);assert.equal(downloads.length,0);checks++;
+  await page.goto(fixture.origin+'/?mobile=1&capture=1');await ready();await panel();
+  const promised=page.waitForEvent('download');await capture().click();await page.clock.runFor(100);const download=await promised;assert.equal(download.suggestedFilename(),'mascot-alpha.png');
+  const bytes=fs.readFileSync(await download.path());assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.equal(bytes.readUInt32BE(16),360);assert.equal(bytes.readUInt32BE(20),540);
+  const pixels=await page.evaluate(async raw=>{const bitmap=await createImageBitmap(new Blob([new Uint8Array(raw)],{type:'image/png'}));const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0);const alpha=[ctx.getImageData(0,0,1,1).data[3],ctx.getImageData(100,200,1,1).data[3]];bitmap.close();return alpha;},[...bytes]);assert.deepEqual(pixels,[0,255]);if(out)await download.saveAs(path.join(out,'synthetic-character.png'));
+  await page.clock.runFor(1100);assert.deepEqual(await page.evaluate(()=>window.__pngURLs.created),await page.evaluate(()=>window.__pngURLs.revoked));checks++;
+  await hold();await capture().click();await page.clock.runFor(100);await pending();assert.equal(await capture().isDisabled(),true);const count=await page.evaluate(()=>window.__mascotFixture.events.filter(event=>event.type==='capture').length);await capture().evaluate(el=>el.onclick());assert.equal(await page.evaluate(()=>window.__mascotFixture.events.filter(event=>event.type==='capture').length),count);
+  await visibility(true);await release();await page.clock.runFor(100);assert.equal(downloads.length,1);await visibility(false);await ready();checks++;
+  await hold();await capture().click();await page.clock.runFor(100);await pending();await page.getByLabel('Choose character',{exact:true}).selectOption('beta');await button('Preview character').click();await page.waitForFunction(()=>window.WZFHaruStatus().character==='beta'&&!window.WZFHaruStatus().loading);await release();await page.clock.runFor(100);assert.equal(downloads.length,1);assert.equal(await capture().isDisabled(),true);checks++;
+  await button('Cancel preview').click();await page.waitForFunction(()=>window.WZFHaruStatus().character==='alpha'&&!window.WZFHaruStatus().loading);await hold();await capture().click();await page.clock.runFor(100);await pending();await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await release();await page.clock.runFor(100);assert.equal(downloads.length,1);await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));await ready();checks++;
+  if(out)await page.screenshot({path:path.join(out,'capture-desktop.png')});await page.setViewportSize({width:390,height:844});if(out)await page.screenshot({path:path.join(out,'capture-mobile.png')});assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks,syntheticOnly:true,realRenderingTested:false}));
+ }finally{await context.close();await browser.close();await fixture.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

@@ -43,6 +43,7 @@ function wzf_mascot_manage_character($id, $version, $operation) {
                 $rollback['presets'] = wzf_mascot_current_presets($previous);
                 $rollback['presetWarnings'] = is_array($previous['presets']) ? max(0, count($previous['presets']) - count($rollback['presets'])) : 1;
             } else { unset($rollback['presets'], $rollback['presetWarnings']); }
+            $rollback['captureAllowed'] = false;
             $rollback['hitBindings'] = wzf_mascot_hit_bindings($previous['hitBindings'] ?? [], wzf_mascot_character_hit_names($rollback), $rollback['presets'] ?? []);
             $rollback['hitWarnings'] = is_array($previous['hitBindings'] ?? null) ? max(0,count($previous['hitBindings'])-count($rollback['hitBindings'])) : 0;
             wzf_mascot_character_runtime_files($rollback);
@@ -89,6 +90,7 @@ function wzf_mascot_replace_resource($file, $id, $version, $reset = false) {
         $new = $new_catalog['motions'];
         $mapped = wzf_mascot_remap_motions($c, $old, $new, $model['idle'], $reset);
         $mapped = array_replace($mapped, wzf_mascot_remap_presets($c, $old, $new_catalog));
+        $mapped['captureAllowed'] = false;
         $mapped['hitBindings'] = wzf_mascot_hit_bindings($c['hitBindings'] ?? [], wzf_mascot_hit_names(wzf_mascot_json($model['files'][$model['file']])), $mapped['presets']);
         $mapped['hitWarnings'] = is_array($c['hitBindings'] ?? null) ? max(0,count($c['hitBindings'])-count($mapped['hitBindings'])) : 0;
         $u = wzf_mascot_uploads(true);

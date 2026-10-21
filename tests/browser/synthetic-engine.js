@@ -20,14 +20,18 @@
       let paused = true, disposed = false, activeMotion = character.idle,
         activeExpression = null, frames = 0, timer = null;
       const channels = { motion: 0, expression: 0 };
+      let capture=null;
+      const cancelCapture=()=>{if(!capture)return false;const request=capture;capture=null;request.reject(new DOMException('Synthetic cancellation','AbortError'));return true;};
       const draw = () => {
         if (paused || disposed) return;
         if (!fixture.noFrames) frames++;
         const context = canvas.getContext('2d');
-        context.fillStyle = '#edf4fa'; context.fillRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0,0,canvas.width,canvas.height);
+        context.fillStyle = '#edf4fa'; context.fillRect(15,15,canvas.width-30,canvas.height-30);
         context.fillStyle = '#203c54'; context.font = '22px sans-serif';
         context.fillText('Synthetic fixture', 15, 45);
         context.fillText(character.name, 15, 80);
+        if(capture&&!capture.started){const request=capture;request.started=true;const finish=()=>canvas.toBlob((blob)=>{if(capture===request){capture=null;request.resolve(blob);}},'image/png');if(fixture.holdCapture)fixture.pendingCaptures.push(finish);else finish();}
         timer = requestAnimationFrame(draw);
       };
       const candidate = {
@@ -39,7 +43,9 @@
           getParameter: () => { fixture.gpuQueries++; return 'Synthetic SwiftShader'; } },
         state: () => ({ paused, disposed, activeMotion, activeExpression, frames,
           renderMsAvg: 0.1, renderMsMax: 0.2, renderMsTotal: frames * 0.1 }),
-        pause() { paused = true; cancelAnimationFrame(timer); },
+        captureFrame(){if(capture||paused||disposed||character.captureAllowed!==true)return Promise.reject(Error('Synthetic capture unavailable'));record({type:'capture',id});return new Promise((resolve,reject)=>{capture={resolve,reject,started:false};});},
+        cancelCapture,
+        pause() { cancelCapture(); paused = true; cancelAnimationFrame(timer); },
         resume() { if (paused && !disposed) { paused = false; timer = requestAnimationFrame(draw); } },
         cancelPending(type) { channels[type]++; record({ type: 'cancel', id, channel: type }); },
         idleNow() { this.cancelPending('motion'); activeMotion = character.idle; },
@@ -62,6 +68,7 @@
           return true;
         },
         destroy() {
+          cancelCapture();
           disposed = this.disposed = true; paused = true;
           channels.motion++; channels.expression++; cancelAnimationFrame(timer);
           record({ type: 'destroy', id });

@@ -164,6 +164,9 @@ msgstr "允许读者在手机浏览器单独开启看板娘"
 msgid "Allow the mascot on the frontend"
 msgstr "允许前台显示看板娘"
 
+msgid "Allow transparent PNG download for this character"
+msgstr "允许下载此角色的透明 PNG"
+
 msgid "Alternative lines"
 msgstr "备选台词"
 
@@ -328,6 +331,12 @@ msgstr "角色 ID 或配置结构无效。"
 
 msgid "Character ID, name or credit is invalid."
 msgstr "角色 ID、名称或署名无效。"
+
+msgid "Character PNG"
+msgstr "角色 PNG"
+
+msgid "Character PNG download"
+msgstr "角色 PNG 下载"
 
 msgid "Character capacity summary"
 msgstr "角色容量摘要"
@@ -620,6 +629,9 @@ msgstr "下载最新盘点 JSON"
 msgid "Download starts a new bounded metadata scan and saves the JSON only to your device. It may differ from an earlier inventory. Nothing is saved on the server or sent to another service."
 msgstr "下载会重新执行受限元数据扫描，仅将 JSON 保存到本机，可能与先前的盘点不同。服务器不会保存报告，也不会向其他服务发送数据。"
 
+msgid "Download transparent PNG"
+msgstr "下载透明 PNG"
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr "每个合计对同一相对文件路径只计算一次。当前、上一版、缩略图及不同角色之间可能共用路径，不能将各项直接相加。硬链接仍按路径计数；这些是逻辑大小，不代表物理磁盘占用。"
 
@@ -652,6 +664,9 @@ msgstr "晚间"
 
 msgid "Existing resource configuration is invalid."
 msgstr "现有资源配置无效。"
+
+msgid "Explicitly confirm that PNG capture is permitted for this character."
+msgstr "请明确确认此角色允许保存 PNG。"
 
 msgid "Expression"
 msgstr "表情"
@@ -751,6 +766,9 @@ msgstr "命中区域绑定无效。"
 
 msgid "Hit area bindings saved."
 msgstr "命中区域绑定已保存。"
+
+msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
+msgstr "我已核对资源条款，并明确允许下载角色 PNG。"
 
 msgid "I have the right to use the new resources on this site and have read their source licenses and terms."
 msgstr "我有权在本站使用新资源，并已阅读来源许可与使用条件。"
@@ -1016,6 +1034,9 @@ msgstr "已观察路径（仅管理员可见）"
 msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
 msgstr "请从官方 SDK 取得指定 Web 5 R5 的 live2dcubismcore.min.js。不要通过重命名替代 Core 版本。现有资源已保留。"
 
+msgid "Off by default for every character. Enable only when the resource terms permit readers to save a transparent character PNG. Updating or rolling back model resources disables this permission until you explicitly confirm again."
+msgstr "每个角色默认关闭。仅在资源条款允许访客保存透明角色 PNG 时启用。更新或回退模型资源会关闭此许可，需要重新明确确认。"
+
 msgid "Off by default. After mobile display is allowed, each browser must still consent and opt in separately. Desktop preferences never automatically enable mobile animation. Reduced motion, account display permission and reading suspension always apply."
 msgstr "默认关闭。允许手机显示后，每个浏览器仍需单独同意并开启，已有桌面显示偏好不会自动开启手机动画。减少动画、账号显示权限和阅读暂停规则始终有效。"
 
@@ -1046,6 +1067,27 @@ msgstr "仅使用本地纯文本。每行一条备选，每个事件最多 8 条
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
 msgstr "自愿同步角色、收藏与布局。显示、条款和移动端同意仅保留在此浏览器。只有主动选择操作才读取或保存账号偏好。"
 
+msgid "PNG capture cancelled."
+msgstr "PNG 保存已取消。"
+
+msgid "PNG capture failed. Try again."
+msgstr "PNG 保存失败，请重试。"
+
+msgid "PNG capture is unavailable for this character."
+msgstr "此角色当前无法保存 PNG。"
+
+msgid "PNG capture settings are invalid."
+msgstr "PNG 保存设置无效。"
+
+msgid "PNG capture settings saved."
+msgstr "PNG 保存设置已保存。"
+
+msgid "PNG download is not enabled for this character."
+msgstr "此角色未启用 PNG 下载。"
+
+msgid "PNG download started."
+msgstr "已开始下载 PNG。"
+
 msgid "Partial: %s observed bytes"
 msgstr "部分观察值：%s 字节"
 
@@ -1066,6 +1108,9 @@ msgstr "姿态"
 
 msgid "Position and size"
 msgstr "位置与大小"
+
+msgid "Preparing PNG…"
+msgstr "正在生成 PNG…"
 
 msgid "Preset expression"
 msgstr "预设表情"
@@ -1289,6 +1334,9 @@ msgstr "采样已中断。"
 msgid "Sampling; hiding, reading suspension or character switching will interrupt it."
 msgstr "正在采样；收起、阅读暂停或切换角色会中断。"
 
+msgid "Save PNG permission"
+msgstr "保存 PNG 许可"
+
 msgid "Save area bindings"
 msgstr "保存区域绑定"
 
@@ -1306,6 +1354,9 @@ msgstr "保存互动预设"
 
 msgid "Save mobile settings"
 msgstr "保存移动端设置"
+
+msgid "Save only the current character canvas on a transparent background."
+msgstr "仅保存当前角色画布，背景透明。"
 
 msgid "Save thumbnail"
 msgstr "保存缩略图"
