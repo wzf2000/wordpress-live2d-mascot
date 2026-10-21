@@ -3,7 +3,7 @@
 Plugin Name: WordPress Live2D Mascot
 Plugin URI: https://github.com/wzf2000/wordpress-live2d-mascot
 Description: 为 WordPress 提供看板娘互动；管理员自行导入有权使用的 Core 与模型，插件不附带这些资源。
-Version: 3.9.0-rc.1
+Version: 3.9.0-rc.2
 Author: wzf2000
 Author URI: https://github.com/wzf2000
 License: GPL-2.0-or-later
@@ -96,9 +96,12 @@ function wzf_haru_output() {
     } catch (Throwable $e) { return; }
     $base=plugins_url('',__FILE__).'/';
     $first=reset($characters);
-    $config=['version'=>'3.9.0-rc.1','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
+    $config=['version'=>'3.9.0-rc.2','mobileEnabled'=>($resources['mobileEnabled'] ?? false) === true,'mobilePauseOnInput'=>($resources['mobilePauseOnInput'] ?? true) !== false,'characters'=>$characters,'core'=>$uploads['url'].$core,'engine'=>$base.$assets['engine'],'model'=>$first['root'],'shaders'=>$base.$assets['shaders'],'terms'=>$base.$assets['terms'],'termsVersion'=>'2026-10-08-user-import-v1'];
     $config = array_merge($config, $presentation);
     $config['i18n'] = wzf_mascot_frontend_translations();
+    // This flag exposes only an optional local tool, never server data or authority.
+    // Logged-in HTML must bypass shared page caches (WordPress's normal contract).
+    $config['diagnosticsAllowed'] = current_user_can('manage_options') === true;
     $config['accountEndpoint'] = admin_url('admin-ajax.php');
     echo '<link rel="stylesheet" href="'.esc_url($base.$assets['css']).'">';
     echo '<script id="wzf-live2d-config" type="application/json">'.wp_json_encode($config,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>';

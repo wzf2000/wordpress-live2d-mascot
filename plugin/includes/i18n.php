@@ -37,6 +37,11 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Occasional chatter'=>__('Occasional chatter', 'live2d-show'),
+        'Chat once'=>__('Chat once', 'live2d-show'),
+        'Say hello'=>__('Say hello', 'live2d-show'),
+        'More interactions and settings'=>__('More interactions and settings', 'live2d-show'),
+        'Change character'=>__('Change character', 'live2d-show'),
         'Download transparent PNG'=>__('Download transparent PNG', 'live2d-show'),
         'Character PNG'=>__('Character PNG', 'live2d-show'),
         'Save only the current character canvas on a transparent background.'=>__('Save only the current character canvas on a transparent background.', 'live2d-show'),

@@ -4,7 +4,7 @@
 <p align="center">A WordPress Live2D controller with character previews, local favorites and reading-aware interaction.</p>
 <p align="center"><a href="#开始使用">开始使用</a> · <a href="#准备模型-zip">模型准备</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.7.0">下载 3.7.0</a> · <a href="#许可与资源来源">许可</a></p>
 
-**本分支候选：3.9.0-rc.1，尚未发布或部署。** 新增角色台词、快捷互动、拖动停靠、视线与模型区域互动、站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG，并包含 3.8 候选维护改进。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。下方稳定下载仍为 3.7.0。
+**本分支候选：3.9.0-rc.2，尚未发布或部署。** 新增角色台词、快捷互动、拖动停靠、视线与模型区域互动、站点操作通知、自愿账号偏好、收藏随机／最近角色和透明 PNG，并包含 3.8 候选维护改进。操作与接入见[互动与偏好指南](docs/INTERACTIONS.md)。下方稳定下载仍为 3.7.0。
 
 **当前发行版：3.7.0。** 新增后台搜索与状态筛选、中英文界面、只读资源盘点和离线采样汇总。插件提供互动功能，Core 与模型由站点管理员自行取得并导入。首次安装没有内置角色；完成资源设置后，读者可以自行显示或收起看板娘。
 
@@ -277,7 +277,7 @@ Character capacity is aggregated during the same bounded metadata scan, independ
 
 管理员在设置页点击 **检查已安装资源**，另外只读核对 Core SHA256、运行引用、catalog、布局与条款配置。不会修改选项或模型，不代表已通过画面验收。
 
-前台的 **本地诊断** 独立于角色就绪状态，加载失败时也能打开。展开不会采集；点击 **开启本地诊断** 后才读取当前 WebGL / GPU renderer，并在内存中记录白名单阶段及错误码。请先开启诊断，再显示或重试角色，才能记录完整加载时间。`readyMs` 是引擎初始化完成时间，`firstFrameMs` 必须在实际 `frames > 0` 后记录；未观察到首帧时留空并注明原因。
+前台的 **本地诊断** 仅对具备 `manage_options` 权限的管理员创建入口；访客和普通账号不采集。登录HTML须绕过共享页面缓存。此flag仅控制本地工具，不是服务端权限凭证。诊断独立于角色就绪状态，加载失败时也能打开。展开不会采集；点击 **开启本地诊断** 后才读取当前 WebGL / GPU renderer，并在内存中记录白名单阶段及错误码。请先开启诊断，再显示或重试角色，才能记录完整加载时间。`readyMs` 是引擎初始化完成时间，`firstFrameMs` 必须在实际 `frames > 0` 后记录；未观察到首帧时留空并注明原因。
 
 **采样 3 秒** 使用采样期间实际新增帧数和经过时间计算 FPS；收起、阅读暂停、后台标签或切换角色会中断并标记窗口。`cpuDrawMsAvg` 是此窗口 CPU 侧绘制调用耗时，`engineLifetimeCpuDrawMsMax` 与 `engineStats.renderMsAvg/Max` 为引擎累计 CPU 侧统计，均不是 GPU 执行时间。每个采样窗口记录自己的角色 ID 和环境；切换后保留的旧窗口不会重新归属到新角色。预览失败与恢复原角色分别记录为加载 attempt，包含请求／实际显示角色、失败角色和 fallback 标记。软件 renderer 标识只是字符串启发式判断；未提供 renderer 时为 `null`。这些数据不能代替真实硬件或不同模型的画面测试。
 
@@ -297,7 +297,7 @@ Character capacity is aggregated during the same bounded metadata scan, independ
 
 以下是待管理员执行的实机流程，文档和合成 CI 不表示已经完成真机验收。准备有合法真实资源的隔离站；移动默认关闭，手机测试须由管理员在该隔离站另行开启，读者仍需自行同意并开启。不要把桌面模拟手机尺寸或软件 WebGL 的结果当作 Android／iOS 或真实桌面 GPU 验收。
 
-1. 分别准备真实桌面 GPU、Android、iOS。记录插件版本、浏览器及版本、系统、设备／GPU、角色 ID；选定同一页面、视口、缩放和网络条件，每个角色保持一致。手机记录竖屏／横屏实际视口、安全区和软键盘状态。
+1. 以具备 `manage_options` 权限的管理员账号登录隔离站前台（访客和普通账号没有本地诊断入口）。分别准备真实桌面 GPU、Android、iOS。记录插件版本、浏览器及版本、系统、设备／GPU、角色 ID；选定同一页面、视口、缩放和网络条件，每个角色保持一致。手机记录竖屏／横屏实际视口、安全区和软键盘状态。
 2. 每轮先收起角色，再重新打开页面，避免加载早于诊断授权；打开 **本地诊断 → 开启本地诊断** 后再点击显示并加载角色。开启前不会采集 GPU 信息；仅当前页面内存保存。先做冷加载 3 次（清除此隔离站相关浏览器资源缓存，再重新开启诊断），再做暖加载 3 次（保留缓存），分别下载诊断 JSON 并标记轮次。避免把清缓存造成的网络差异混为渲染差异。
 3. 每次就绪后点击 **连续采样 3 组**，等待 3/3 完成，再 **下载全部已保存窗口**。也可保留原单次 **采样 3 秒** 操作；最多保留最近 20 窗口，刷新或重新开启诊断前先下载。记录 `readyMs`、实际首帧 `firstFrameMs`、FPS、CPU 绘制统计、renderer 及是否软件 renderer；被切换／暂停／后台中断的窗口单列，未观察到首帧的字段保持空值。
 4. 连续切换／预览角色、播放动作／表情、收起再显示；打开阅读面板后关闭，切到后台再返回。检查原选择、收藏、暂停原因和恢复画面。桌面用键盘完成控件操作；手机打开外部输入框和软键盘，检查暂停及结束后的恢复，再测试旋转、安全区和面板滚动。
@@ -307,7 +307,7 @@ JSON 只在点击下载时保存在本机，无自动采集、自动上传或远
 
 可直接保留批次 JSON 交给维护者离线整理，无需先手写 manifest。自行处理时运行 `python3 tools/diagnostic_samples.py --unpack-batch batch.json --out new-directory`，先校验再生成固定文件名的 schema 1 窗口和 `runs.json`。模板默认 `physicalDevice=false`、`visualCheck=not-run`，设备、系统／浏览器版本、平台、缓存、场景与视觉结果须实际观察后填写；解包成功不代表验收。安全解包需 Linux/macOS，输入最多 2 MiB／20 窗口，拒绝软链接和已有输出目录；Windows 浏览器可正常采样并交回 JSON。原 manifest 汇总命令继续可用。详见设备文档。
 
-For physical sampling, enable diagnostics explicitly before showing a character, then choose **Sample 3 windows** and download all saved windows after the sequence completes. Stop sampling, hiding, switching, reading suspension or backgrounding interrupts the active window and stops the sequence; returning never resumes it automatically. The page retains the latest 20 frozen windows and shows replacement counts. **Stop recording** preserves downloads; enabling again starts a new random batch and clears saved windows. Single-report JSON stays schema 1 and downloads the last saved snapshot, or current state before any window exists. Batch files can be handed directly to a maintainer, or unpacked locally with `--unpack-batch ... --out NEW_DIRECTORY`. Fill real device/OS/browser versions and conditions manually; defaults declare no physical-device or visual pass. Check both orientations, keyboards, background/resume and at least 15 minutes of residence. CPU timings and synthetic browser tests establish no GPU improvement or physical-device acceptance.
+For physical sampling, sign in as an administrator with `manage_options` (guests and ordinary accounts have no diagnostic entry), then enable diagnostics explicitly before showing a character, then choose **Sample 3 windows** and download all saved windows after the sequence completes. Stop sampling, hiding, switching, reading suspension or backgrounding interrupts the active window and stops the sequence; returning never resumes it automatically. The page retains the latest 20 frozen windows and shows replacement counts. **Stop recording** preserves downloads; enabling again starts a new random batch and clears saved windows. Single-report JSON stays schema 1 and downloads the last saved snapshot, or current state before any window exists. Batch files can be handed directly to a maintainer, or unpacked locally with `--unpack-batch ... --out NEW_DIRECTORY`. Fill real device/OS/browser versions and conditions manually; defaults declare no physical-device or visual pass. Check both orientations, keyboards, background/resume and at least 15 minutes of residence. CPU timings and synthetic browser tests establish no GPU improvement or physical-device acceptance.
 
 ### 本地联动 API v1
 

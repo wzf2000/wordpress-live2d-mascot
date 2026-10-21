@@ -32,7 +32,7 @@
         context.fillText('Synthetic fixture', 15, 45);
         context.fillText(character.name, 15, 80);
         if(capture&&!capture.started){const request=capture;request.started=true;const finish=()=>canvas.toBlob((blob)=>{if(capture===request){capture=null;request.resolve(blob);}},'image/png');if(fixture.holdCapture)fixture.pendingCaptures.push(finish);else finish();}
-        timer = requestAnimationFrame(draw);
+        if (!fixture.freezeDrawing) timer = requestAnimationFrame(draw);
       };
       const candidate = {
         catalog, disposed: false,

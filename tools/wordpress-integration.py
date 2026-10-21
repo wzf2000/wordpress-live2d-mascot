@@ -175,8 +175,8 @@ def main():
 
     def state(): return json.loads(wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode='state'))
     def fixture(mode): return wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode=mode)
-    def front():
-        status, html = request(anonymous, '/'); assert status == 200
+    def front(opener=None):
+        status, html = request(opener or anonymous, '/'); assert status == 200
         m = re.search(r'<script id="wzf-live2d-config"[^>]*>(.*?)</script>', html, re.S)
         return json.loads(m[1]) if m else None
     def form(action, operation=None, character='legacy_character'):
@@ -218,6 +218,10 @@ def main():
         assert 'fixture' in state()['config']['characters']; record('real multipart import with administrator nonce')
         fixture('seed'); original = state()['config']; snapshot = lab / 'snapshot.json'; snapshot.write_text(json.dumps(original)); env['MASCOT_CI_SNAPSHOT'] = str(snapshot)
         assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
+        assert front()['diagnosticsAllowed'] is False
+        assert front(reader)['diagnosticsAllowed'] is False
+        assert front(admin)['diagnosticsAllowed'] is True
+        record('real HTTP guest/subscriber/admin diagnostics flag follows manage_options')
         assert front()['mobileEnabled'] is False; record('legacy IDs, maintained extra action, mobile default and server output')
         def listed(html):
             match = re.search(r'<table class="widefat striped">.*?<tbody>(.*?)</tbody>', html, re.S)

@@ -393,6 +393,7 @@ class ImporterTests(unittest.TestCase):
     def test_admin_and_profile_render_are_scoped_escaped_and_readonly(self):
         report=self.php(self.settings_setup()+"""
         function admin_url($s){return '/wp-admin/'.$s;}
+        function wp_json_encode($value,$flags=0){return json_encode($value,$flags);}
         function esc_url($s){return htmlspecialchars($s,ENT_QUOTES);}
         function esc_attr($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
         function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}

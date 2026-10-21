@@ -1,3 +1,9 @@
+
+const expandNavigation = async (page) => {
+ for (const selector of ['.wzf-haru-character-settings', '.wzf-haru-more-settings']) {
+  const details=page.locator(selector);if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ }
+};
 // Whole shipped loader/CSS in a real local browser. Synthetic engine contract;
 // never a Cubism SDK/model, real GPU, physical mobile or licensing acceptance.
 const assert = require('node:assert/strict');
@@ -38,7 +44,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
     await wait(page, { ready: true, loading: false, paused: false });
   };
   const interact = async (page) => {
-    if (!(await status(page)).panelOpen) await page.getByRole('button', { name: 'Interact', exact: true }).click();
+    if (!(await status(page)).panelOpen) await page.getByRole('button', { name: 'Interact', exact: true }).click();await expandNavigation(page);
     await page.locator('#wzf-haru-panel').waitFor({ state: 'visible' });
   };
   const suspend = (page, source, suspended) => page.evaluate(({ source, suspended }) => {
@@ -65,6 +71,15 @@ if (output) fs.mkdirSync(output, { recursive: true });
     });
     context.on('page', (page) => page.on('pageerror', (error) => errors.push(error.message)));
     const page = await context.newPage(); page.setDefaultTimeout(7000);
+    await run('guest diagnostics cannot be enabled by URL or local storage', async () => {
+      await loadPage(page,'?diagnostics=1');
+      await page.evaluate(()=>localStorage.setItem('wzf-mascot-diagnostics','enabled'));
+      assert.equal(await page.locator('.wzf-haru-diagnostics').count(),0);
+      assert.equal(await page.evaluate(()=>window.__mascotFixture.gpuQueries),0);
+      await loadPage(page,'?role=subscriber');
+      assert.equal(await page.locator('.wzf-haru-diagnostics').count(),0);
+      assert.equal(await page.evaluate(()=>window.__mascotFixture.gpuQueries),0);
+    });
     await run('consent gates all runtime requests; cancel consent keeps resources unloaded', async () => {
       await loadPage(page); assert.equal(heavy().length, 0);
       assert.equal(await page.evaluate(() => !!window.Live2DCubismCore || !!window.WZFHaruEngine), false);
@@ -105,6 +120,8 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await search.dispatchEvent('compositionend', { data: '測' });
       await search.dispatchEvent('keydown', { key: 'Escape', isComposing: true, bubbles: true });
       assert.equal((await status(page)).panelOpen, true);
+      await page.keyboard.press('Escape'); assert.equal((await status(page)).panelOpen,true);
+      assert.equal(await page.locator('.wzf-haru-character-settings').evaluate(el=>el.open),false);
       await page.keyboard.press('Escape'); await wait(page, { panelOpen: false });
       assert.equal(await page.getByRole('button', { name: 'Interact', exact: true }).evaluate((node) => node === document.activeElement), true);
       assert.equal((await status(page)).committed, 'beta');
@@ -232,7 +249,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
     await run('diagnostic opt-in, 3-window sequence, immutable snapshots and pause/switch/user-stop cancellation', async () => {
       await page.evaluate(() => localStorage.setItem('wzfl-mascot', 'hidden'));
       diagnosticPage = await context.newPage(); diagnosticPage.setDefaultTimeout(7000);
-      await diagnosticPage.clock.install(); await loadPage(diagnosticPage);
+      await diagnosticPage.clock.install(); await loadPage(diagnosticPage, '?role=administrator');
       assert.equal(await diagnosticPage.evaluate(() => window.__mascotFixture.gpuQueries), 0);
       await openDiagnostics(diagnosticPage);
       await diagnosticPage.getByRole('button', { name: 'Enable local diagnostics', exact: true }).click();
@@ -309,7 +326,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await target.setViewportSize({ width: 390, height: 844 }); await target.clock.install();
       // Mobile opt-in is explicitly seeded from this context's previous consent;
       // this is a controller fixture, never a physical phone measurement.
-      await loadPage(target, '?mobile=1');
+      await loadPage(target, '?mobile=1&role=administrator');
       await target.locator('.wzfl-mascot-toggle').click(); // Hide cached mobile character.
       await target.reload(); await wait(target, { ready: false });
       await target.evaluate(() => { window.__mascotFixture.noFrames = true; });
@@ -361,7 +378,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await shot(target,'dialogue-mobile'); assert.equal(await target.evaluate(() => document.documentElement.scrollWidth > innerWidth),false);
       await target.close();
     });
-    await context.close(); report.complete = checks.length === 12;
+    await context.close(); report.complete = checks.length === 13;
     assert.equal(report.complete, true);
   } catch (error) {
     report.failure = String(error.message); throw error;

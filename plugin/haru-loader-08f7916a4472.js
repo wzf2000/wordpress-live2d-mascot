@@ -109,10 +109,13 @@
       if (typeof line !== 'string' || !line.trim() || new TextEncoder().encode(line).length > 300 || /[\u0000-\u001f\u007f]/.test(line)) return false;
       clearDialogue();
       if (!bubble) return false;
+      lastDialogue = performance.now();
+      cancelIdle();
       bubble.textContent = line;
       bubble.hidden = false;
       placeDialogue();
       bubbleTimer = setTimeout(clearDialogue, Math.max(4500,Math.min(12000,[...line].length*40)));
+      syncIdle();
       return true;
     };
     const speak = (event, proactive = false) => {
@@ -228,7 +231,8 @@
       windowSequence = 0,
       sampleSeries = null,
       seriesMessage = '';
-    const diagnostics = make('details', '', 'wzf-haru-diagnostics');
+    const diagnosticsAllowed = config.diagnosticsAllowed === true;
+    const diagnostics = diagnosticsAllowed ? make('details', '', 'wzf-haru-diagnostics') : document.createDocumentFragment();
     diagnostics.append(make('summary', t("Local diagnostics")));
     const diagnosticBody = make('div', '', 'wzf-haru-diagnostic-body');
     const diagnosticEnable = make('button', t("Enable local diagnostics")),
@@ -259,7 +263,7 @@
       diagnosticStatus,
     );
     diagnostics.append(diagnosticBody);
-    document.body.append(diagnostics);
+    if (diagnosticsAllowed) document.body.append(diagnostics);
     const diagnosticUpdate = () => {
       diagnosticEnable.textContent = diagnosticsEnabled ? t("Stop recording") : t("Enable local diagnostics");
       diagnosticSample.disabled =
@@ -494,6 +498,7 @@
       firstFrameWatch.timer = setTimeout(observe, 0);
     };
     diagnosticEnable.onclick = () => {
+      if (!diagnosticsAllowed) return;
       if (diagnosticsEnabled) {
         interruptDiagnostics('user-stopped');
         diagnosticsEnabled = false;
@@ -593,7 +598,8 @@
       document.body.append(button);
     }
     const controlsDock = make('div', '', 'wzf-haru-dock');
-    controlsDock.append(diagnostics, button);
+    if (diagnosticsAllowed) controlsDock.append(diagnostics);
+    controlsDock.append(button);
     document.body.append(controlsDock);
     const panel = make('section', '', 'wzf-haru-controls');
     panel.id = 'wzf-haru-panel';
@@ -682,7 +688,7 @@
       candidateImage.alt = character ? t("Thumbnail of %1$s", character.name) : '';
       const src = thumbnailSource(character),
         key = id + ':' + (src || '');
-      if (!panelOpen || panel.hidden || !src) {
+      if (!panelOpen || panel.hidden || !characterSettings.open || !src) {
         candidateImage.onload = candidateImage.onerror = null;
         candidateImage.removeAttribute('src');
         candidateImage.hidden = true;
@@ -787,6 +793,55 @@
       try { localStorage.setItem('wzf-mascot-dialogue-v1', dialogueMode); } catch {}
       paint();
     };
+    let idleEnabled = false, idleTimer = null, idleTimerCharacter = null;
+    try { idleEnabled = localStorage.getItem('wzf-mascot-idle-v1') === 'enabled'; } catch {}
+    const idleHistory = [], idlePools = new Map();
+    const idleChoice = make('input'), idleLabel = make('label', '', 'wzf-haru-favorites-filter');
+    idleChoice.type='checkbox'; idleChoice.checked=idleEnabled;
+    idleLabel.append(idleChoice, document.createTextNode(t("Occasional chatter")));
+    const idleLines = () => {
+      const rule=characters[active].dialogue?.idle;
+      return rule?.enabled === true && Array.isArray(rule.lines)
+        ? [...new Set(rule.lines.filter(line=>typeof line==='string' && line.trim() && new TextEncoder().encode(line).length<=300))] : [];
+    };
+    const idleBusy = () => manualPending.size || touchPending || pendingPreset || externalPending || dragState;
+    const cancelIdle = () => { clearTimeout(idleTimer); idleTimer=null; idleTimerCharacter=null; };
+    const idleEligible = () => idleEnabled && dialogueMode==='auto' && allowed() && engine && !loading && !preview && !panelOpen && !idleBusy() && idleLines().length;
+    const idleSpeak = (automatic=false) => {
+      if (dialogueMode==='silent' || !allowed() || !engine || loading || preview || idleBusy()) return false;
+      const lines=idleLines(), now=performance.now();
+      while(idleHistory.length && now-idleHistory[0]>=600000)idleHistory.shift();
+      if(!lines.length || now-lastDialogue<15000 || (automatic && idleHistory.length>=3))return false;
+      let pool=idlePools.get(active);
+      const key=JSON.stringify(lines);
+      if(!pool || pool.key!==key) { pool={key,bag:[],last:null}; idlePools.set(active,pool); }
+      if(!pool.bag.length) {
+        pool.bag=[...lines];
+        for(let i=pool.bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool.bag[i],pool.bag[j]]=[pool.bag[j],pool.bag[i]];}
+        if(pool.bag.length>1 && pool.bag.at(-1)===pool.last)[pool.bag[0],pool.bag[pool.bag.length-1]]=[pool.bag.at(-1),pool.bag[0]];
+      }
+      const line=pool.bag.at(-1);
+      if(!showLine(line,automatic))return false;
+      pool.bag.pop();pool.last=line;lastDialogue=now;
+      if(automatic)idleHistory.push(now);
+      return true;
+    };
+    const syncIdle = () => {
+      if(!idleEligible()){cancelIdle();return;}
+      if(idleTimer && idleTimerCharacter===active)return;
+      cancelIdle();
+      const seconds=characters[active].dialogue.idle.cooldown;
+      const delay=Number.isInteger(seconds)&&seconds>=90&&seconds<=1800?seconds:120;
+      idleTimerCharacter=active;
+      idleTimer=setTimeout(()=>{
+        idleTimer=null;idleTimerCharacter=null;
+        const focused=document.activeElement;
+        const input=focused?.matches('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+        if(idleEligible() && !input && !bubble?.contains(focused) && !idleBusy())idleSpeak(true);
+        syncIdle();
+      },delay*(1+Math.random())*1000);
+    };
+    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;try{localStorage.setItem('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');}catch{}syncIdle();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -794,40 +849,31 @@
     const searchRow = make('div', '', 'wzf-haru-search-row');
     searchRow.append(characterSearch, clearSearch);
     const dialogueSettings = make('details', '', 'wzf-haru-layout');
-    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice);
+    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice, idleLabel);
     const pointerSettings = make('details', '', 'wzf-haru-layout');
     const gazeChoice = make('input'), gazeLabel = make('label', '', 'wzf-haru-favorites-filter'), pointerStatus = make('p');
     gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
     gazeLabel.append(gazeChoice,document.createTextNode(t("Follow pointer gently")));
     pointerSettings.append(make('summary',t("Pointer interactions")),gazeLabel,pointerStatus);
     gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();try{localStorage.setItem('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');}catch{}};
-    panel.append(
-      label,
-      searchRow,
-      searchResults,
-      characterSelect,
-      randomFavorite,
-      recentSettings,
-      candidatePreview,
-      previewButton,
-      favoritesLabel,
-      favoriteButton,
-      favoritesState,
-      commitButton,
-      cancelPreview,
-      presetControls,
-      helpButton,
-      motion,
-      play,
-      stopMotion,
-      expression,
-      face,
-      resetFace,
-      dialogueSettings,
-      pointerSettings,
-      credit,
-      state,
-    );
+    const characterSettings = make('details', '', 'wzf-haru-layout wzf-haru-character-settings');
+    characterSettings.append(make('summary', t("Change character")), searchRow, searchResults,
+      characterSelect, randomFavorite, recentSettings, candidatePreview, previewButton,
+      favoritesLabel, favoriteButton, favoritesState);
+    const moreSettings = make('details', '', 'wzf-haru-layout wzf-haru-more-settings');
+    moreSettings.append(make('summary', t("More interactions and settings")));
+    const advancedControls = make('div', '', 'wzf-haru-advanced-controls');
+    moreSettings.append(advancedControls);
+    const extraPresets = make('div', '', 'wzf-haru-presets');
+    const greeting = make('button', t("Say hello"), 'wzf-haru-greeting');
+    greeting.onclick = () => host?.querySelector('button')?.click();
+    const chatButton = make('button', t("Chat once"), 'wzf-haru-chat');
+    chatButton.onclick = () => idleSpeak(false);
+    advancedControls.append(extraPresets, motion, play, stopMotion, expression, face, resetFace,
+      dialogueSettings, pointerSettings, helpButton, credit);
+    const previewActions = make('div', '', 'wzf-haru-preview-actions');
+    previewActions.append(commitButton, cancelPreview);
+    panel.append(label, greeting, chatButton, presetControls, previewActions, characterSettings, moreSettings, state);
     document.body.append(panel);
     const panelToggle = make('button', t("Interact"), 'wzf-haru-panel-toggle');
     panelToggle.hidden = true;
@@ -860,14 +906,14 @@
     const output = make('output'),
       reset = make('button', t("Reset defaults"));
     settings.append(side, slider, output, reset);
-    panel.insertBefore(settings, credit);
+    advancedControls.insertBefore(settings, credit);
     const mobileSize = make('p', '', 'wzf-haru-mobile-size');
-    panel.insertBefore(mobileSize, credit);
+    advancedControls.insertBefore(mobileSize, credit);
     const captureSettings=make('details','','wzf-haru-layout');
     const captureButton=make('button',t("Download transparent PNG")),captureStatus=make('p');
     captureStatus.setAttribute('role','status');
     captureSettings.append(make('summary',t("Character PNG")),make('p',t("Save only the current character canvas on a transparent background.")),captureButton,captureStatus);
-    panel.insertBefore(captureSettings,credit);
+    advancedControls.insertBefore(captureSettings,credit);
     let pendingCapture=null,captureSequence=0,pngURL=null,pngURLTimer=null;
     const clearPngURL=()=>{clearTimeout(pngURLTimer);pngURLTimer=null;if(pngURL){URL.revokeObjectURL(pngURL);pngURL=null;}};
     const cancelPNG=()=>{
@@ -897,7 +943,7 @@
     const accountActions=make('div','','wzf-haru-account-actions');
     accountActions.append(accountRead,accountSave,accountUse,accountKeep);
     accountSettings.append(accountActions,accountStatus);
-    panel.insertBefore(accountSettings,credit);
+    advancedControls.insertBefore(accountSettings,credit);
     let accountState=null,accountNonce='',accountPending=false;
     const preferenceId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     const exactFields=(value,allowed,required=allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>allowed.includes(key))&&required.every(key=>Object.hasOwn(value,key));
@@ -1016,6 +1062,13 @@
     const placeDialogue = () => {
       if (!bubble || bubble.hidden || !host) return;
       const bounds=movementBounds(), box=host.getBoundingClientRect();
+      if (panelOpen && !desktop.matches && !panel.hidden) {
+        if(bubble.parentElement!==panel)panel.insertBefore(bubble,previewActions);
+        bubble.style.left='';bubble.style.top='';bubble.style.right='';bubble.style.bottom='';
+        bubble.style.maxHeight=Math.max(44,Math.min(160,(bounds.bottom-bounds.top)*0.3))+'px';
+        return;
+      }
+      if(bubble.parentElement!==host)host.append(bubble);
       bubble.style.maxHeight=Math.max(44,bounds.bottom-bounds.top-12)+'px';
       const text=bubble.getBoundingClientRect();
       const x=clamp(position==='right'?box.right-text.width:box.left,bounds.left,Math.max(bounds.left,bounds.right-text.width));
@@ -1024,9 +1077,11 @@
       bubble.style.left=(x-box.left)+'px';bubble.style.top=(y-box.top)+'px';
     };
     const layout = () => {
-      const renderedSize = desktop.matches
+      let renderedSize = desktop.matches
         ? size
         : Math.max(96, Math.min(140, Math.floor(innerWidth * 0.34)));
+      const visibleBounds = movementBounds();
+      renderedSize = Math.max(1, Math.min(renderedSize, visibleBounds.right-visibleBounds.left, (visibleBounds.bottom-visibleBounds.top)/1.5));
       const leftControls = position === 'right';
       const edge = 'max(16px, env(safe-area-inset-' + (leftControls ? 'left' : 'right') + '))';
       for (const element of [panel, controlsDock]) {
@@ -1050,9 +1105,35 @@
           host.style.top = (bounds.top + anchor.y*(bounds.maxY-bounds.top))+'px';
         } else { host.style.top = 'auto'; host.style.bottom = '0'; }
         if (dragHandle) {
-          const box=host.getBoundingClientRect(), bounds=movementBounds();
-          dragHandle.style.left=clamp(box.x+box.width/2-22,bounds.left,bounds.right-44)+'px';
-          dragHandle.style.top=clamp(box.bottom-44,bounds.top,bounds.bottom-44)+'px';
+          const bounds=movementBounds();
+          // Clamp only the rendered position; saved anchors/defaults remain untouched.
+          let box=host.getBoundingClientRect();
+          if (!anchor) {
+            host.style.transform='none'; host.style.right='auto'; host.style.bottom='auto';
+            host.style.left=clamp(box.left,bounds.left,bounds.maxX)+'px';
+            host.style.top=clamp(box.top,bounds.top,bounds.maxY)+'px';
+            box=host.getBoundingClientRect();
+          }
+          const gap=8, width=44;
+          const inward=position==='right'?box.left-gap-width:box.right+gap;
+          const outward=position==='right'?box.right+gap:box.left-gap-width;
+          let x=inward, y=clamp(box.top+(box.height-width)/2,bounds.top,bounds.bottom-width);
+          const fits=(left)=>left>=bounds.left&&left+width<=bounds.right;
+          if (!fits(x)) {
+            if (fits(outward)) x=outward;
+            else {
+              // Very narrow viewports reserve a strip above the canvas instead of covering feet.
+              const top=bounds.top+width+gap;
+              renderedSize=Math.max(1,Math.min(renderedSize,(bounds.bottom-top)/1.5));
+              host.style.width=renderedSize+'px';host.style.height=renderedSize*1.5+'px';
+              host.style.left=clamp(box.left,bounds.left,bounds.right-renderedSize)+'px';
+              host.style.top=top+'px';
+              box=host.getBoundingClientRect();
+              x=clamp(box.left+(box.width-width)/2,bounds.left,bounds.right-width);
+              y=box.top-gap-width;
+            }
+          }
+          dragHandle.style.left=x+'px'; dragHandle.style.top=y+'px';
         }
         placeDialogue();
       }
@@ -1103,6 +1184,7 @@
       const previous = dragState;
       const pointer = previous.pointer;
       dragState = null;
+      syncIdle();
       if (dragHandle.hasPointerCapture?.(pointer)) dragHandle.releasePointerCapture(pointer);
       if (commit && anchor) {
         position = anchor.x < 0.5 ? 'left' : 'right';
@@ -1120,6 +1202,7 @@
       const box=host.getBoundingClientRect();
       dragState={pointer:event.pointerId,dx:event.clientX-box.x,dy:event.clientY-box.y,anchor:anchor?{...anchor}:null,position};
       clearDialogue(); cancelWelcome(); cancelPreset(); engine?.resetGaze?.();
+      cancelIdle();
       dragHandle.setPointerCapture(event.pointerId);
       event.preventDefault();
     };
@@ -1132,7 +1215,7 @@
     dragHandle.onlostpointercapture = () => endDrag(false);
     dragHandle.onkeydown = (event) => {
       if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || !allowed() || !engine || loading) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); endDrag(); reset.click(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); endDrag(); cancelIdle(); reset.click(); syncIdle(); return; }
       if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
       event.preventDefault(); event.stopPropagation();
       clearDialogue(); cancelWelcome(); cancelPreset(); engine?.resetGaze?.();
@@ -1140,6 +1223,7 @@
       const step=event.shiftKey ? 40 : 16;
       moveAnchor(event.key==='ArrowLeft'?bounds.left:event.key==='ArrowRight'?bounds.maxX:box.x,box.y+(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0));
       position=anchor.x<0.5?'left':'right'; side.value=position; rememberLayout();
+      cancelIdle(); syncIdle();
     };
     readLayout();
     const consent = make('dialog', '', 'wzf-haru-consent'),
@@ -1172,6 +1256,10 @@
       !failed;
     const paint = () => {
       const run = allowed();
+      syncIdle();
+      chatButton.hidden = !idleLines().length;
+      chatButton.disabled = dialogueMode === 'silent' || !run || !engine || loading || preview;
+      idleLabel.hidden = !idleLines().length;
       if (!run) {
         endDrag();
         cancelPNG();
@@ -1186,7 +1274,7 @@
       if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
         interruptDiagnostics('hidden-suspended-or-loading');
       controlsDock.hidden = suspensions.size > 0;
-      diagnostics.hidden = panelOpen;
+      if (diagnosticsAllowed) diagnostics.hidden = panelOpen;
       diagnosticUpdate();
       button.hidden = suspensions.size > 0;
       button.disabled = reduce.matches || suspensions.size > 0;
@@ -1201,7 +1289,8 @@
               : t("Show mascot");
       button.setAttribute('aria-pressed', String(displayWanted() && accepted));
       button.setAttribute('aria-busy', String(loading));
-      dragHandle.hidden = !(run && engine && !loading);
+      if (panelOpen && !desktop.matches) endDrag();
+      dragHandle.hidden = !(run && engine && !loading && !(panelOpen && !desktop.matches));
       panel.hidden = !(run && panelOpen);
       syncThumbnail();
       panelToggle.hidden = !(run && engine);
@@ -1209,7 +1298,14 @@
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
       layoutDock();
       const supported=capabilities();
+      pointerSettings.hidden = !supported.gazeParameters.length && !supported.hitAreas.length;
+      gazeLabel.hidden = !supported.gazeParameters.length;
       gazeChoice.disabled=!supported.gazeParameters.length;
+      captureSettings.hidden = characters[active].captureAllowed !== true || typeof engine?.captureFrame !== 'function';
+      accountSettings.hidden = !config.accountEndpoint;
+      dialogueSettings.hidden = !Object.values(characters[active].dialogue || {}).some(rule => rule?.enabled === true) && !livePresets.size;
+      greeting.hidden = !characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true;
+      greeting.disabled = !run || !engine || loading;
       pointerStatus.textContent=supported.hitAreas.length?t("Model hit areas available: %1$s",supported.hitAreas.join(', ')):t("No model hit areas; normal greeting is used.");
       if (!run || loading || dragState || !gazeEnabled) engine?.resetGaze?.();
       if (host) {
@@ -1226,7 +1322,7 @@
         face.disabled =
         resetFace.disabled =
           !(run && engine && !loading);
-      for (const button of presetControls.querySelectorAll('button')) button.disabled = !(run && engine && !loading);
+      for (const button of [...presetControls.querySelectorAll('button'), ...extraPresets.querySelectorAll('button')]) button.disabled = !(run && engine && !loading);
       face.disabled = face.disabled || !expression.options.length;
       expression.hidden = face.hidden = resetFace.hidden = !expression.options.length;
       resetFace.disabled = resetFace.disabled || !expression.options.length;
@@ -1240,6 +1336,7 @@
       clearSearch.disabled = loading || !characterSearch.value;
       characterSelect.disabled = previewButton.disabled =
         loading || !characterSelect.options.length;
+      previewActions.hidden = !preview;
       commitButton.hidden = cancelPreview.hidden = !preview;
       commitButton.disabled = cancelPreview.disabled = loading || !engine;
       accountUpdate();
@@ -1255,6 +1352,7 @@
       }
       layout();
     };
+    characterSettings.addEventListener('toggle', syncThumbnail);
     diagnostics.addEventListener('toggle', () => {
       if (diagnostics.open) {
         panelOpen = false;
@@ -1266,8 +1364,7 @@
       panelOpen = !panelOpen;
       paint();
       if (panelOpen && !panel.hidden) {
-        const entry = characterSelect.options.length ? characterSelect : characterSearch;
-        entry.focus({ preventScroll: true });
+        (greeting.hidden ? characterSettings.querySelector('summary') : greeting).focus({ preventScroll: true });
       }
     };
     characterSearch.oninput = () => {
@@ -1336,6 +1433,8 @@
     panel.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !e.isComposing && !composing) {
         e.preventDefault();
+        const expanded = e.target.closest('details[open]');
+        if (expanded) { expanded.open = false; expanded.querySelector('summary').focus(); return; }
         panelOpen = false;
         paint();
         panelToggle.focus();
@@ -1550,7 +1649,7 @@
     };
     const populatePresets = () => {
       livePresets.clear(); nextHit=0;
-      presetControls.replaceChildren();
+      presetControls.replaceChildren(); extraPresets.replaceChildren();
       const rows = characters[active].presets;
       if (!Array.isArray(rows)) { presetControls.hidden = true; return; }
       for (const row of rows.slice(0, 8)) {
@@ -1564,7 +1663,7 @@
         const button = make('button', row.name);
         button.dataset.presetId = row.id;
         button.onclick = () => performPreset(row);
-        presetControls.append(button);
+        (presetControls.children.length < 3 ? presetControls : extraPresets).append(button);
       }
       presetControls.hidden = !presetControls.children.length;
     };
@@ -1713,7 +1812,8 @@
       }
     };
     previewButton.onclick = () => switchTo(characterSelect.value, true);
-    cancelPreview.onclick = () => switchTo(committed, false);
+    const previewReturnFocus = () => { if (panelOpen && !panel.hidden && !preview) characterSettings.querySelector('summary').focus({preventScroll:true}); };
+    cancelPreview.onclick = async () => { await switchTo(committed, false); previewReturnFocus(); };
     commitButton.onclick = () => {
       if (!allowed() || loading || !engine || !preview) return;
       try {
@@ -1726,6 +1826,7 @@
         state.textContent = t("The browser did not allow saving. This preview is still usable.");
       }
       paint();
+      previewReturnFocus();
     };
     const save = () => {
       try {
@@ -1781,6 +1882,7 @@
         touchPending = false;
         nextTouch = 0;
       }
+      cancelIdle();
       manualPending.add(type);
       state.textContent = t("Loading…");
       try {
@@ -1794,6 +1896,7 @@
           state.textContent = error?.name === 'AbortError' ? t("Cancelled") : errorMessage(error);
       } finally {
         if (channel === interactions[type] && g === generation) manualPending.delete(type);
+        syncIdle();
       }
     };
     const performPreset = async (preset) => {
@@ -1802,11 +1905,13 @@
       welcomeConsumed = true; dialogueWelcomeConsumed = true; cancelWelcome();
       const n = ++operation, g = generation, target = engine;
       const pending = { target, g, channels: new Map() };
+      cancelIdle();
       pendingPreset = pending;
       const jobs = [];
       for (const type of ['motion', 'expression']) {
         if (!preset[type]) continue;
         const channel = ++interactions[type];
+        cancelIdle();
         manualPending.add(type);
         pending.channels.set(type, channel);
         if (type === 'motion') { touchPending = false; nextTouch = 0; }
@@ -1822,6 +1927,7 @@
       if (preset.line) showLine(preset.line);
       const results = await Promise.allSettled(jobs);
       if (pendingPreset === pending) pendingPreset = null;
+      syncIdle();
       if (n !== operation || g !== generation || target !== engine || !allowed()) return false;
       const values = results.map((result) => result.status === 'fulfilled' ? result.value : {error:result.reason});
       const errors = values.filter((value) => value.error && value.error.name !== 'AbortError');
@@ -1879,6 +1985,7 @@
         engine.state().activeMotion !== characters[active].idle
       )
         return;
+      cancelIdle();
       touchPending = true;
       nextTouch = performance.now() + 8000;
       const n = ++operation,
@@ -1903,6 +2010,7 @@
         }
       } finally {
         if (g === generation && channel === interactions.motion) touchPending = false;
+        syncIdle();
       }
     };
     const haruNames = {
@@ -2050,6 +2158,7 @@
         return result();
       }
       externalPending = { target, type: req.action };
+      cancelIdle();
       manualPending.add('external');
       try {
         const done = await target.play(req.action, req.id);
@@ -2077,6 +2186,7 @@
         if (externalSequence === token) {
           externalPending = null;
           manualPending.delete('external');
+          syncIdle();
         }
       }
     };
@@ -2109,7 +2219,7 @@
       version: 1,
       notify,
       command: externalCommand,
-      cancel: () => {const pending=!!pendingPreset;cancelPreset();clearDialogue();return {ok:true,code:cancelExternal()||pending?'cancelled':'idle'};},
+      cancel: () => {const pending=!!pendingPreset;cancelPreset();clearDialogue();const external=cancelExternal();syncIdle();return {ok:true,code:external||pending?'cancelled':'idle'};},
     });
     const setSuspension = (source, suspended) => {
       if (suspensions.has(source) === suspended) return;
@@ -2251,6 +2361,8 @@
       welcomeCount,
       welcomeConsumed,
       dialogueMode,
+      idleEnabled,
+      idleScheduled: idleTimer !== null,
       dialogueWelcomeConsumed,
       engineCapabilities: capabilities(),
       gazeEnabled,

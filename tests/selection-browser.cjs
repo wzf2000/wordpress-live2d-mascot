@@ -1,3 +1,9 @@
+
+const expandNavigation = async (page) => {
+ for (const selector of ['.wzf-haru-character-settings', '.wzf-haru-more-settings']) {
+  const details=page.locator(selector);if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ }
+};
 // Whole shipped loader with a synthetic engine, no model/SDK rendering acceptance.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
@@ -7,7 +13,7 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
  await context.addInitScript(()=>{localStorage.setItem('wzfl-mascot','shown');localStorage.setItem('wzf-haru-terms','synthetic-v1');localStorage.setItem('wzf-mascot-mobile-v1','enabled');if(!localStorage.getItem('wzf-mascot-favorites'))localStorage.setItem('wzf-mascot-favorites',JSON.stringify(['alpha','beta','temporarily-disabled']));if(!localStorage.getItem('wzf-mascot-recent-v1'))localStorage.setItem('wzf-mascot-recent-v1',JSON.stringify(['temporarily-disabled']));});
  const ready=()=>page.waitForFunction(()=>window.WZFHaruStatus?.().ready&&!window.WZFHaruStatus().loading),button=name=>page.getByRole('button',{name,exact:true}),heavy=()=>fixture.requests.filter(row=>row.path.startsWith('/synthetic/')).length;
  const recent=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-recent-v1'))),candidate=()=>page.getByLabel('Choose character',{exact:true}),random=()=>button('Random favorite candidate');
- const panel=async()=>{if(!await page.evaluate(()=>window.WZFHaruStatus().panelOpen))await button('Interact').click();};
+ const panel=async()=>{if(!await page.evaluate(()=>window.WZFHaruStatus().panelOpen))await button('Interact').click();await expandNavigation(page);};
  const preview=async(id)=>{await candidate().selectOption(id);await button('Preview character').click();await page.waitForFunction(expected=>window.WZFHaruStatus().character===expected&&!window.WZFHaruStatus().loading,id);};
  const errors=[];page.on('pageerror',error=>errors.push(error.message));let checks=0;
  try{

@@ -74,13 +74,28 @@ msgstr ""
 msgid "A ZIP file is too large or has an abnormal compression ratio."
 msgstr ""
 
+msgid "A calm start to the day."
+msgstr ""
+
 msgid "A configured reference is invalid, missing, inaccessible or exceeds the report limit; classification is unknown."
+msgstr ""
+
+msgid "A different angle may reveal something new."
+msgstr ""
+
+msgid "A difficult paragraph can wait while you take a breath."
+msgstr ""
+
+msgid "A fresh morning, a fresh start!"
 msgstr ""
 
 msgid "A greeting motion is not in the current character catalog."
 msgstr ""
 
 msgid "A greeting motion reference is invalid."
+msgstr ""
+
+msgid "A little step is still progress today!"
 msgstr ""
 
 msgid "A model reference is missing or has an invalid format."
@@ -90,6 +105,15 @@ msgid "A model runtime reference is missing, outside the allowed directory or ha
 msgstr ""
 
 msgid "A motion catalog entry is invalid."
+msgstr ""
+
+msgid "A new clue lies ahead. Keep a steady pace."
+msgstr ""
+
+msgid "A new page for a new day."
+msgstr ""
+
+msgid "A pause can reveal details you missed before."
 msgstr ""
 
 msgid "A preset needs a name and at least one motion, expression or line."
@@ -102,6 +126,18 @@ msgid "A resource or settings task is in progress. Wait for it to finish, then r
 msgstr ""
 
 msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
+msgstr ""
+
+msgid "A short pause may help the next paragraph."
+msgstr ""
+
+msgid "A sip of water and we are ready again."
+msgstr ""
+
+msgid "A small pause can make room for a new thought."
+msgstr ""
+
+msgid "A small question can lead to an interesting discovery."
 msgstr ""
 
 msgid "Accept terms and enable mobile animation in this browser"
@@ -173,6 +209,9 @@ msgstr ""
 msgid "Alternative lines"
 msgstr ""
 
+msgid "An interesting discovery often starts with a small question."
+msgstr ""
+
 msgid "Another request changed the resource configuration. Refresh before editing again."
 msgstr ""
 
@@ -224,6 +263,9 @@ msgstr ""
 msgid "Available favorites: %1$s characters"
 msgstr ""
 
+msgid "Background unverified; these drafts use a neutral voice."
+msgstr ""
+
 msgid "Between 1 and 16 textures are required."
 msgstr ""
 
@@ -237,6 +279,9 @@ msgid "Bottom left"
 msgstr ""
 
 msgid "Bottom right"
+msgstr ""
+
+msgid "Break a tough problem into pieces and solve them one by one!"
 msgstr ""
 
 msgid "Cancel"
@@ -318,6 +363,9 @@ msgid "Catalog"
 msgstr ""
 
 msgid "Catalog and motion configuration"
+msgstr ""
+
+msgid "Change character"
 msgstr ""
 
 msgid "Change expression"
@@ -437,6 +485,12 @@ msgstr ""
 msgid "Characters and runtime libraries are imported by this site’s administrator. See source information for credits and terms; this plugin grants no redistribution or other rights to resources."
 msgstr ""
 
+msgid "Chat once"
+msgstr ""
+
+msgid "Chatter cooldown must be 90–1800 seconds."
+msgstr ""
+
 msgid "Check installed resources"
 msgstr ""
 
@@ -450,6 +504,9 @@ msgid "Checked %1$s characters; %2$s isolated."
 msgstr ""
 
 msgid "Checks only character configuration types and model/catalog entry paths, readability and sizes. It does not read model references or textures, or hash Core. Display also requires valid shared Core and terms and reader opt-in; this is not visual or full resource validation."
+msgstr ""
+
+msgid "Cheerful greeting"
 msgstr ""
 
 msgid "Chin in hand · open palm"
@@ -474,6 +531,9 @@ msgid "Choose expression"
 msgstr ""
 
 msgid "Choose motion"
+msgstr ""
+
+msgid "Choose something interesting. I will keep you company."
 msgstr ""
 
 msgid "Clear"
@@ -516,6 +576,9 @@ msgid "Confirm your right to use the thumbnail."
 msgstr ""
 
 msgid "Confirm your right to use the uploaded resources."
+msgstr ""
+
+msgid "Continue reading"
 msgstr ""
 
 msgid "Continuous sampling complete: 3 of 3 windows saved."
@@ -578,6 +641,9 @@ msgstr ""
 msgid "Dialogue cooldown must be 15–3600 seconds."
 msgstr ""
 
+msgid "Dialogue draft"
+msgstr ""
+
 msgid "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
 msgstr ""
 
@@ -638,6 +704,12 @@ msgstr ""
 msgid "Download transparent PNG"
 msgstr ""
 
+msgid "Draft filled into empty fields. Review and save to apply."
+msgstr ""
+
+msgid "Draw a little circle in the air and add a little cheer."
+msgstr ""
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr ""
 
@@ -663,6 +735,9 @@ msgid "Encrypted ZIP files are not supported."
 msgstr ""
 
 msgid "Engine"
+msgstr ""
+
+msgid "Even when reading gets absorbing, give your eyes a rest."
 msgstr ""
 
 msgid "Evening"
@@ -707,16 +782,34 @@ msgstr ""
 msgid "Feedback"
 msgstr ""
 
+msgid "Fill blank dialogue"
+msgstr ""
+
+msgid "Fill common interaction drafts"
+msgstr ""
+
 msgid "First-use readiness"
 msgstr ""
 
 msgid "Follow pointer gently"
 msgstr ""
 
+msgid "Found something you like? Leave yourself a bookmark."
+msgstr ""
+
+msgid "Found something you like? Stay a little longer."
+msgstr ""
+
 msgid "Frontend display"
 msgstr ""
 
 msgid "Frontend entry checks"
+msgstr ""
+
+msgid "Getting one question clear is already a good start."
+msgstr ""
+
+msgid "Good to see you. Take your time."
 msgstr ""
 
 msgid "Greeting motion request is invalid."
@@ -761,7 +854,55 @@ msgstr ""
 msgid "Hands together · light sway"
 msgstr ""
 
+msgid "Hat on tight! Let us take our time exploring."
+msgstr ""
+
+msgid "Have a stretch, then carry on. Meow."
+msgstr ""
+
+msgid "Have a stretch, then keep discovering interesting things."
+msgstr ""
+
 msgid "Head lowered · listening"
+msgstr ""
+
+msgid "Hello again! Leave a little unhurried time in your day."
+msgstr ""
+
+msgid "Hello! I am here to keep you company."
+msgstr ""
+
+msgid "Hello! Let us collect a little discovery today."
+msgstr ""
+
+msgid "Hello! Ready to begin?"
+msgstr ""
+
+msgid "Hello! Where would you like to begin today?"
+msgstr ""
+
+msgid "Hello. It is good to see you here."
+msgstr ""
+
+msgid "Hello. Leave a little room for curiosity today."
+msgstr ""
+
+msgid "Hello. Let us find something new today."
+msgstr ""
+
+msgid "Hello. What has caught your curiosity today?"
+msgstr ""
+
+msgid "Hello. What would you like to talk about today?"
+msgstr ""
+
+msgid "Here I am!"
+msgstr ""
+
+msgid "Hey! Is your curiosity awake today?"
+msgstr ""
+
+msgid "Hey, take a break if you have been reading too long. You need energy to keep going."
 msgstr ""
 
 msgid "Hide mascot"
@@ -771,6 +912,12 @@ msgid "Hit area bindings are invalid."
 msgstr ""
 
 msgid "Hit area bindings saved."
+msgstr ""
+
+msgid "I am here."
+msgstr ""
+
+msgid "I am ready! How about your curiosity?"
 msgstr ""
 
 msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
@@ -792,6 +939,9 @@ msgid "Idle"
 msgstr ""
 
 msgid "Idle motion (loop)"
+msgstr ""
+
+msgid "If today were a color, which would you choose?"
 msgstr ""
 
 msgid "Image decoding failed."
@@ -869,6 +1019,12 @@ msgstr ""
 msgid "Legacy or unknown task state"
 msgstr ""
 
+msgid "Let us go! Find the answer you most want to know."
+msgstr ""
+
+msgid "Let us take the evening slowly."
+msgstr ""
+
 msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
 msgstr ""
 
@@ -908,6 +1064,12 @@ msgstr ""
 msgid "Mascot interaction"
 msgstr ""
 
+msgid "Meow. This corner is perfect for a quiet moment."
+msgstr ""
+
+msgid "Meow? Found something new?"
+msgstr ""
+
 msgid "Mobile display"
 msgstr ""
 
@@ -939,6 +1101,9 @@ msgid "Model validation failed"
 msgstr ""
 
 msgid "Model: %s"
+msgstr ""
+
+msgid "More interactions and settings"
 msgstr ""
 
 msgid "Morning"
@@ -1022,6 +1187,9 @@ msgstr ""
 msgid "No resource or settings task is currently detected. Recovery removes only this interrupted task record; it does not repair, remove or roll back resources, staging directories or configuration. Inspect installed resources afterward."
 msgstr ""
 
+msgid "No rush. A little at a time is fine!"
+msgstr ""
+
 msgid "No selectable character"
 msgstr ""
 
@@ -1040,6 +1208,9 @@ msgstr ""
 msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
 msgstr ""
 
+msgid "Occasional chatter"
+msgstr ""
+
 msgid "Off by default for every character. Enable only when the resource terms permit readers to save a transparent character PNG. Updating or rolling back model resources disables this permission until you explicitly confirm again."
 msgstr ""
 
@@ -1052,7 +1223,16 @@ msgstr ""
 msgid "Official samples"
 msgstr ""
 
+msgid "One more page, or a well-earned rest?"
+msgstr ""
+
+msgid "One small step at a time!"
+msgstr ""
+
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
+msgstr ""
+
+msgid "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
 msgstr ""
 
 msgid "Only on interaction"
@@ -1067,10 +1247,16 @@ msgstr ""
 msgid "Open palms · head tilt"
 msgstr ""
 
-msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 msgstr ""
 
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
+msgstr ""
+
+msgid "Original editorial examples, not official character dialogue. Choose a draft manually. Only empty fields are filled; review and save the form to apply. Chatter still requires each reader to opt in."
+msgstr ""
+
+msgid "Original voice examples. Source links provide context, not official dialogue."
 msgstr ""
 
 msgid "PNG capture cancelled."
@@ -1095,6 +1281,12 @@ msgid "PNG download started."
 msgstr ""
 
 msgid "Partial: %s observed bytes"
+msgstr ""
+
+msgid "Pause and see whether you missed a clue."
+msgstr ""
+
+msgid "Pause for a breath when you need one."
 msgstr ""
 
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
@@ -1157,10 +1349,16 @@ msgstr ""
 msgid "Previous thumbnail"
 msgstr ""
 
+msgid "Purr... Take your time. I will keep you company."
+msgstr ""
+
 msgid "Pursed lips"
 msgstr ""
 
 msgid "Quick interactions"
+msgstr ""
+
+msgid "Quiet company"
 msgstr ""
 
 msgid "Raise hand to greet"
@@ -1184,7 +1382,19 @@ msgstr ""
 msgid "Reading account preferences…"
 msgstr ""
 
+msgid "Reading companion"
+msgstr ""
+
+msgid "Reading team, assemble! Pick an interesting title."
+msgstr ""
+
 msgid "Ready"
+msgstr ""
+
+msgid "Ready when you are. Let us continue."
+msgstr ""
+
+msgid "Ready? Let us tackle a new question today."
 msgstr ""
 
 msgid "Recent characters"
@@ -1272,6 +1482,9 @@ msgid "Resources cannot be downloaded right now. Try again later."
 msgstr ""
 
 msgid "Resources imported."
+msgstr ""
+
+msgid "Rest your eyes for a moment."
 msgstr ""
 
 msgid "Restore a configuration backup before retrying."
@@ -1376,6 +1589,9 @@ msgstr ""
 msgid "Saving account preferences…"
 msgstr ""
 
+msgid "Say hello"
+msgstr ""
+
 msgid "Search"
 msgstr ""
 
@@ -1439,6 +1655,9 @@ msgstr ""
 msgid "Size must be 140–260 pixels in steps of 10; offset must be -100–100%."
 msgstr ""
 
+msgid "Slowing down can help you hear your own thoughts."
+msgstr ""
+
 msgid "Smile"
 msgstr ""
 
@@ -1481,6 +1700,18 @@ msgstr ""
 msgid "Surprised"
 msgstr ""
 
+msgid "Swordsman and dragon ready! Which page shall we explore?"
+msgstr ""
+
+msgid "Take a break"
+msgstr ""
+
+msgid "Take your time and work through one question at a time."
+msgstr ""
+
+msgid "Take your time. Just finish this small section first."
+msgstr ""
+
 msgid "Tap"
 msgstr ""
 
@@ -1512,6 +1743,9 @@ msgid "Texture"
 msgstr ""
 
 msgid "Texture creation failed"
+msgstr ""
+
+msgid "That little charm... it is pretty cute."
 msgstr ""
 
 msgid "The Core file is missing or has an invalid size."
@@ -1694,6 +1928,9 @@ msgstr ""
 msgid "The welcome motion reference is invalid."
 msgstr ""
 
+msgid "There is no hurry. I will keep you company."
+msgstr ""
+
 msgid "This browser does not support WebGL; the mascot cannot be displayed."
 msgstr ""
 
@@ -1742,6 +1979,9 @@ msgstr ""
 msgid "Thumbnail: %s"
 msgstr ""
 
+msgid "Time for a little stretch!"
+msgstr ""
+
 msgid "Tool completed"
 msgstr ""
 
@@ -1749,6 +1989,9 @@ msgid "Trash"
 msgstr ""
 
 msgid "Turn with hands behind"
+msgstr ""
+
+msgid "Understand this stage first, then keep moving."
 msgstr ""
 
 msgid "Unfavorite %1$s"
@@ -1829,10 +2072,58 @@ msgstr ""
 msgid "View character sources, terms and notices"
 msgstr ""
 
+msgid "Want a new topic? Start with a small question."
+msgstr ""
+
 msgid "Welcome"
 msgstr ""
 
+msgid "Welcome back to your reading."
+msgstr ""
+
+msgid "Welcome back. Find a comfortable pace for your reading."
+msgstr ""
+
+msgid "Welcome back. We can continue at your pace."
+msgstr ""
+
 msgid "Welcome motion (first display)"
+msgstr ""
+
+msgid "Welcome. I hope you find something here."
+msgstr ""
+
+msgid "Welcome. Start with what you most want to understand."
+msgstr ""
+
+msgid "Welcome. Take your time looking around."
+msgstr ""
+
+msgid "What detail made you want to look twice today?"
+msgstr ""
+
+msgid "What shall we read next?"
+msgstr ""
+
+msgid "What would you like to explore today?"
+msgstr ""
+
+msgid "When an idea gets stuck, try another angle."
+msgstr ""
+
+msgid "Woof! A soft little hello for you."
+msgstr ""
+
+msgid "Woof! Take a break, then keep exploring."
+msgstr ""
+
+msgid "You are back! Shall we continue?"
+msgstr ""
+
+msgid "You can leave a thought to revisit later."
+msgstr ""
+
+msgid "You have made it through another day."
 msgstr ""
 
 msgid "You have unsaved changes. Leave this page?"

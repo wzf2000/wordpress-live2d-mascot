@@ -4,12 +4,14 @@
 软件 Chromium、模拟手机视口或 CI 结果称作真实 GPU、Android 或 iPhone 验收。
 不需要在生产启用移动端，也不需要上传 Core、模型或诊断文件。
 
+Only a signed-in WordPress administrator with `manage_options` can access local diagnostics. Guests and ordinary accounts have no diagnostic entry or collection; logged-in HTML must bypass shared caches.
+
 ## 准备与记录
 
 1. 准备至少一台真实桌面 GPU 设备、一台 Android 和一台 iPhone。记录设备型号、系统、
    浏览器版本、插件版本和角色 ID。先用正常规模角色验证流程，再测重型角色；同一比较
    使用相同模型资源版本、页面、浏览器缩放、网络、视口和设备电源模式。
-2. 使用独立测试 WordPress 及其独立数据库和 uploads。只在该站启用移动端；保持读者
+2. 使用独立测试 WordPress 及其独立数据库和 uploads，以具备 `manage_options` 权限的管理员账号登录前台；访客和普通账号不提供本地诊断入口或采集。只在该站启用移动端；保持读者
    自主同意和开启流程。不要为测试改变生产的资源、许可或用户偏好。
 3. 检查角色画面、条款和资源诊断。预热设备后关闭无关后台负载，记录节能模式、充电与否、
    屏幕刷新率等条件。不同条件另分组，不用网络差异推断渲染性能。

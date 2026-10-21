@@ -10,7 +10,7 @@ const forms = [
 forms.forEach((form) => { form.handlers = {}; form.addEventListener = (name, fn) => { form.handlers[name] = fn; }; });
 const windowHandlers = {};
 let confirmations = 0, approved = false;
-const root = { dataset: { unsavedMessage: '有尚未保存的修改。' }, querySelectorAll: (selector) => selector.includes('method') ? forms.slice(0, 2) : forms };
+const root = { dataset: { unsavedMessage: '有尚未保存的修改。' }, querySelectorAll: (selector) => selector.includes('wzf-mascot-') ? [] : selector.includes('method') ? forms.slice(0, 2) : forms };
 vm.runInNewContext(fs.readFileSync('plugin/admin.js', 'utf8'), {
   document: { querySelector: () => root },
   window: { confirm: (message) => { confirmations++; assert.equal(message, root.dataset.unsavedMessage); return approved; }, addEventListener: (name, fn) => { windowHandlers[name] = fn; } },

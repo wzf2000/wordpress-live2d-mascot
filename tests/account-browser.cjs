@@ -1,3 +1,9 @@
+
+const expandNavigation = async (page) => {
+ for (const selector of ['.wzf-haru-character-settings', '.wzf-haru-more-settings']) {
+  const details=page.locator(selector);if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ }
+};
 // Real shipped controller, synthetic account HTTP responses and engine only.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
@@ -25,7 +31,7 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
  let checks=0;
  try{
   await page.clock.install();await page.goto(fixture.origin+'/');await ready();assert.equal(requests.length,0);
-  await button('Interact').click();await page.getByText('Account preferences',{exact:true}).click();
+  await button('Interact').click();await expandNavigation(page);await page.getByText('Account preferences',{exact:true}).click();
   const before=await storage();await readDone();assert.equal(requests.length,1);assert.deepEqual(await storage(),before);
   assert.equal(await page.evaluate(()=>window.WZFHaruStatus().character),'alpha');
   await button('Keep browser preferences').click();assert.equal(requests.length,1);assert.deepEqual(await storage(),before);checks++;
@@ -55,7 +61,7 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
   signedIn=false;await readDone();await page.getByText('Sign in to read or save account preferences.',{exact:true}).waitFor();assert.equal(await use().isDisabled(),true);assert.equal(await save().isDisabled(),true);checks++;
   signedIn=true;hold=true;await read().click();await page.clock.runFor(10050);await page.getByText(/^The request timed out/).waitFor();assert.equal(await read().isDisabled(),false);assert.equal(await save().isDisabled(),true);hold=false;await readDone();assert.equal(await save().isDisabled(),false);
   hold=true;await save().click();await page.clock.runFor(10050);await page.getByText(/^The request timed out/).waitFor();assert.equal(await save().isDisabled(),true);hold=false;checks++;
-  await page.evaluate(()=>localStorage.setItem('wzf-mascot-mobile-v1','enabled'));await page.setViewportSize({width:390,height:844});await page.goto(fixture.origin+'/?mobile=1');await ready();await button('Interact').click();await page.getByText('Account preferences',{exact:true}).click();await readDone();if(out)await page.screenshot({path:path.join(out,'account-mobile.png')});await page.setViewportSize({width:1440,height:900});if(out)await page.screenshot({path:path.join(out,'account-desktop.png')});
+  await page.evaluate(()=>localStorage.setItem('wzf-mascot-mobile-v1','enabled'));await page.setViewportSize({width:390,height:844});await page.goto(fixture.origin+'/?mobile=1');await ready();await button('Interact').click();await expandNavigation(page);await page.getByText('Account preferences',{exact:true}).click();await readDone();if(out)await page.screenshot({path:path.join(out,'account-mobile.png')});await page.setViewportSize({width:1440,height:900});if(out)await page.screenshot({path:path.join(out,'account-desktop.png')});
   assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks,syntheticOnly:true,realRenderingTested:false}));
  }finally{await context.close();await browser.close();await fixture.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

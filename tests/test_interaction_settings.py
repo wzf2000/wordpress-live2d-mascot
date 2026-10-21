@@ -26,6 +26,18 @@ class InteractionTests(unittest.TestCase):
     def test_permissions_and_nonce_are_required(self):
         for body in ["$allowed=false;wzf_mascot_save_interaction('x',str_repeat('0',64),[]);", "wzf_mascot_interaction_post();", "$allowed=false;wzf_mascot_interaction_post();"]:
             result=self.php(body);self.assertFalse(result['ok'])
+    def test_idle_limits_defaults_and_template_library(self):
+        result=self.php("echo json_encode(['rules'=>wzf_mascot_dialogue([],true),'drafts'=>wzf_mascot_dialogue_drafts()]);")
+        self.assertEqual(result['rules']['idle']['cooldown'],120)
+        self.assertFalse(result['rules']['idle']['enabled'])
+        self.assertEqual(len(result['drafts']),26)
+        for draft in result['drafts'].values():
+            for lines in draft['lines'].values():
+                self.assertLessEqual(len(lines),8)
+                for line in lines:self.assertLessEqual(len(line.encode()),300)
+        for cooldown in [89,1801]:
+            self.assertFalse(self.php("wzf_mascot_dialogue(['idle'=>['enabled'=>true,'cooldown'=>"+str(cooldown)+",'lines'=>['Hi']]],true);")['ok'])
+
     def test_empty_rule_is_disabled(self):
         result=self.php("echo json_encode(wzf_mascot_dialogue(['welcome'=>['enabled'=>true,'lines'=>[' ','']]],true));")
         self.assertFalse(result['welcome']['enabled'])

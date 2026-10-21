@@ -1,3 +1,9 @@
+
+const expandNavigation = async (page) => {
+ for (const selector of ['.wzf-haru-character-settings', '.wzf-haru-more-settings']) {
+  const details=page.locator(selector);if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ }
+};
 // Controller/download tests with synthetic 2D drawing only. Not real SDK transparency acceptance.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
@@ -6,13 +12,13 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true}),page=await context.newPage(),out=process.argv[2];if(out)fs.mkdirSync(out,{recursive:true});
  await context.addInitScript(()=>{localStorage.setItem('wzfl-mascot','shown');localStorage.setItem('wzf-haru-terms','synthetic-v1');localStorage.setItem('wzf-mascot-mobile-v1','enabled');window.__pngURLs={created:[],revoked:[]};const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);URL.createObjectURL=function(blob){const url=create(blob);if(blob.type==='image/png')window.__pngURLs.created.push(url);return url;};URL.revokeObjectURL=function(url){if(window.__pngURLs.created.includes(url))window.__pngURLs.revoked.push(url);return revoke(url);};});
  const errors=[],downloads=[];page.on('pageerror',error=>errors.push(error.message));page.on('download',download=>downloads.push(download));
- const ready=()=>page.waitForFunction(()=>window.WZFHaruStatus?.().ready&&!window.WZFHaruStatus().loading),button=name=>page.getByRole('button',{name,exact:true}),capture=()=>button('Download transparent PNG');
- const panel=async()=>{if(!await page.evaluate(()=>window.WZFHaruStatus().panelOpen))await button('Interact').click();await page.getByText('Character PNG',{exact:true}).click();};
+ const ready=()=>page.waitForFunction(()=>window.WZFHaruStatus?.().ready&&!window.WZFHaruStatus().loading),button=name=>page.getByRole('button',{name,exact:true}),capture=()=>page.getByRole('button',{name:'Download transparent PNG',exact:true,includeHidden:true});
+ const panel=async()=>{if(!await page.evaluate(()=>window.WZFHaruStatus().panelOpen))await button('Interact').click();await expandNavigation(page);if(await page.getByText('Character PNG',{exact:true}).isVisible())await page.getByText('Character PNG',{exact:true}).click();};
  const hold=()=>page.evaluate(()=>{window.__mascotFixture.holdCapture=true;}),pending=()=>page.waitForFunction(()=>window.__mascotFixture.pendingCaptures.length===1),release=()=>page.evaluate(()=>{window.__mascotFixture.holdCapture=false;window.__mascotFixture.pendingCaptures.splice(0).forEach(fn=>fn());});
  const visibility=hidden=>page.evaluate(value=>{Object.defineProperty(document,'hidden',{configurable:true,value});document.dispatchEvent(new Event('visibilitychange'));},hidden);
  let checks=0;
  try{
-  await page.clock.install();await page.goto(fixture.origin+'/?mobile=1');await ready();await panel();assert.equal(await capture().isDisabled(),true);assert.equal(downloads.length,0);checks++;
+  await page.clock.install();await page.goto(fixture.origin+'/?mobile=1');await ready();await panel();assert.equal(await page.getByText('Character PNG',{exact:true}).isVisible(),false);assert.equal(await capture().isDisabled(),true);await capture().evaluate(el=>el.onclick());assert.equal(downloads.length,0);checks++;
   await page.goto(fixture.origin+'/?mobile=1&capture=1');await ready();await panel();
   const promised=page.waitForEvent('download');await capture().click();await page.clock.runFor(100);const download=await promised;assert.equal(download.suggestedFilename(),'mascot-alpha.png');
   const bytes=fs.readFileSync(await download.path());assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.equal(bytes.readUInt32BE(16),360);assert.equal(bytes.readUInt32BE(20),540);

@@ -71,14 +71,29 @@ msgstr "需要 Version 3 的 Cubism 运行模型。"
 msgid "A ZIP file is too large or has an abnormal compression ratio."
 msgstr "ZIP 文件过大或压缩比异常。"
 
+msgid "A calm start to the day."
+msgstr "让今天从一份平静开始吧。"
+
 msgid "A configured reference is invalid, missing, inaccessible or exceeds the report limit; classification is unknown."
 msgstr "配置引用无效、缺失、无法访问或超出报告限制；引用分类未知。"
+
+msgid "A different angle may reveal something new."
+msgstr "同一件事，换个角度也许会有新发现。"
+
+msgid "A difficult paragraph can wait while you take a breath."
+msgstr "难懂的段落可以等一等，先歇口气吧。"
+
+msgid "A fresh morning, a fresh start!"
+msgstr "新的一天，新的开始！"
 
 msgid "A greeting motion is not in the current character catalog."
 msgstr "招呼动作不在当前角色目录中。"
 
 msgid "A greeting motion reference is invalid."
 msgstr "招呼动作引用无效。"
+
+msgid "A little step is still progress today!"
+msgstr "小小的一步，也算今天的新进展！"
 
 msgid "A model reference is missing or has an invalid format."
 msgstr "模型引用缺失或格式错误。"
@@ -88,6 +103,15 @@ msgstr "模型运行引用缺失、越界或大小无效。"
 
 msgid "A motion catalog entry is invalid."
 msgstr "动作目录条目无效。"
+
+msgid "A new clue lies ahead. Keep a steady pace."
+msgstr "新的线索就在前面，稳稳地继续前进吧。"
+
+msgid "A new page for a new day."
+msgstr "新的一天，翻开新的一页。"
+
+msgid "A pause can reveal details you missed before."
+msgstr "偶尔停一下，也会发现刚才没注意到的细节呢。"
 
 msgid "A preset needs a name and at least one motion, expression or line."
 msgstr "预设需要名称，并至少包含动作、表情或台词中的一项。"
@@ -100,6 +124,18 @@ msgstr "资源或设置任务正在进行，请等待完成后刷新。"
 
 msgid "A resource task is in progress or configuration changed during inventory; classification is unknown."
 msgstr "资源任务正在进行，或盘点期间配置发生变化；引用分类未知。"
+
+msgid "A short pause may help the next paragraph."
+msgstr "稍作休息，下一段也许更容易理解。"
+
+msgid "A sip of water and we are ready again."
+msgstr "喝口水，再继续吧。"
+
+msgid "A small pause can make room for a new thought."
+msgstr "稍作停留，也许会有新的想法。"
+
+msgid "A small question can lead to an interesting discovery."
+msgstr "一个小问题，也可能带来很有趣的发现。"
 
 msgid "Accept terms and enable mobile animation in this browser"
 msgstr "同意条款并在本浏览器开启移动动画"
@@ -170,6 +206,9 @@ msgstr "允许下载此角色的透明 PNG"
 msgid "Alternative lines"
 msgstr "备选台词"
 
+msgid "An interesting discovery often starts with a small question."
+msgstr "有趣的发现，常常从一个小问题开始。"
+
 msgid "Another request changed the resource configuration. Refresh before editing again."
 msgstr "资源配置已被其他请求修改，请刷新页面后重新编辑。"
 
@@ -221,6 +260,9 @@ msgstr "可用收藏"
 msgid "Available favorites: %1$s characters"
 msgstr "可用收藏 %1$s 个角色"
 
+msgid "Background unverified; these drafts use a neutral voice."
+msgstr "角色背景尚未核实，草稿采用中性语气。"
+
 msgid "Between 1 and 16 textures are required."
 msgstr "需要 1–16 张贴图。"
 
@@ -235,6 +277,9 @@ msgstr "左下角"
 
 msgid "Bottom right"
 msgstr "右下角"
+
+msgid "Break a tough problem into pieces and solve them one by one!"
+msgstr "遇到难题就拆开来，一个一个解决好了！"
 
 msgid "Cancel"
 msgstr "取消"
@@ -316,6 +361,9 @@ msgstr "目录"
 
 msgid "Catalog and motion configuration"
 msgstr "目录与动作配置"
+
+msgid "Change character"
+msgstr "换个角色"
 
 msgid "Change expression"
 msgstr "切换表情"
@@ -434,6 +482,12 @@ msgstr "角色缩略图"
 msgid "Characters and runtime libraries are imported by this site’s administrator. See source information for credits and terms; this plugin grants no redistribution or other rights to resources."
 msgstr "角色与运行库由本站管理员自行导入。制作署名和适用条款见来源说明；本插件不授予素材再分发或其他使用权。"
 
+msgid "Chat once"
+msgstr "聊一句"
+
+msgid "Chatter cooldown must be 90–1800 seconds."
+msgstr "闲聊间隔须为90–1800秒。"
+
 msgid "Check installed resources"
 msgstr "检查已安装资源"
 
@@ -448,6 +502,9 @@ msgstr "已检查 %1$s 位角色，隔离 %2$s 位。"
 
 msgid "Checks only character configuration types and model/catalog entry paths, readability and sizes. It does not read model references or textures, or hash Core. Display also requires valid shared Core and terms and reader opt-in; this is not visual or full resource validation."
 msgstr "只检查角色配置类型及模型／目录入口路径、可读性和大小，不读取模型引用或贴图，不核对 Core 哈希。可显示仍须共享 Core 与条款有效，并由读者开启；不代表画面或完整资源正常。"
+
+msgid "Cheerful greeting"
+msgstr "元气招呼"
 
 msgid "Chin in hand · open palm"
 msgstr "托腮摊手"
@@ -472,6 +529,9 @@ msgstr "选择表情"
 
 msgid "Choose motion"
 msgstr "选择动作"
+
+msgid "Choose something interesting. I will keep you company."
+msgstr "选一篇有趣的内容吧，我陪你读。"
 
 msgid "Clear"
 msgstr "清空"
@@ -514,6 +574,9 @@ msgstr "请确认有权使用缩略图。"
 
 msgid "Confirm your right to use the uploaded resources."
 msgstr "请确认有权使用上传资源。"
+
+msgid "Continue reading"
+msgstr "继续阅读"
 
 msgid "Continuous sampling complete: 3 of 3 windows saved."
 msgstr "连续采样完成：已保存 3 / 3 组窗口。"
@@ -575,6 +638,9 @@ msgstr "诊断尚未开启。"
 msgid "Dialogue cooldown must be 15–3600 seconds."
 msgstr "台词冷却时间须为 15–3600 秒。"
 
+msgid "Dialogue draft"
+msgstr "台词草稿"
+
 msgid "Dialogue lines must be plain text without markup or control characters, within 300 bytes."
 msgstr "台词须为 300 字节以内的纯文本，不含标记或控制字符。"
 
@@ -635,6 +701,12 @@ msgstr "下载会重新执行受限元数据扫描，仅将 JSON 保存到本机
 msgid "Download transparent PNG"
 msgstr "下载透明 PNG"
 
+msgid "Draft filled into empty fields. Review and save to apply."
+msgstr "已填入空白字段，请检查后保存。"
+
+msgid "Draw a little circle in the air and add a little cheer."
+msgstr "空中画个小小的圆，再添一点好心情。"
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr "每个合计对同一相对文件路径只计算一次。当前、上一版、缩略图及不同角色之间可能共用路径，不能将各项直接相加。硬链接仍按路径计数；这些是逻辑大小，不代表物理磁盘占用。"
 
@@ -661,6 +733,9 @@ msgstr "不支持加密 ZIP。"
 
 msgid "Engine"
 msgstr "引擎"
+
+msgid "Even when reading gets absorbing, give your eyes a rest."
+msgstr "读得投入的时候，也别忘了让眼睛歇一歇。"
 
 msgid "Evening"
 msgstr "晚间"
@@ -704,17 +779,35 @@ msgstr "只看收藏"
 msgid "Feedback"
 msgstr "反馈"
 
+msgid "Fill blank dialogue"
+msgstr "填入空白台词"
+
+msgid "Fill common interaction drafts"
+msgstr "填入常用互动草稿"
+
 msgid "First-use readiness"
 msgstr "首次使用准备"
 
 msgid "Follow pointer gently"
 msgstr "轻柔跟随鼠标"
 
+msgid "Found something you like? Leave yourself a bookmark."
+msgstr "遇到喜欢的内容，记得给自己留个书签哦。"
+
+msgid "Found something you like? Stay a little longer."
+msgstr "发现喜欢的内容，就多停留一会儿吧。"
+
 msgid "Frontend display"
 msgstr "前台显示"
 
 msgid "Frontend entry checks"
 msgstr "前台入口检查"
+
+msgid "Getting one question clear is already a good start."
+msgstr "先想清楚一个问题，就已经很不错了。"
+
+msgid "Good to see you. Take your time."
+msgstr "见到你真好，慢慢来吧。"
 
 msgid "Greeting motion request is invalid."
 msgstr "招呼动作请求无效。"
@@ -758,8 +851,56 @@ msgstr "合手轻摆"
 msgid "Hands together · light sway"
 msgstr "合手轻晃"
 
+msgid "Hat on tight! Let us take our time exploring."
+msgstr "帽子戴稳，今天也慢慢探索吧！"
+
+msgid "Have a stretch, then carry on. Meow."
+msgstr "伸个懒腰，再继续吧。喵。"
+
+msgid "Have a stretch, then keep discovering interesting things."
+msgstr "伸个懒腰，再继续发现有趣的内容吧。"
+
 msgid "Head lowered · listening"
 msgstr "低头倾听"
+
+msgid "Hello again! Leave a little unhurried time in your day."
+msgstr "又见面啦，给今天留一点悠闲的时间吧。"
+
+msgid "Hello! I am here to keep you company."
+msgstr "你好！我会在这里陪你。"
+
+msgid "Hello! Let us collect a little discovery today."
+msgstr "你好呀，今天也来收集一点小发现吧！"
+
+msgid "Hello! Ready to begin?"
+msgstr "你好呀！准备开始了吗？"
+
+msgid "Hello! Where would you like to begin today?"
+msgstr "你好呀，今天想从哪里开始？"
+
+msgid "Hello. It is good to see you here."
+msgstr "你好，很高兴在这里见到你。"
+
+msgid "Hello. Leave a little room for curiosity today."
+msgstr "你好，今天也留一点时间给好奇心吧。"
+
+msgid "Hello. Let us find something new today."
+msgstr "你好，今天也一起找点新发现吧。"
+
+msgid "Hello. What has caught your curiosity today?"
+msgstr "你好，今天有什么让你好奇的事吗？"
+
+msgid "Hello. What would you like to talk about today?"
+msgstr "你好，今天想聊点什么呢？"
+
+msgid "Here I am!"
+msgstr "我来啦！"
+
+msgid "Hey! Is your curiosity awake today?"
+msgstr "嘿！今天的好奇心上线了吗？"
+
+msgid "Hey, take a break if you have been reading too long. You need energy to keep going."
+msgstr "喂，读得太久就休息一下，精神好才有干劲吧。"
 
 msgid "Hide mascot"
 msgstr "收起看板娘"
@@ -769,6 +910,12 @@ msgstr "命中区域绑定无效。"
 
 msgid "Hit area bindings saved."
 msgstr "命中区域绑定已保存。"
+
+msgid "I am here."
+msgstr "我在这里。"
+
+msgid "I am ready! How about your curiosity?"
+msgstr "我已经准备好啦，你的好奇心呢？"
 
 msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
 msgstr "我已核对资源条款，并明确允许下载角色 PNG。"
@@ -790,6 +937,9 @@ msgstr "空闲"
 
 msgid "Idle motion (loop)"
 msgstr "待机动作（循环）"
+
+msgid "If today were a color, which would you choose?"
+msgstr "要是把今天画成一种颜色，你会选什么呢？"
 
 msgid "Image decoding failed."
 msgstr "图片解码失败。"
@@ -866,6 +1016,12 @@ msgstr "已保留本机偏好，账号未变更。"
 msgid "Legacy or unknown task state"
 msgstr "旧版或未知任务状态"
 
+msgid "Let us go! Find the answer you most want to know."
+msgstr "出发吧！先找一个最想知道的答案。"
+
+msgid "Let us take the evening slowly."
+msgstr "一起慢慢度过这个晚上吧。"
+
 msgid "Limits: 20,000 entries, 3 seconds, 500 displayed paths and 1,000 references. Counts may be partial. Source permissions are unknown; preserve every referenced directory, including disabled and trashed characters."
 msgstr "限制：20,000 项、3 秒、显示 500 条路径、1,000 条引用。统计可能不完整。资源使用权限未知；应保留所有被引用目录，包括停用与回收站角色。"
 
@@ -905,6 +1061,12 @@ msgstr "管理资源与角色，让读者按自己的习惯使用看板娘。"
 msgid "Mascot interaction"
 msgstr "看板娘互动"
 
+msgid "Meow. This corner is perfect for a quiet moment."
+msgstr "喵——这个角落真适合安静待着。"
+
+msgid "Meow? Found something new?"
+msgstr "喵？有新发现了吗？"
+
 msgid "Mobile display"
 msgstr "移动端显示"
 
@@ -937,6 +1099,9 @@ msgstr "模型校验失败"
 
 msgid "Model: %s"
 msgstr "模型：%s"
+
+msgid "More interactions and settings"
+msgstr "更多互动与设置"
 
 msgid "Morning"
 msgstr "上午"
@@ -1019,6 +1184,9 @@ msgstr "没有可回退的上一版角色资源。"
 msgid "No resource or settings task is currently detected. Recovery removes only this interrupted task record; it does not repair, remove or roll back resources, staging directories or configuration. Inspect installed resources afterward."
 msgstr "未检测到进行中的资源或设置任务。恢复仅移除此条中断的任务记录，不会修复、删除或回退资源、暂存目录或配置。恢复后请检查已安装资源。"
 
+msgid "No rush. A little at a time is fine!"
+msgstr "别着急，一点一点来就好！"
+
 msgid "No selectable character"
 msgstr "当前没有可选角色"
 
@@ -1037,6 +1205,9 @@ msgstr "已观察路径（仅管理员可见）"
 msgid "Obtain the exact Web 5 R5 live2dcubismcore.min.js from the official SDK. Do not rename a different Core version. Existing resources are retained."
 msgstr "请从官方 SDK 取得指定 Web 5 R5 的 live2dcubismcore.min.js。不要通过重命名替代 Core 版本。现有资源已保留。"
 
+msgid "Occasional chatter"
+msgstr "偶尔闲聊"
+
 msgid "Off by default for every character. Enable only when the resource terms permit readers to save a transparent character PNG. Updating or rolling back model resources disables this permission until you explicitly confirm again."
 msgstr "每个角色默认关闭。仅在资源条款允许访客保存透明角色 PNG 时启用。更新或回退模型资源会关闭此许可，需要重新明确确认。"
 
@@ -1049,8 +1220,17 @@ msgstr "Cubism SDK for Web 官方下载"
 msgid "Official samples"
 msgstr "官方样例"
 
+msgid "One more page, or a well-earned rest?"
+msgstr "再读一页，还是好好休息一下？"
+
+msgid "One small step at a time!"
+msgstr "每次前进一小步就好！"
+
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr "仅接受 PNG、JPEG 或 WebP；宽高均须不超过 2048，最多 4M 像素。"
+
+msgid "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
+msgstr "仅填入空白预设。请检查文本及已有招呼动作后保存；不会自动保存。"
 
 msgid "Only on interaction"
 msgstr "仅主动互动"
@@ -1064,11 +1244,17 @@ msgstr "张嘴皱眉"
 msgid "Open palms · head tilt"
 msgstr "摊手侧头"
 
-msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. No periodic chatter. Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
-msgstr "仅使用本地纯文本。每行一条备选，每个事件最多 8 条，每条不超过 300 字节。不定时闲聊，离开至少 60 秒才触发返回台词。访客可选择自动、仅主动互动或静默。"
+msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgstr "可选的本地纯文本，每行一条备选；每个事件最多8条，每条最多300字节。偶尔闲聊需访客自愿开启，等待1–2倍间隔（90–1800秒）。离开至少60秒才触发返回。访客可选择自动、仅主动或静默。"
 
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
 msgstr "自愿同步角色、收藏与布局。显示、条款和移动端同意仅保留在此浏览器。只有主动选择操作才读取或保存账号偏好。"
+
+msgid "Original editorial examples, not official character dialogue. Choose a draft manually. Only empty fields are filled; review and save the form to apply. Chatter still requires each reader to opt in."
+msgstr "这些是原创编辑示例，并非角色官方台词。请手动选择草稿；仅填入空白字段，检查后保存才会生效。闲聊仍需每位访客自愿开启。"
+
+msgid "Original voice examples. Source links provide context, not official dialogue."
+msgstr "原创语气示例。来源链接用于背景参考，并非官方台词出处。"
 
 msgid "PNG capture cancelled."
 msgstr "PNG 保存已取消。"
@@ -1093,6 +1279,12 @@ msgstr "已开始下载 PNG。"
 
 msgid "Partial: %s observed bytes"
 msgstr "部分观察值：%s 字节"
+
+msgid "Pause and see whether you missed a clue."
+msgstr "不妨停一下，看看刚才有没有遗漏的线索。"
+
+msgid "Pause for a breath when you need one."
+msgstr "需要的时候，停下来喘口气吧。"
 
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 msgstr "手机输入框聚焦时暂停（避免遮挡输入与软键盘）"
@@ -1154,11 +1346,17 @@ msgstr "上一版引用"
 msgid "Previous thumbnail"
 msgstr "上一版缩略图"
 
+msgid "Purr... Take your time. I will keep you company."
+msgstr "呼噜呼噜，慢慢看，我在这里陪你。"
+
 msgid "Pursed lips"
 msgstr "抿嘴"
 
 msgid "Quick interactions"
 msgstr "快捷互动"
+
+msgid "Quiet company"
+msgstr "安静陪伴"
 
 msgid "Raise hand to greet"
 msgstr "举手招呼"
@@ -1181,8 +1379,20 @@ msgstr "读者自行开启"
 msgid "Reading account preferences…"
 msgstr "正在读取账号偏好…"
 
+msgid "Reading companion"
+msgstr "阅读伙伴"
+
+msgid "Reading team, assemble! Pick an interesting title."
+msgstr "阅读小队集合！先挑一个有意思的标题吧。"
+
 msgid "Ready"
 msgstr "已就绪"
+
+msgid "Ready when you are. Let us continue."
+msgstr "准备好了就继续读吧。"
+
+msgid "Ready? Let us tackle a new question today."
+msgstr "准备好了吗？今天也来挑战一个新问题。"
 
 msgid "Recent characters"
 msgstr "最近角色"
@@ -1270,6 +1480,9 @@ msgstr "资源暂时无法下载，请稍后重试"
 
 msgid "Resources imported."
 msgstr "资源已导入。"
+
+msgid "Rest your eyes for a moment."
+msgstr "让眼睛休息一会儿吧。"
 
 msgid "Restore a configuration backup before retrying."
 msgstr "请恢复配置备份后重试。"
@@ -1373,6 +1586,9 @@ msgstr "已保存窗口：%1$s / 20。已替换更早窗口：%2$s。"
 msgid "Saving account preferences…"
 msgstr "正在保存账号偏好…"
 
+msgid "Say hello"
+msgstr "打招呼"
+
 msgid "Search"
 msgstr "搜索"
 
@@ -1436,6 +1652,9 @@ msgstr "大小或偏移必须是有效数字。"
 msgid "Size must be 140–260 pixels in steps of 10; offset must be -100–100%."
 msgstr "大小须为 140–260 像素（步长 10），偏移须为 -100–100%。"
 
+msgid "Slowing down can help you hear your own thoughts."
+msgstr "偶尔放慢一点，也能听见自己的想法。"
+
 msgid "Smile"
 msgstr "微笑"
 
@@ -1478,6 +1697,18 @@ msgstr "停止采样"
 msgid "Surprised"
 msgstr "惊讶"
 
+msgid "Swordsman and dragon ready! Which page shall we explore?"
+msgstr "剑士与飞龙就位，今天想探索哪一页？"
+
+msgid "Take a break"
+msgstr "休息一下"
+
+msgid "Take your time and work through one question at a time."
+msgstr "不用急，把问题一个个看清楚就好。"
+
+msgid "Take your time. Just finish this small section first."
+msgstr "慢慢来，先读完眼前这一小段就好。"
+
 msgid "Tap"
 msgstr "轻点"
 
@@ -1510,6 +1741,9 @@ msgstr "贴图"
 
 msgid "Texture creation failed"
 msgstr "纹理创建失败"
+
+msgid "That little charm... it is pretty cute."
+msgstr "那个小挂件……确实挺可爱的嘛。"
 
 msgid "The Core file is missing or has an invalid size."
 msgstr "Core 文件缺失或大小无效。"
@@ -1691,6 +1925,9 @@ msgstr "上传目录不可用。"
 msgid "The welcome motion reference is invalid."
 msgstr "欢迎动作引用无效。"
 
+msgid "There is no hurry. I will keep you company."
+msgstr "不用着急，我会陪着你。"
+
 msgid "This browser does not support WebGL; the mascot cannot be displayed."
 msgstr "浏览器不支持 WebGL，无法显示看板娘"
 
@@ -1739,6 +1976,9 @@ msgstr "缩略图写入校验失败。"
 msgid "Thumbnail: %s"
 msgstr "缩略图：%s"
 
+msgid "Time for a little stretch!"
+msgstr "该伸个懒腰啦！"
+
 msgid "Tool completed"
 msgstr "工具操作已完成"
 
@@ -1747,6 +1987,9 @@ msgstr "回收站"
 
 msgid "Turn with hands behind"
 msgstr "转身背手"
+
+msgid "Understand this stage first, then keep moving."
+msgstr "先把眼前这一关弄明白，再继续前进吧。"
 
 msgid "Unfavorite %1$s"
 msgstr "取消收藏 %1$s"
@@ -1826,11 +2069,59 @@ msgstr "查看角色入口状态"
 msgid "View character sources, terms and notices"
 msgstr "查看角色来源、使用条款及声明"
 
+msgid "Want a new topic? Start with a small question."
+msgstr "如果想换个话题，就从一个小问题开始吧。"
+
 msgid "Welcome"
 msgstr "欢迎"
 
+msgid "Welcome back to your reading."
+msgstr "欢迎回来继续阅读。"
+
+msgid "Welcome back. Find a comfortable pace for your reading."
+msgstr "欢迎回来，找个舒服的节奏慢慢读吧。"
+
+msgid "Welcome back. We can continue at your pace."
+msgstr "欢迎回来，我们按你的节奏继续吧。"
+
 msgid "Welcome motion (first display)"
 msgstr "欢迎动作（首次显示时播放）"
+
+msgid "Welcome. I hope you find something here."
+msgstr "欢迎来到这里，希望你有所发现。"
+
+msgid "Welcome. Start with what you most want to understand."
+msgstr "欢迎，先从最想了解的内容开始吧。"
+
+msgid "Welcome. Take your time looking around."
+msgstr "欢迎，慢慢看看吧。"
+
+msgid "What detail made you want to look twice today?"
+msgstr "今天有什么细节，让你忍不住多看一眼呢？"
+
+msgid "What shall we read next?"
+msgstr "接下来读点什么呢？"
+
+msgid "What would you like to explore today?"
+msgstr "今天想探索什么呢？"
+
+msgid "When an idea gets stuck, try another angle."
+msgstr "思路卡住的时候，换个角度看看。"
+
+msgid "Woof! A soft little hello for you."
+msgstr "汪！软乎乎地来打个招呼。"
+
+msgid "Woof! Take a break, then keep exploring."
+msgstr "汪呜，休息一下，再继续探索吧。"
+
+msgid "You are back! Shall we continue?"
+msgstr "你回来啦！要继续吗？"
+
+msgid "You can leave a thought to revisit later."
+msgstr "可以留下想法，稍后再回来看看。"
+
+msgid "You have made it through another day."
+msgstr "今天也辛苦啦。"
 
 msgid "You have unsaved changes. Leave this page?"
 msgstr "有尚未保存的修改。确定离开此页吗？"

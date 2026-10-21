@@ -18,6 +18,7 @@ async function startFixture() {
         greetings: ['wave'], welcome: null, size: 180, offset: 0, credit: 'Synthetic test data' });
       const config = { version: 'synthetic-browser', termsVersion: 'synthetic-v1',
         terms: '/terms', core: '/synthetic/core.js', engine: '/synthetic/engine.js', shaders: '/synthetic/shaders/',
+        diagnosticsAllowed: url.searchParams.get('role') === 'administrator',
         mobileEnabled: url.searchParams.get('mobile') === '1', mobilePauseOnInput: true, accountEndpoint:'/account',
         characters: { alpha: character('alpha'), beta: character('beta') } };
       if (url.searchParams.get('dialogue') === '1') for (const [id, c] of Object.entries(config.characters)) {
@@ -28,6 +29,7 @@ async function startFixture() {
         {id:'greet',name:'Quick greeting',motion:'wave',expression:'smile',line:id+' preset line'},
         {id:'text',name:'Text only',motion:'',expression:'',line:id+' text only'},
         {id:'invalid',name:'Invalid preset',motion:'missing',expression:'',line:'Never show'}];
+      if (url.searchParams.get('idle') === '1') for (const c of Object.values(config.characters)) { c.dialogue={idle:{enabled:true,cooldown:90,lines:['idle one','idle two','idle three','idle four']}}; }
       if (url.searchParams.get('capture')==='1')config.characters.alpha.captureAllowed=true;
       if (url.searchParams.get('hits') === '1') for (const c of Object.values(config.characters)) c.hitBindings=[{area:'Head',preset:'greet'},{area:'Body',preset:'text'}];
       if (url.searchParams.get('period') === '1') for (const c of Object.values(config.characters)) c.dialogue.welcome.enabled = false;

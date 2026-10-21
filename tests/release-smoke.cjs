@@ -47,10 +47,13 @@ const thumbnailElement = (tag) => {
 const exerciseThumbnail = new Function('make', 'characters', 'characterSelect', 'panel', 'location', 'URL', 'assert', 'requests', `
   const t = ${translate.toString()};
   let panelOpen = false;
+  const characterSettings={open:false};
   ${thumbnailCode}
   syncThumbnail();
   assert.equal(requests.length, 0);
   panelOpen = true; panel.hidden = false;
+  syncThumbnail();assert.equal(requests.length,0);
+  characterSettings.open=true;
   syncThumbnail();
   assert.equal(requests.length, 1);
   assert.equal(candidateImage.loading, 'eager');
@@ -137,7 +140,7 @@ const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed'
 `);
 const diagnosticResult = exerciseDiagnostics(makeElement, { body: { append() {} } }, testEngine, () => true,
   { now: () => clock }, (fn) => { timers.set(++timerId, fn); return timerId; }, (id) => timers.delete(id),
-  { version: '3.6.0' }, 'synthetic-character', { matches: false }, 1200, 800, 1,
+  { version: '3.6.0', diagnosticsAllowed:true }, 'synthetic-character', { matches: false }, 1200, 800, 1,
   { createObjectURL: (blob) => { exportedBlob = blob; return 'blob:local'; }, revokeObjectURL() {} },
   () => { throw Error('Diagnostics must not make network requests'); }, require('node:crypto').webcrypto, assert,
   (time, frames, average) => { clock = time; frameCount = frames; drawAverage = average; }, () => gpuQueries, () => { const [id, fn] = timers.entries().next().value; timers.delete(id); fn(); });
@@ -203,7 +206,7 @@ const exerciseAPI = new Function('assert', 'performance', 'setTimeout', 'clearTi
   // The extracted legacy command boundary now also installs semantic/help hooks.
   // Their full behavior is covered by the whole-page dialogue browser suite.
   const helpButton={addEventListener:()=>{}},document={addEventListener:()=>{}};
-  const pendingPreset=null,cancelPreset=()=>{},clearDialogue=()=>{};
+  const pendingPreset=null,cancelPreset=()=>{},clearDialogue=()=>{},cancelIdle=()=>{},syncIdle=()=>{};
   const allowed=()=>permitted, cancelWelcome=()=>{};
   let resolvePlay=null, asyncPlay=false;
   const target={state:()=>({paused:false}), catalog:{motions:[{id:'01'}], expressions:[{id:'smile'}]},
