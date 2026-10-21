@@ -139,7 +139,7 @@ function wzf_mascot_template_apply($id, $version, $raw, $scope, $issued, $signat
         $plan = wzf_mascot_template_plan($config, $id, $version, $raw, $scope);
         if ($plan['before'] === $plan['after']) return;
         $config['characters'][$id] = $plan['after'];
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
 function wzf_mascot_template_post_fields($keys) {

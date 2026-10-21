@@ -45,7 +45,7 @@
     const recentKey='wzf-mascot-recent-v1';
     const historyId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     try{const saved=JSON.parse(localStorage.getItem(recentKey)||'[]');if(Array.isArray(saved))recent=[...new Set(saved.filter(historyId))].slice(0,8);}catch{}
-    const pendingFavorites = new Map();
+    const pendingFavorites = new Map(), pendingLayouts = new Map();
     // Favorites storage must not interrupt the existing visibility/consent reads.
     try {
       favorites = readFavorites();
@@ -70,6 +70,7 @@
       touchPending = false,
       manualPending = new Set(),
       committed = defaultCharacter,
+      preferredCharacter = defaultCharacter,
       active = defaultCharacter,
       preview = false,
       layouts = {},
@@ -83,12 +84,13 @@
       mobileOptIn = localStorage.getItem('wzf-mascot-mobile-v1') === 'enabled';
       accepted = localStorage.getItem('wzf-haru-terms') === config.termsVersion;
       const saved = localStorage.getItem('wzf-mascot-character');
+      if (historyId(saved)) preferredCharacter = saved;
       if (Object.hasOwn(characters, saved)) committed = saved;
       const parsed = JSON.parse(localStorage.getItem('wzf-mascot-layouts') || '{}');
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) layouts = parsed;
       if (!layouts.haru) {
         const old = JSON.parse(localStorage.getItem('wzf-haru-layout') || 'null');
-        if (old && typeof old === 'object') layouts.haru = old;
+        if (old && typeof old === 'object') { layouts.haru = old; pendingLayouts.set('haru',old); }
       }
     } catch {}
     let dialogueMode = 'auto';
@@ -947,7 +949,10 @@
     accountActions.append(accountRead,accountSave,accountUse,accountKeep);
     accountSettings.append(accountActions,accountStatus);
     advancedControls.insertBefore(accountSettings,credit);
-    let accountState=null,accountNonce='',accountPending=false;
+    let accountState=null,accountNonce='',accountPending=false,accountEpoch=0;
+    const preferenceKeys=['wzf-mascot-character',favoritesKey,'wzf-mascot-layouts'];
+    const preferenceBaseline=()=>preferenceKeys.map(key=>[key,localStorage.getItem(key)]);
+    const samePreferenceBaseline=(baseline)=>baseline.every(([key,value])=>localStorage.getItem(key)===value);
     const preferenceId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     const exactFields=(value,allowed,required=allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>allowed.includes(key))&&required.every(key=>Object.hasOwn(value,key));
     const validPreferences=(value)=>{
@@ -961,8 +966,9 @@
       return true;
     };
     const browserPreferences=()=>{
-      let character=committed;
-      try{const saved=localStorage.getItem('wzf-mascot-character');if(preferenceId(saved))character=saved;}catch{}
+      // Export one coherent page snapshot, including an unavailable saved ID;
+      // never mix another tab's live character key with this page's collections.
+      const character=preferredCharacter;
       const rows=[];
       for(const [id,row] of Object.entries(layouts)){
         if(!preferenceId(id)||!row||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)continue;
@@ -978,6 +984,13 @@
       accountUse.disabled=accountPending||!accountState?.preferences||!engine||loading||preview||!allowed();
       accountKeep.disabled=accountPending||!accountState;
     };
+    const browserChangedNotice=()=>t("Browser preferences changed in another tab. Read account preferences again before using or saving them.");
+    const invalidateAccount=()=>{accountEpoch++;accountState=null;accountNonce='';accountStatus.textContent=browserChangedNotice();accountUpdate();};
+    window.addEventListener('storage',(event)=>{
+      let area;try{area=localStorage;}catch{return;}
+      if(event.storageArea!==area || (event.key!==null && !preferenceKeys.includes(event.key)))return;
+      invalidateAccount();
+    });
     const accountRequest=async(operation,extra={})=>{
       const url=new URL(config.accountEndpoint,location.href);
       if(!config.accountEndpoint||url.origin!==location.origin)throw Error('unavailable');
@@ -992,11 +1005,12 @@
       }catch(error){if(error.name==='AbortError')throw Error('request-timeout');throw error;}
       finally{clearTimeout(timer);}
     };
-    const accountError=(code)=>code==='request-timeout'?t("The request timed out. A save may have completed. Read account preferences again before saving."):code==='sign-in-required'?t("Sign in to read or save account preferences."):code==='account-busy'?t("Account preferences are busy. Try again."):t("Account preferences could not be read or saved. Your browser preferences are retained.");
+    const accountError=(code)=>code==='browser-changed'?browserChangedNotice():code==='request-timeout'?t("The request timed out. A save may have completed. Read account preferences again before saving."):code==='sign-in-required'?t("Sign in to read or save account preferences."):code==='account-busy'?t("Account preferences are busy. Try again."):t("Account preferences could not be read or saved. Your browser preferences are retained.");
     accountRead.onclick=async()=>{
-      if(accountPending)return;accountState=null;accountNonce='';accountPending=true;accountUpdate();accountStatus.textContent=t("Reading account preferences…");
+      if(accountPending)return;const epoch=accountEpoch;accountState=null;accountNonce='';accountPending=true;accountUpdate();accountStatus.textContent=t("Reading account preferences…");
       try{
         const result=await accountRequest('bootstrap');
+        if(epoch!==accountEpoch)throw Error('browser-changed');
         if(!result.success||!result.data.state||typeof result.data.nonce!=='string'||result.data.nonce.length>128)throw Error(result.data.code||'invalid-response');
         accountState=result.data.state;accountNonce=result.data.nonce;
         accountStatus.textContent=!accountState.preferences?t("No account preferences saved. Saving is optional."):JSON.stringify(accountState.preferences)===JSON.stringify(browserPreferences())?t("Account and browser preferences match."):t("Account and browser differ. Choose which preferences to use; saving to the account is a separate action.");
@@ -1004,9 +1018,10 @@
       finally{accountPending=false;accountUpdate();}
     };
     accountSave.onclick=async()=>{
-      if(accountPending||!accountState)return;const preferences=browserPreferences();accountPending=true;accountUpdate();accountStatus.textContent=t("Saving account preferences…");
+      if(accountPending||!accountState)return;const preferences=browserPreferences(),epoch=accountEpoch;accountPending=true;accountUpdate();accountStatus.textContent=t("Saving account preferences…");
       try{
         const result=await accountRequest('save',{nonce:accountNonce,revision:String(accountState.revision),preferences:JSON.stringify(preferences)});
+        if(epoch!==accountEpoch)throw Error('browser-changed');
         if(!result.success){if(result.data.code==='conflict'&&result.data.state){accountState=result.data.state;accountStatus.textContent=t("The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version.");}else throw Error(result.data.code||'invalid-response');}
         else{if(!result.data.state)throw Error('invalid-response');accountState=result.data.state;accountStatus.textContent=t("Account preferences saved. Any later browser changes remain local.");}
       }catch(error){accountState=null;accountNonce='';accountStatus.textContent=accountError(error.message);}
@@ -1015,7 +1030,9 @@
     accountKeep.onclick=()=>{accountStatus.textContent=t("Keeping browser preferences. The account was not changed.");};
     accountUse.onclick=async()=>{
       if(accountPending||!accountState?.preferences||loading||preview||!allowed()||!engine)return;
-      const value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
+      let baseline;
+      try{baseline=preferenceBaseline();}catch{accountStatus.textContent=t("The browser did not allow saving account preferences locally. Current preferences are retained.");return;}
+      const epoch=accountEpoch,value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
       for(const row of value.layouts){nextLayouts[row.id]={position:row.position,size:row.size,...(row.anchor?{anchor:{...row.anchor}}:{})};}
       const changes=[['wzf-mascot-character',value.character],[favoritesKey,JSON.stringify(value.favorites)],['wzf-mascot-layouts',JSON.stringify(nextLayouts)]];
       const previous=[];
@@ -1032,9 +1049,13 @@
         if(available&&(active!==value.character||!engine||failed||loading||!allowed())){
           await rollbackPreview();accountStatus.textContent=t("The account character could not load. Browser preferences were not changed.");return;
         }
+        let unchanged=false;
+        try{unchanged=epoch===accountEpoch&&samePreferenceBaseline(baseline);}
+        catch{await rollbackPreview();accountState=null;accountNonce='';accountStatus.textContent=t("The browser did not allow saving account preferences locally. Current preferences are retained.");return;}
+        if(!unchanged){await rollbackPreview();invalidateAccount();return;}
         try{for(const [key]of changes)previous.push([key,localStorage.getItem(key)]);for(const [key,text]of changes)localStorage.setItem(key,text);}
         catch{for(const [key,text]of previous){try{text===null?localStorage.removeItem(key):localStorage.setItem(key,text);}catch{}}let restored=false;try{restored=previous.length===changes.length&&previous.every(([key,text])=>localStorage.getItem(key)===text);}catch{}await rollbackPreview();accountStatus.textContent=restored?t("The browser did not allow saving account preferences locally. Current preferences are retained."):t("This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.");return;}
-        layouts=nextLayouts;favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
+        preferredCharacter=value.character;layouts=nextLayouts;pendingLayouts.clear();favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
         if(available){committed=active;preview=false;rememberRecent(active);}
         syncCharacterOptions(active);readLayout();paint();
         accountStatus.textContent=(available?t("Account preferences applied to this browser."):t("Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."))+(recentNotice?' '+recentNotice:'');
@@ -1154,10 +1175,20 @@
         'px - env(safe-area-inset-bottom) - env(safe-area-inset-top))';
     };
     const rememberLayout = () => {
-      layouts[active] = { position, size, ...(anchor ? {anchor:{...anchor}} : {}) };
+      const row={position,size,...(anchor?{anchor:{...anchor}}:{})};
+      layouts[active]=row;pendingLayouts.set(active,row);
       try {
-        localStorage.setItem('wzf-mascot-layouts', JSON.stringify(layouts));
-      } catch {}
+        const raw=localStorage.getItem('wzf-mascot-layouts');
+        let latest;try{latest=JSON.parse(raw||'{}');}catch{latest=null;}
+        // A readable malformed value can be repaired by this explicit edit.
+        // Access failures still reach the page-only notice without overwriting.
+        if(!latest||typeof latest!=='object'||Array.isArray(latest))latest=Object.create(null);
+        const merged=Object.assign(Object.create(null),latest);
+        for(const [id,value]of pendingLayouts)merged[id]=value;
+        // Best effort only: localStorage has no cross-tab compare-and-swap.
+        localStorage.setItem('wzf-mascot-layouts',JSON.stringify(merged));
+        layouts=merged;pendingLayouts.clear();
+      } catch {state.textContent=t("Layout applies only to this page; the browser did not allow saving.");}
       layout();
     };
     side.onchange = () => {
@@ -1868,6 +1899,7 @@
       try {
         localStorage.setItem('wzf-mascot-character', active);
         committed = active;
+        preferredCharacter = active;
         preview = false;
         rememberRecent(active);
         state.textContent = t("Using %1$s; this browser will remember your selection.", characters[active].name)+(recentNotice?' '+recentNotice:'');

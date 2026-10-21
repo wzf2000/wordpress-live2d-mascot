@@ -247,4 +247,16 @@ class AdminInventoryTests(unittest.TestCase):
         self.assertEqual(result['dictionary']['Show mascot'], 'Show mascot'); self.assertNotIn('Disk inventory', result['dictionary'])
 
 
+    def test_resource_and_account_guard_subtrees_are_always_protected(self):
+        report=self.php(self.setup()+'''
+        $account=wzf_mascot_guard_scope_begin('account',true,str_repeat('a',64).'.guard');
+        $report=wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION]);wzf_mascot_guard_scope_end($account);echo json_encode($report);
+        ''')
+        self.assertTrue(report['complete'])
+        rows={row['path']:row['kind'] for row in report['paths']}
+        self.assertEqual(rows['.task-guard'],'directory-guard');self.assertEqual(rows['.resource-guard'],'directory-guard')
+        self.assertEqual(rows['.account-guards'],'directory-guard')
+        self.assertEqual(rows['.account-guards/'+'a'*64+'.guard'],'directory-guard')
+
+
 if __name__ == '__main__': unittest.main()

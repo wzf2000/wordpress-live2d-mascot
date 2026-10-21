@@ -12,7 +12,7 @@ function wzf_mascot_save_mobile($version, $enabled, $pause_input) {
         if (!is_array($config) || !is_array($config['characters'] ?? null)) throw new RuntimeException(__('Resource configuration is invalid.', 'live2d-show'));
         if (($config['mobileEnabled'] ?? false) === $enabled && ($config['mobilePauseOnInput'] ?? true) === $pause_input) return;
         $config['mobileEnabled'] = $enabled; $config['mobilePauseOnInput'] = $pause_input;
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save mobile settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save mobile settings.', 'live2d-show'));
     } finally {
         wzf_mascot_task_end($task);
     }

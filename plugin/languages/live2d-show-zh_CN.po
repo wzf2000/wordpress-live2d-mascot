@@ -302,6 +302,9 @@ msgstr "右下角"
 msgid "Break a tough problem into pieces and solve them one by one!"
 msgstr "遇到难题就拆开来，一个一个解决好了！"
 
+msgid "Browser preferences changed in another tab. Read account preferences again before using or saving them."
+msgstr "其他标签页修改了浏览器偏好。请重新读取账号偏好后，再选择使用或保存。"
+
 msgid "Cancel"
 msgstr "取消"
 
@@ -1066,6 +1069,9 @@ msgstr "保留本机偏好"
 
 msgid "Keeping browser preferences. The account was not changed."
 msgstr "已保留本机偏好，账号未变更。"
+
+msgid "Layout applies only to this page; the browser did not allow saving."
+msgstr "布局仅在本页生效；浏览器不允许保存。"
 
 msgid "Legacy or unknown task state"
 msgstr "旧版或未知任务状态"

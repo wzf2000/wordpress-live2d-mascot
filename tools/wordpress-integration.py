@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """New isolated real WordPress + HTTP admin forms; synthetic data, no render acceptance."""
 import argparse
+from contextlib import contextmanager
 import struct
 import zlib
 import hashlib
@@ -223,6 +224,54 @@ def main():
     def post(data, files=None, opener=None): return request(opener or admin, '/wp-admin/admin-post.php', data, files)
     def record(name): checks.append(name); print('PASS ' + name, flush=True)
 
+    # A separate CLI process holds real WordPress locks while HTTP requests run.
+    # No route, test hook or synthetic credential is shipped in the plugin.
+    holder = lab / 'lock-holder.php'
+    holder.write_text('''<?php
+if (!defined('ABSPATH') || wp_get_environment_type() !== 'local' || !str_starts_with(ABSPATH,'/tmp/mascot-ci-') || !is_file(dirname(rtrim(ABSPATH,'/')).'/mascot-ci-owner')) throw new RuntimeException('Synthetic lab required.');
+$base=dirname(rtrim(ABSPATH,'/'));$ready=getenv('MASCOT_CI_HOLD_READY');$release=getenv('MASCOT_CI_HOLD_RELEASE');
+if(dirname($ready)!==$base || dirname($release)!==$base) throw new RuntimeException('Owned signal paths required.');
+$wait=static function()use($ready,$release){file_put_contents($ready,'ready');$deadline=microtime(true)+60;while(!is_file($release)){if(microtime(true)>$deadline)throw new RuntimeException('Synthetic hold deadline');usleep(10000);}};
+wp_set_current_user(get_user_by('login','mascot-admin')->ID);
+$mode=getenv('MASCOT_CI_HOLD_KIND');
+if($mode==='account') {
+    add_filter('update_user_metadata',static function($check,$uid,$key)use($wait){if($uid===get_current_user_id() && $key===wzf_mascot_preference_key())$wait();return $check;},10,3);
+    $state=wzf_mascot_preference_snapshot(get_current_user_id());
+    $result=wzf_mascot_save_preferences(get_current_user_id(),$state['revision'],['character'=>'fixture','favorites'=>[],'layouts'=>[]]);
+    if(!$result['ok'])throw new RuntimeException('Synthetic account save failed');
+} elseif($mode==='resource') {
+    $task=wzf_mascot_task_begin('settings');try{$wait();}finally{wzf_mascot_task_end($task);}
+} elseif($mode==='legacy') {
+    $bridge=wzf_mascot_task_guard(true);if(!flock($bridge,LOCK_EX|LOCK_NB))throw new RuntimeException('Synthetic legacy guard unavailable');
+    try{$wait();}finally{flock($bridge,LOCK_UN);fclose($bridge);}
+} else throw new RuntimeException('Unknown hold kind');
+echo 'released';
+''')
+
+    @contextmanager
+    def held(kind):
+        token = secrets.token_hex(6)
+        ready, release = lab / ('hold-' + token + '.ready'), lab / ('hold-' + token + '.release')
+        current = dict(env, MASCOT_CI_HOLD_KIND=kind, MASCOT_CI_HOLD_READY=str(ready), MASCOT_CI_HOLD_RELEASE=str(release))
+        process = subprocess.Popen(command + ['eval-file', str(holder)], env=current, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        try:
+            deadline = time.monotonic() + 15
+            while not ready.exists():
+                if process.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError('Synthetic lock holder did not become ready')
+                time.sleep(.02)
+            yield
+        finally:
+            release.write_text('release')
+            try:
+                stdout, stderr = process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.terminate()
+                stdout, stderr = process.communicate(timeout=5)
+            ready.unlink(missing_ok=True); release.unlink(missing_ok=True)
+            if process.returncode != 0 or stdout.strip() != 'released':
+                raise RuntimeError('Synthetic lock holder did not finish cleanly')
+
     try:
         for _ in range(50):
             try: request(anonymous, '/wp-login.php'); break
@@ -314,12 +363,21 @@ def main():
         protected = {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
         post(recovery); assert state() == before
         assert protected == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        # A valid abandoned v1 record uses the original bridge identity. The
+        # new runtime must recover it without pretending it is a v2 record.
+        wp('eval', "$h=wzf_mascot_task_guard(true);if(!flock($h,LOCK_EX|LOCK_NB))throw new RuntimeException('Synthetic v1 guard unavailable');try{add_option(WZF_MASCOT_LOCK,['token'=>bin2hex(random_bytes(16)),'started'=>time(),'guard'=>1,'kind'=>'settings','identity'=>wzf_mascot_task_identity($h)],'',false);}finally{flock($h,LOCK_UN);fclose($h);}")
+        assert state()['lock']['guard'] == 1
+        html = request(admin, inventory_url)[1]
+        assert 'Interrupted · Review required' in html
+        recovery_v1 = next(f for f in Forms(html).forms if f.get('action') == 'wzf_mascot_task_recover')
+        post(dict(recovery_v1, confirm='1')); assert state() == before
+        assert protected == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
         fixture('task-legacy'); legacy = state(); html = request(admin, inventory_url)[1]
         assert 'Legacy or unknown task state' in html and not any(f.get('action') == 'wzf_mascot_task_recover' for f in Forms(html).forms)
         post(recovery); assert state() == legacy; fixture('task-clear')
         assert json.loads(fixture('task-cache-check')) == {'rejected': True, 'retained': True, 'lock': False}
         fixture('restore'); assert state()['config'] == original
-        record('real HTTP guarded recovery, confirmation/nonce/permission/replacement/legacy rejection and stale option cache conflict')
+        record('real HTTP v1/v2 guarded recovery, confirmation/nonce/permission/replacement/unknown rejection and stale option cache conflict')
         # A full synthetic baseline goes through the actual WordPress upgrader.
         # Browser localStorage remains a browser-layer contract, not server metadata.
         uid = wp('user', 'get', 'mascot-admin', '--field=ID')
@@ -483,6 +541,61 @@ def main():
         wp('plugin', 'install', str(bundle), '--force', '--activate')
         assert json.loads(request(reader, account_path, account_action)[1])['data']['state'] == saved_account
         record('real account revision conflicts, strict scope, unavailable ID retention and upgrade preservation without resource option writes')
+        domain_base = state()
+
+        def account_save(opener):
+            code, body = request(opener, account_path, account_action)
+            assert code == 200
+            boot = json.loads(body)['data']
+            return request(opener, account_path, dict(payload, nonce=boot['nonce'], revision=str(boot['state']['revision'])))
+
+        def legacy_exclusive_available():
+            # Old-version behavior: hold the original inode exclusively for the
+            # whole critical section, without consulting the new domain locks.
+            return json.loads(wp('eval', "$handle=wzf_mascot_task_guard();$locked=flock($handle,LOCK_EX|LOCK_NB);if($locked)flock($handle,LOCK_UN);fclose($handle);echo json_encode($locked);"))
+
+        changed_mobile = dict(domain_base['config'],
+                              mobileEnabled=domain_base['config'].get('mobileEnabled') is not True,
+                              mobilePauseOnInput=domain_base['config'].get('mobilePauseOnInput') is False)
+
+        def changed_mobile_form():
+            data = form('wzf_mascot_mobile')
+            for key in ('mobile_enabled', 'pause_input'):
+                data.pop(key, None)
+            if changed_mobile['mobileEnabled']: data['mobile_enabled'] = '1'
+            if changed_mobile['mobilePauseOnInput']: data['pause_input'] = '1'
+            return data
+
+        with held('account'):
+            assert legacy_exclusive_available() is False
+            assert account_save(admin)[0] == 503  # Same user remains exclusive.
+            assert account_save(reader)[0] == 200
+            code, page = request(admin, inventory_url)
+            assert code == 200 and '<strong>Idle</strong>' in page
+            # A real resource/settings request can enter its own domain.
+            post(changed_mobile_form())
+            assert state()['config'] == changed_mobile  # A redirected error is not success.
+            assert state()['lock'] is False
+        assert json.loads(request(admin, account_path, account_action)[1])['data']['state']['revision'] == 1
+        wp('option', 'update', 'wzf_mascot_resources_v1', json.dumps(domain_base['config']), '--format=json')
+        with held('resource'):
+            assert state()['lock']['guard'] == 2
+            assert legacy_exclusive_available() is False
+            assert account_save(reader)[0] == 200
+            code, page = request(admin, inventory_url)
+            assert code == 200 and '<strong>Running</strong>' in page
+        assert state() == domain_base
+        record('real separate-process account domains: same user busy, other user/settings parallel, task status accurate')
+        with held('legacy'):
+            assert account_save(reader)[0] == 503
+            code, page = request(admin, inventory_url)
+            assert code == 200 and 'Legacy or unknown task state' in page
+            assert not any(f.get('action') == 'wzf_mascot_task_recover' for f in Forms(page).forms)
+            post(changed_mobile_form())
+            assert state() == domain_base
+        assert account_save(reader)[0] == 200
+        assert state() == domain_base
+        record('real legacy exclusive bridge blocks new account/settings writers without exposing unsafe recovery')
         data = form('wzf_mascot_settings'); stale = dict(data)
         data.update(name='Updated synthetic', credit='Synthetic credit', size='200', offset='6.5', idle='motion-1', welcome='01_extra', **{'greetings[]': '01_extra'})
         post(data); updated = state()['config']; c = updated['characters']['legacy_character']; old = original['characters']['legacy_character']
@@ -553,8 +666,8 @@ def main():
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 25:
-            raise RuntimeError(f'Expected 25 completed integration groups, got {len(checks)}')
+        if len(checks) != 27:
+            raise RuntimeError(f'Expected 27 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

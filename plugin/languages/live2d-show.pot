@@ -305,6 +305,9 @@ msgstr ""
 msgid "Break a tough problem into pieces and solve them one by one!"
 msgstr ""
 
+msgid "Browser preferences changed in another tab. Read account preferences again before using or saving them."
+msgstr ""
+
 msgid "Cancel"
 msgstr ""
 
@@ -1068,6 +1071,9 @@ msgid "Keep browser preferences"
 msgstr ""
 
 msgid "Keeping browser preferences. The account was not changed."
+msgstr ""
+
+msgid "Layout applies only to this page; the browser did not allow saving."
 msgstr ""
 
 msgid "Legacy or unknown task state"

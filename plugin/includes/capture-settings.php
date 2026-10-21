@@ -6,7 +6,7 @@ function wzf_mascot_save_capture($id, $version, $allowed, $confirmed) {
     wzf_mascot_locked_character($id, $version, function($config) use ($id, $allowed) {
         if (($config['characters'][$id]['captureAllowed'] ?? false) === $allowed) return;
         $config['characters'][$id]['captureAllowed'] = $allowed;
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
 function wzf_mascot_capture_post() {

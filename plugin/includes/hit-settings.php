@@ -43,7 +43,7 @@ function wzf_mascot_save_hits($id, $version, $rows) {
         $bindings = wzf_mascot_hit_bindings($rows, wzf_mascot_character_hit_names($c), wzf_mascot_current_presets($c), true);
         if (($c['hitBindings'] ?? []) === $bindings && empty($c['hitWarnings'])) return;
         $config['characters'][$id]['hitBindings'] = $bindings; unset($config['characters'][$id]['hitWarnings']);
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
 function wzf_mascot_hits_post() {

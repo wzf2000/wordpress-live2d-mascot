@@ -136,7 +136,8 @@ function wzf_mascot_disk_inventory($config, $limits = []) {
             $path = $reference['path'];
             if ($relative === $path || str_starts_with($path, $relative . '/') || ($reference['directory'] && str_starts_with($relative, $path . '/'))) $kinds[] = $reference['kind'];
         }
-        if (in_array($relative, ['index.html', '.htaccess', 'web.config', WZF_MASCOT_GUARD_FILE], true)) $kinds[] = 'directory-guard';
+        if (in_array($relative, ['index.html', '.htaccess', 'web.config', WZF_MASCOT_GUARD_FILE, WZF_MASCOT_RESOURCE_GUARD_FILE], true)) $kinds[] = 'directory-guard';
+        if ($relative === WZF_MASCOT_ACCOUNT_GUARD_DIR || str_starts_with($relative, WZF_MASCOT_ACCOUNT_GUARD_DIR . '/')) $kinds[] = 'directory-guard';
         if (preg_match('~(?:^|/)stage-[^/]+(?:/|$)~', $relative)) $kinds[] = 'staging';
         if ($kinds) return implode(', ', array_unique($kinds));
         return 'unreferenced';
