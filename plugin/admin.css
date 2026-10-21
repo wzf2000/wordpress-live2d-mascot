@@ -211,6 +211,20 @@
   min-width: 820px;
 }
 
+.wzf-mascot-admin .wzf-mascot-cleanup-table {
+  min-width: 820px;
+  table-layout: fixed;
+}
+.wzf-mascot-admin .wzf-mascot-cleanup-table thead th:nth-child(1) { width: 23%; }
+.wzf-mascot-admin .wzf-mascot-cleanup-table thead th:nth-child(2) { width: 15%; }
+.wzf-mascot-admin .wzf-mascot-cleanup-table thead th:nth-child(3) { width: 30%; }
+.wzf-mascot-admin .wzf-mascot-cleanup-table thead th:nth-child(4) { width: 14%; }
+.wzf-mascot-admin .wzf-mascot-cleanup-table thead th:nth-child(5) { width: 18%; }
+.wzf-mascot-admin .wzf-mascot-cleanup-review .wzf-mascot-table:focus-visible {
+  outline: 2px solid var(--wzf-admin-accent, #356454);
+  outline-offset: 2px;
+}
+
 /* Keep WordPress form conventions inside the mascot's own surfaces. */
 .wzf-mascot-admin, .wzf-mascot-profile {
   --wzf-admin-accent: #356454;

@@ -86,7 +86,9 @@ function wzf_mascot_inventory_finish_review($report, $version, $metadata, $reten
         elseif (!$complete || $reasons) { $status = 'unknown'; if (!$complete) array_unshift($reasons, 'incomplete'); }
         else { $status = $item['latestMtime'] <= $scan_time - $retention_days * 86400 ? 'due' : 'waiting'; $reasons[] = $status; }
         if (count($review['rows']) >= $max_rows) { $review['rowsTruncated'] = true; continue; }
-        $review['rows'][] = ['path'=>(string)$path, 'status'=>$status, 'reason'=>implode(' ', array_map('wzf_mascot_inventory_review_reason', array_unique($reasons))),
+        $display_reasons = array_unique($reasons);
+        if (in_array('protected-descendant', $display_reasons, true)) $display_reasons = array_diff($display_reasons, ['protected']);
+        $review['rows'][] = ['path'=>(string)$path, 'status'=>$status, 'reason'=>implode(' ', array_map('wzf_mascot_inventory_review_reason', $display_reasons)),
             'reasons'=>array_values(array_unique($reasons)), 'bytes'=>$item['bytes'], 'files'=>$item['files'], 'latestMtime'=>$item['latestMtime']];
     }
     $report['cleanupReview'] = $review;
@@ -309,11 +311,11 @@ function wzf_mascot_inventory_review_fields($id) {
 }
 function wzf_mascot_inventory_review_panel($review) {
     $labels = ['due'=>__('Due for review', 'live2d-show'), 'waiting'=>__('Waiting period', 'live2d-show'), 'protected'=>__('Protected / preserve', 'live2d-show'), 'unknown'=>__('Unknown / preserve', 'live2d-show')];
-    echo '<div class="wzf-mascot-cleanup-review"><h3>' . esc_html__('Read-only cleanup review', 'live2d-show') . '</h3><p>' . esc_html(sprintf(__('The %s-day period is a minimum wait before manual review, not permission to delete. External references, cached URLs, licensing and recovery needs remain unknown. This report changes no files or settings.', 'live2d-show'), number_format_i18n($review['retentionDays']))) . '</p>';
+    echo '<div class="wzf-mascot-cleanup-review"><h3 id="wzf-mascot-cleanup-review-title">' . esc_html__('Read-only cleanup review', 'live2d-show') . '</h3><p>' . esc_html(sprintf(__('The %s-day period is a minimum wait before manual review, not permission to delete. External references, cached URLs, licensing and recovery needs remain unknown. This report changes no files or settings.', 'live2d-show'), number_format_i18n($review['retentionDays']))) . '</p>';
     if (!$review['complete']) echo '<p role="status">' . esc_html(wzf_mascot_inventory_review_reason('incomplete')) . '</p>';
     if ($review['rowsTruncated']) echo '<p>' . esc_html__('The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit.', 'live2d-show') . '</p>';
     if (!$review['rows']) { echo '<p>' . esc_html__('No cleanup review rows were available within the inspection limits.', 'live2d-show') . '</p></div>'; return; }
-    echo '<div class="wzf-mascot-table"><table class="widefat striped"><thead><tr><th scope="col">' . esc_html__('Relative path', 'live2d-show') . '</th><th scope="col">' . esc_html__('Review status', 'live2d-show') . '</th><th scope="col">' . esc_html__('Reason', 'live2d-show') . '</th><th scope="col">' . esc_html__('Logical bytes / files', 'live2d-show') . '</th><th scope="col">' . esc_html__('Newest modification (UTC)', 'live2d-show') . '</th></tr></thead><tbody>';
+    echo '<div class="wzf-mascot-table" role="region" tabindex="0" aria-labelledby="wzf-mascot-cleanup-review-title"><table class="widefat striped wzf-mascot-cleanup-table"><thead><tr><th scope="col">' . esc_html__('Relative path', 'live2d-show') . '</th><th scope="col">' . esc_html__('Review status', 'live2d-show') . '</th><th scope="col">' . esc_html__('Reason', 'live2d-show') . '</th><th scope="col">' . esc_html__('Logical bytes / files', 'live2d-show') . '</th><th scope="col">' . esc_html__('Newest modification (UTC)', 'live2d-show') . '</th></tr></thead><tbody>';
     foreach ($review['rows'] as $row) echo '<tr><th scope="row"><code>' . wzf_mascot_inventory_text($row['path']) . '</code></th><td>' . esc_html($labels[$row['status']]) . '</td><td>' . esc_html($row['reason']) . '</td><td>' . esc_html(number_format_i18n($row['bytes']) . ' / ' . number_format_i18n($row['files'])) . '</td><td>' . esc_html($row['latestMtime'] === null ? '—' : gmdate('Y-m-d H:i:s', $row['latestMtime'])) . '</td></tr>';
     echo '</tbody></table></div></div>';
 }

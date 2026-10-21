@@ -310,6 +310,7 @@ class AdminInventoryTests(unittest.TestCase):
             self.assertEqual(rows[path]['status'],'protected',path)
         for path in ['nested-protected','nested-stage']:
             self.assertEqual(rows[path]['status'],'protected');self.assertIn('protected-descendant',rows[path]['reasons'])
+            self.assertIn('protected',rows[path]['reasons']);self.assertEqual(rows[path]['reason'],'This subtree contains protected storage; preserve it as a whole.')
         self.assertNotIn('nested-protected/deeper/core-old',rows)
         model=next(r for r in review['rows'] if 'current-model' in next(p['kind'] for p in report['paths'] if p['path']==r['path']))
         self.assertEqual(model['status'],'protected')
@@ -369,6 +370,8 @@ class AdminInventoryTests(unittest.TestCase):
         from html import unescape
         self.assertIn('old&amp;&quot;中文',unescape(result['html']))
         self.assertIn('wzf-mascot-cleanup-review',result['html'])
+        self.assertIn('role="region" tabindex="0" aria-labelledby="wzf-mascot-cleanup-review-title"',result['html'])
+        self.assertIn('id="wzf-mascot-cleanup-review-title"',result['html']);self.assertIn('wzf-mascot-cleanup-table',result['html'])
         self.assertNotIn(str(self.helper.root),json.dumps(result['report']))
 
 
