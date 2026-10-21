@@ -386,7 +386,10 @@ def main():
             if invalid_nonce: fields['_wpnonce'] = 'invalid'
             return request(actor or admin, preview_url, fields, {'template': ('interactions.json', raw)})
 
-        raw_template = body.encode()
+        # Preserve literal HTML entity text through WordPress attribute escaping
+        # and the browser's one-pass entity decoding before native submission.
+        template['dialogue']['click']['lines'] = ['Literal &amp; &quot; &copy; "reader" 中文 ✨']
+        raw_template = json.dumps(template, ensure_ascii=False).encode()
         assert template_preview(raw_template, actor=reader)[0] == 403
         assert template_preview(raw_template, invalid_nonce=True)[0] == 403
         code, page = template_preview(raw_template)

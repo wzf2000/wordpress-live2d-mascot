@@ -188,7 +188,9 @@ function wzf_mascot_template_apply_post() {
     wp_safe_redirect(add_query_arg(['mascot_notice'=>rawurlencode($notice),'character'=>$id], admin_url('options-general.php?page=wzf-mascot'))); exit;
 }
 function wzf_mascot_template_hidden($values) {
-    foreach ($values as $key=>$value) echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '">';
+    // WordPress esc_attr preserves existing entities. Encode literal ampersands
+    // first so HTML parsing cannot alter the exact signed payload bytes.
+    foreach ($values as $key=>$value) echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr(str_replace('&', '&amp;', $value)) . '">';
 }
 function wzf_mascot_template_rule_summary($rule) {
     $label = !empty($rule['enabled']) ? __('Enabled', 'live2d-show') : __('Disabled', 'live2d-show');

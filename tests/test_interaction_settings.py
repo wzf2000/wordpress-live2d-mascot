@@ -347,3 +347,21 @@ class InteractionTests(unittest.TestCase):
         ''')
         self.assertTrue(result['sameBytes']);self.assertTrue(result['compact']);self.assertTrue(result['readableExport'])
         self.assertEqual(result['saved'],['New welcome'])
+
+
+    def test_template_hidden_payload_preserves_literal_entities_with_wordpress_escaping(self):
+        result=self.php(self.transfer_setup()+'''
+        function esc_attr($value){return htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8',false);}
+        $line='Literal &amp; &quot; "quotes" 中文 & café';
+        $template['dialogue']['welcome']['lines']=[$line];$raw=json_encode($template);
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+        ob_start();wzf_mascot_template_hidden(['payload'=>$r['payload']]);$html=ob_get_clean();
+        preg_match('/name="payload" value="([^"]*)"/',$html,$matches);
+        $posted=html_entity_decode($matches[1],ENT_QUOTES|ENT_HTML5,'UTF-8');
+        wzf_mascot_template_apply('text',$version,$posted,$r['scope'],$r['issued'],$r['signature'],'1');
+        echo json_encode(['sameBytes'=>$posted===$r['payload'],'saved'=>$options[WZF_MASCOT_OPTION]['characters']['text']['dialogue']['welcome']['lines']]);
+        ''')
+        self.assertTrue(result['sameBytes'])
+        self.assertEqual(result['saved'],['Literal &amp; &quot; "quotes" 中文 & café'])
