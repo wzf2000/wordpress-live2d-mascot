@@ -348,6 +348,38 @@ echo 'released';
         assert 'characterSummary' not in front() and state() == before
         assert resource_before == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
         record('real administrator character capacity unions and fresh metadata-only JSON attachment preserve options/files')
+        assert 'cleanupReview' not in report
+        fixture('inventory-review'); before = state()
+        review_files = {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        code, page = request(admin, inventory_url + '&cleanup_review=1&retention_days=30')
+        assert code == 200 and 'review-old' not in page
+        scan_form = next(f for f in Forms(page).forms if f.get('mascot_inventory') == '1')
+        review_form = next(f for f in Forms(page).forms if f.get('mascot_inventory_export') == '1')
+        scan_form.update(cleanup_review='1', retention_days='30')
+        review_form.update(cleanup_review='1', retention_days='30')
+        code, review_page = request(admin, inventory_url, scan_form)
+        assert code == 200 and 'review-old' in review_page and 'review-recent' in review_page
+        code, review_json, review_headers = request(admin, inventory_url, review_form, with_headers=True)
+        assert code == 200 and review_headers['Content-Type'].startswith('application/json')
+        cleanup = json.loads(review_json)['cleanupReview']
+        assert cleanup['schema'] == 1 and cleanup['readOnly'] is True and cleanup['retentionDays'] == 30
+        assert cleanup['complete'] and not cleanup['rowsTruncated'] and cleanup['scanTime']
+        rows = {row['path']: row for row in cleanup['rows']}
+        assert rows['review-old']['status'] == 'due' and rows['review-old']['files'] == 1 and rows['review-old']['bytes'] > 0
+        assert rows['review-recent']['status'] == 'waiting' and rows['review-recent']['latestMtime'] > rows['review-old']['latestMtime']
+        assert rows['core-retained-old']['status'] == 'protected'
+        assert rows['review-parent']['status'] in ('protected', 'unknown')
+        assert all(row['reasons'] for row in cleanup['rows']) and 'safeToDelete' not in review_json
+        for invalid in ['0', '3651', '3.5', 'abc']:
+            code, rejected, headers = request(admin, inventory_url, dict(review_form, retention_days=invalid), with_headers=True)
+            assert code == 400 and not headers['Content-Type'].startswith('application/json')
+        invalid = dict(review_form); invalid.pop('retention_days'); invalid['retention_days[]'] = '30'
+        assert request(admin, inventory_url, invalid)[0] == 400
+        assert request(reader, inventory_url, review_form)[0] == 403
+        assert request(admin, inventory_url, dict(review_form, _wpnonce='invalid'))[0] == 403
+        assert state() == before and 'cleanupReview' not in front()
+        assert review_files == {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site / 'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}
+        record('real explicit cleanup review is read-only: subtree age, protected Core, strict retention, permissions and nonce')
         # Recovery uses the same real WordPress option APIs and fresh reads.
         before = state(); fixture('task-abandon'); abandoned = state()
         status, html = request(admin, inventory_url)
@@ -666,8 +698,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 27:
-            raise RuntimeError(f'Expected 27 completed integration groups, got {len(checks)}')
+        if len(checks) != 28:
+            raise RuntimeError(f'Expected 28 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

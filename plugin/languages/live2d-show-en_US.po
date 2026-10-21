@@ -104,6 +104,12 @@ msgstr "A model reference is missing or has an invalid format."
 msgid "A model runtime reference is missing, outside the allowed directory or has an invalid size."
 msgstr "A model runtime reference is missing, outside the allowed directory or has an invalid size."
 
+msgid "A modification time is in the future."
+msgstr "A modification time is in the future."
+
+msgid "A modification time is invalid or unavailable."
+msgstr "A modification time is invalid or unavailable."
+
 msgid "A motion catalog entry is invalid."
 msgstr "A motion catalog entry is invalid."
 
@@ -749,6 +755,9 @@ msgstr "Draft filled into empty fields. Review and save to apply."
 msgid "Draw a little circle in the air and add a little cheer."
 msgstr "Draw a little circle in the air and add a little cheer."
 
+msgid "Due for review"
+msgstr "Due for review"
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 
@@ -778,6 +787,9 @@ msgstr "Encrypted ZIP files are not supported."
 
 msgid "Engine"
 msgstr "Engine"
+
+msgid "Enter a review waiting period from 1 to 3650 whole days."
+msgstr "Enter a review waiting period from 1 to 3650 whole days."
 
 msgid "Even when reading gets absorbing, give your eyes a rest."
 msgstr "Even when reading gets absorbing, give your eyes a rest."
@@ -1007,6 +1019,9 @@ msgstr "Import the exact Web 5 R5 Core file, or restore its missing file. Other 
 msgid "Import type is invalid."
 msgstr "Import type is invalid."
 
+msgid "Include read-only cleanup review"
+msgstr "Include read-only cleanup review"
+
 msgid "Inspect disk usage"
 msgstr "Inspect disk usage"
 
@@ -1109,6 +1124,9 @@ msgstr "Local state recorded. Sample now, or show the mascot again to record loa
 msgid "Logical bytes"
 msgstr "Logical bytes"
 
+msgid "Logical bytes / files"
+msgstr "Logical bytes / files"
+
 msgid "Lowered brows"
 msgstr "Lowered brows"
 
@@ -1129,6 +1147,12 @@ msgstr "Meow. This corner is perfect for a quiet moment."
 
 msgid "Meow? Found something new?"
 msgstr "Meow? Found something new?"
+
+msgid "Minimum review waiting period (days)"
+msgstr "Minimum review waiting period (days)"
+
+msgid "Minimum waiting period reached; review references and recovery needs before any cleanup."
+msgstr "Minimum waiting period reached; review references and recovery needs before any cleanup."
 
 msgid "Mobile display"
 msgstr "Mobile display"
@@ -1196,6 +1220,9 @@ msgstr "Move mascot: drag, use arrow keys, or Escape to reset"
 msgid "Move to trash"
 msgstr "Move to trash"
 
+msgid "Multiple hard links; ownership and physical storage are unknown."
+msgstr "Multiple hard links; ownership and physical storage are unknown."
+
 msgid "Name and credit must be valid plain text."
 msgstr "Name and credit must be valid plain text."
 
@@ -1214,6 +1241,9 @@ msgstr "New preset %s"
 msgid "New single-model runtime ZIP"
 msgstr "New single-model runtime ZIP"
 
+msgid "Newest modification (UTC)"
+msgstr "Newest modification (UTC)"
+
 msgid "No account preferences saved. Saving is optional."
 msgstr "No account preferences saved. Saving is optional."
 
@@ -1228,6 +1258,9 @@ msgstr "No characters match. Change the search or status filter."
 
 msgid "No characters yet. Import Core and one model, then configure the character."
 msgstr "No characters yet. Import Core and one model, then configure the character."
+
+msgid "No cleanup review rows were available within the inspection limits."
+msgstr "No cleanup review rows were available within the inspection limits."
 
 msgid "No favorites yet. Turn off “Favorites only” to see all characters."
 msgstr "No favorites yet. Turn off “Favorites only” to see all characters."
@@ -1415,6 +1448,9 @@ msgstr "Previous references"
 msgid "Previous thumbnail"
 msgstr "Previous thumbnail"
 
+msgid "Protected / preserve"
+msgstr "Protected / preserve"
+
 msgid "Purr... Take your time. I will keep you company."
 msgstr "Purr... Take your time. I will keep you company."
 
@@ -1445,6 +1481,9 @@ msgstr "Re-export one model3 runtime ZIP. Check relative model3 references, incl
 msgid "Read account preferences"
 msgstr "Read account preferences"
 
+msgid "Read-only cleanup review"
+msgstr "Read-only cleanup review"
+
 msgid "Readers opt in"
 msgstr "Readers opt in"
 
@@ -1466,6 +1505,9 @@ msgstr "Ready when you are. Let us continue."
 msgid "Ready? Let us tackle a new question today."
 msgstr "Ready? Let us tackle a new question today."
 
+msgid "Reason"
+msgstr "Reason"
+
 msgid "Recent characters"
 msgstr "Recent characters"
 
@@ -1486,6 +1528,9 @@ msgstr "Reference classification"
 
 msgid "Reference inspection reached its bound; classification is unknown."
 msgstr "Reference inspection reached its bound; classification is unknown."
+
+msgid "Referenced resources or protected storage; preserve this subtree."
+msgstr "Referenced resources or protected storage; preserve this subtree."
 
 msgid "Relative path"
 msgstr "Relative path"
@@ -1577,6 +1622,9 @@ msgstr "Restore the character to a valid status before updating resources."
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 msgstr "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 
+msgid "Retained Core directory / manual review"
+msgstr "Retained Core directory / manual review"
+
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 
@@ -1594,6 +1642,9 @@ msgstr "Reuse your dialogue and quick interactions with a JSON file. Model files
 
 msgid "Review interaction changes"
 msgstr "Review interaction changes"
+
+msgid "Review status"
+msgstr "Review status"
 
 msgid "Roll back to previous resources and motions"
 msgstr "Roll back to previous resources and motions"
@@ -1691,6 +1742,9 @@ msgstr "Search name or character ID"
 msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 msgstr "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 
+msgid "Select the read-only cleanup review option before continuing."
+msgstr "Select the read-only cleanup review option before continuing."
+
 msgid "Settings"
 msgstr "Settings"
 
@@ -1763,6 +1817,9 @@ msgstr "Some presets are invalid or could not follow the resource update and wer
 msgid "Sound references are not supported."
 msgstr "Sound references are not supported."
 
+msgid "Special or inaccessible metadata; preserve for manual inspection."
+msgstr "Special or inaccessible metadata; preserve for manual inspection."
+
 msgid "Staging / preserve"
 msgstr "Staging / preserve"
 
@@ -1789,6 +1846,9 @@ msgstr "Surprised"
 
 msgid "Swordsman and dragon ready! Which page shall we explore?"
 msgstr "Swordsman and dragon ready! Which page shall we explore?"
+
+msgid "Symbolic link; its target was not scanned."
+msgstr "Symbolic link; its target was not scanned."
 
 msgid "Take a break"
 msgstr "Take a break"
@@ -1837,6 +1897,9 @@ msgstr "Texture creation failed"
 
 msgid "That little charm... it is pretty cute."
 msgstr "That little charm... it is pretty cute."
+
+msgid "The %s-day period is a minimum wait before manual review, not permission to delete. External references, cached URLs, licensing and recovery needs remain unknown. This report changes no files or settings."
+msgstr "The %s-day period is a minimum wait before manual review, not permission to delete. External references, cached URLs, licensing and recovery needs remain unknown. This report changes no files or settings."
 
 msgid "The Core file is missing or has an invalid size."
 msgstr "The Core file is missing or has an invalid size."
@@ -1904,6 +1967,9 @@ msgstr "The character status has changed. Refresh before trying again."
 msgid "The character texture cannot be decoded. Retry or choose another character."
 msgstr "The character texture cannot be decoded. Retry or choose another character."
 
+msgid "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
+msgstr "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
+
 msgid "The current reference is invalid; choose again"
 msgstr "The current reference is invalid; choose again"
 
@@ -1949,6 +2015,9 @@ msgstr "The motion catalog contains duplicate IDs or invalid file references."
 msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 msgstr "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 
+msgid "The newest item in this subtree is still within the minimum waiting period."
+msgstr "The newest item in this subtree is still within the minimum waiting period."
+
 msgid "The path display is truncated; metadata counts cover the bounded scan."
 msgstr "The path display is truncated; metadata counts cover the bounded scan."
 
@@ -1978,6 +2047,9 @@ msgstr "The runtime component is invalid. Try again."
 
 msgid "The runtime component is missing. Try again later."
 msgstr "The runtime component is missing. Try again later."
+
+msgid "The scan, references or task state are incomplete or changed; no due review is available."
+msgstr "The scan, references or task state are incomplete or changed; no due review is available."
 
 msgid "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
 msgstr "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
@@ -2054,6 +2126,9 @@ msgstr "This preference applies only to this page; the browser did not allow sav
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 
+msgid "This subtree contains protected storage; preserve it as a whole."
+msgstr "This subtree contains protected storage; preserve it as a whole."
+
 msgid "This template preview expired or changed. Upload it again to review a fresh preview."
 msgstr "This template preview expired or changed. Upload it again to review a fresh preview."
 
@@ -2123,6 +2198,9 @@ msgstr "Unique paths referenced by characters: %1$s. Shared reference paths: %2$
 msgid "Unique subtotal: %s"
 msgstr "Unique subtotal: %s"
 
+msgid "Unknown / preserve"
+msgstr "Unknown / preserve"
+
 msgid "Unknown / protected"
 msgstr "Unknown / protected"
 
@@ -2182,6 +2260,9 @@ msgstr "View character entry status"
 
 msgid "View character sources, terms and notices"
 msgstr "View character sources, terms and notices"
+
+msgid "Waiting period"
+msgstr "Waiting period"
 
 msgid "Want a new topic? Start with a small question."
 msgstr "Want a new topic? Start with a small question."

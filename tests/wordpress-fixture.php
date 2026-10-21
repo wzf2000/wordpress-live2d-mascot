@@ -29,6 +29,20 @@ if ($mode === 'seed') {
     file_put_contents($u['path'] . '/terms.html', '<html>Synthetic terms</html>');
     $c['presentation'] = ['terms'=>'terms.html','termsVersion'=>'synthetic-v1','consentText'=>'Synthetic local consent'];
     update_option(WZF_MASCOT_OPTION, $c, false);
+} elseif ($mode === 'inventory-review') {
+    $root = wzf_mascot_uploads()['path'];
+    $old = time() - 40 * DAY_IN_SECONDS;
+    foreach (['review-old', 'review-recent', 'core-retained-old'] as $name) {
+        mkdir($root . '/' . $name);
+        file_put_contents($root . '/' . $name . '/synthetic.txt', 'Synthetic review bytes only.');
+        touch($root . '/' . $name . '/synthetic.txt', $old);
+        touch($root . '/' . $name, $old);
+    }
+    // Old directory metadata must not hide a newly modified descendant.
+    touch($root . '/review-recent/synthetic.txt', time());
+    mkdir($root . '/review-parent'); mkdir($root . '/review-parent/core-old');
+    file_put_contents($root . '/review-parent/core-old/synthetic.txt', 'Nested protected bytes.');
+    foreach (['review-parent/core-old/synthetic.txt', 'review-parent/core-old', 'review-parent'] as $path) touch($root . '/' . $path, $old);
 } elseif ($mode === 'state') {
     echo wp_json_encode(['config'=>get_option(WZF_MASCOT_OPTION),'lock'=>get_option(WZF_MASCOT_LOCK), 'version'=>wzf_mascot_config_version(get_option(WZF_MASCOT_OPTION))]);
 } elseif ($mode === 'task-abandon') {

@@ -77,8 +77,8 @@ class ImporterTests(unittest.TestCase):
             }
         }
         $wpdb=new TaskDatabase();
-        function wp_die(...$x) { throw new RuntimeException('forbidden'); }
-        function check_admin_referer($x) { throw new RuntimeException('nonce rejected'); }
+        function wp_die(...$x) { $GLOBALS['test_die_response']=$x[2]['response']??null; throw new RuntimeException('forbidden'); }
+        function check_admin_referer($x) { if (!empty($GLOBALS['test_nonce_valid'])) return; throw new RuntimeException('nonce rejected'); }
         require getenv('TEST_MODULE');
         try { ''' + body + ''' } catch (Throwable $e) { echo json_encode(['ok'=>false,'error'=>$e->getMessage()]); }'''
         env = dict(os.environ,TEST_UPLOADS=str(self.root/'uploads'),TEST_MODULE=str(ROOT/'plugin/includes/admin-import.php'))

@@ -101,6 +101,12 @@ msgstr "模型引用缺失或格式错误。"
 msgid "A model runtime reference is missing, outside the allowed directory or has an invalid size."
 msgstr "模型运行引用缺失、越界或大小无效。"
 
+msgid "A modification time is in the future."
+msgstr "存在晚于扫描时间的修改时间。"
+
+msgid "A modification time is invalid or unavailable."
+msgstr "存在无效或无法读取的修改时间。"
+
 msgid "A motion catalog entry is invalid."
 msgstr "动作目录条目无效。"
 
@@ -746,6 +752,9 @@ msgstr "已填入空白字段，请检查后保存。"
 msgid "Draw a little circle in the air and add a little cheer."
 msgstr "空中画个小小的圆，再添一点好心情。"
 
+msgid "Due for review"
+msgstr "到期待复核"
+
 msgid "Each total counts a relative file path once. Current, previous, thumbnail and character rows may share paths: do not add these values together. Hard links still count once per path; these are logical sizes, not physical disk usage."
 msgstr "每个合计对同一相对文件路径只计算一次。当前、上一版、缩略图及不同角色之间可能共用路径，不能将各项直接相加。硬链接仍按路径计数；这些是逻辑大小，不代表物理磁盘占用。"
 
@@ -775,6 +784,9 @@ msgstr "不支持加密 ZIP。"
 
 msgid "Engine"
 msgstr "引擎"
+
+msgid "Enter a review waiting period from 1 to 3650 whole days."
+msgstr "请输入 1–3650 天的整数复核等待期。"
 
 msgid "Even when reading gets absorbing, give your eyes a rest."
 msgstr "读得投入的时候，也别忘了让眼睛歇一歇。"
@@ -1004,6 +1016,9 @@ msgstr "请导入指定 Web 5 R5 Core 文件，或恢复缺失文件。不能用
 msgid "Import type is invalid."
 msgstr "导入类型无效。"
 
+msgid "Include read-only cleanup review"
+msgstr "附加只读清理复核"
+
 msgid "Inspect disk usage"
 msgstr "盘点磁盘用量"
 
@@ -1106,6 +1121,9 @@ msgstr "已记录本地状态。可采样，或重新显示看板娘记录加载
 msgid "Logical bytes"
 msgstr "逻辑字节数"
 
+msgid "Logical bytes / files"
+msgstr "逻辑字节数 / 文件数"
+
 msgid "Lowered brows"
 msgstr "低眉"
 
@@ -1126,6 +1144,12 @@ msgstr "喵——这个角落真适合安静待着。"
 
 msgid "Meow? Found something new?"
 msgstr "喵？有新发现了吗？"
+
+msgid "Minimum review waiting period (days)"
+msgstr "最低复核等待期（天）"
+
+msgid "Minimum waiting period reached; review references and recovery needs before any cleanup."
+msgstr "已达到最低等待期；清理前仍需人工核对引用和恢复用途。"
 
 msgid "Mobile display"
 msgstr "移动端显示"
@@ -1193,6 +1217,9 @@ msgstr "移动看板娘：拖动、方向键移动或 Escape 复位"
 msgid "Move to trash"
 msgstr "移入回收站"
 
+msgid "Multiple hard links; ownership and physical storage are unknown."
+msgstr "存在多个硬链接，归属和实际磁盘占用不明。"
+
 msgid "Name and credit must be valid plain text."
 msgstr "名称或署名必须是有效纯文本。"
 
@@ -1211,6 +1238,9 @@ msgstr "新增预设 %s"
 msgid "New single-model runtime ZIP"
 msgstr "新单模型运行 ZIP"
 
+msgid "Newest modification (UTC)"
+msgstr "最新修改时间（UTC）"
+
 msgid "No account preferences saved. Saving is optional."
 msgstr "账号尚未保存偏好，可自愿保存。"
 
@@ -1225,6 +1255,9 @@ msgstr "没有匹配的角色。请更换搜索词或状态筛选。"
 
 msgid "No characters yet. Import Core and one model, then configure the character."
 msgstr "暂无角色。请先导入 Core 和一个模型，再配置角色。"
+
+msgid "No cleanup review rows were available within the inspection limits."
+msgstr "本次扫描范围内没有可展示的清理复核条目。"
 
 msgid "No favorites yet. Turn off “Favorites only” to see all characters."
 msgstr "还没有收藏的角色，取消“只看收藏”可查看全部角色"
@@ -1412,6 +1445,9 @@ msgstr "上一版引用"
 msgid "Previous thumbnail"
 msgstr "上一版缩略图"
 
+msgid "Protected / preserve"
+msgstr "受保护，保留"
+
 msgid "Purr... Take your time. I will keep you company."
 msgstr "呼噜呼噜，慢慢看，我在这里陪你。"
 
@@ -1442,6 +1478,9 @@ msgstr "请重新导出单个 model3 运行 ZIP。检查 model3 的相对引用�
 msgid "Read account preferences"
 msgstr "读取账号偏好"
 
+msgid "Read-only cleanup review"
+msgstr "只读清理复核"
+
 msgid "Readers opt in"
 msgstr "读者自行开启"
 
@@ -1463,6 +1502,9 @@ msgstr "准备好了就继续读吧。"
 msgid "Ready? Let us tackle a new question today."
 msgstr "准备好了吗？今天也来挑战一个新问题。"
 
+msgid "Reason"
+msgstr "原因"
+
 msgid "Recent characters"
 msgstr "最近角色"
 
@@ -1483,6 +1525,9 @@ msgstr "引用分类"
 
 msgid "Reference inspection reached its bound; classification is unknown."
 msgstr "引用检查已达到限制；引用分类未知。"
+
+msgid "Referenced resources or protected storage; preserve this subtree."
+msgstr "此子树包含资源引用或受保护存储，请保留。"
 
 msgid "Relative path"
 msgstr "相对路径"
@@ -1574,6 +1619,9 @@ msgstr "请先恢复角色有效状态再更新资源。"
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 msgstr "请恢复已配置的站点条款文件或配置备份。共享条款失效会停止所有前台输出。"
 
+msgid "Retained Core directory / manual review"
+msgstr "留存的 Core 目录，需人工复核"
+
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr "保留角色 ID、名称、署名、布局与其他显示配置。使用新独立资源目录，旧文件保留供缓存与回退；回退只恢复资源和动作，保留当前显示信息与启用状态。动作按相对文件路径映射；无法保留时默认拒绝。"
 
@@ -1591,6 +1639,9 @@ msgstr "通过 JSON 文件复用台词和快捷互动。文件不包含模型文
 
 msgid "Review interaction changes"
 msgstr "核对互动变更"
+
+msgid "Review status"
+msgstr "复核状态"
 
 msgid "Roll back to previous resources and motions"
 msgstr "回退到上一版资源与动作"
@@ -1688,6 +1739,9 @@ msgstr "搜索名称或角色 ID"
 msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 msgstr "选择角色编辑名称、署名、默认布局与动作。升级插件保留 uploads 中的资源和浏览器偏好。"
 
+msgid "Select the read-only cleanup review option before continuing."
+msgstr "请勾选只读清理复核后继续。"
+
 msgid "Settings"
 msgstr "设置"
 
@@ -1760,6 +1814,9 @@ msgstr "部分预设无效或无法跟随资源更新，已跳过。请检查并
 msgid "Sound references are not supported."
 msgstr "不支持声音引用。"
 
+msgid "Special or inaccessible metadata; preserve for manual inspection."
+msgstr "存在特殊文件或无法读取的元数据，请保留并人工检查。"
+
 msgid "Staging / preserve"
 msgstr "候选目录／保留"
 
@@ -1786,6 +1843,9 @@ msgstr "惊讶"
 
 msgid "Swordsman and dragon ready! Which page shall we explore?"
 msgstr "剑士与飞龙就位，今天想探索哪一页？"
+
+msgid "Symbolic link; its target was not scanned."
+msgstr "此项为符号链接，未扫描其指向的内容。"
 
 msgid "Take a break"
 msgstr "休息一下"
@@ -1834,6 +1894,9 @@ msgstr "纹理创建失败"
 
 msgid "That little charm... it is pretty cute."
 msgstr "那个小挂件……确实挺可爱的嘛。"
+
+msgid "The %s-day period is a minimum wait before manual review, not permission to delete. External references, cached URLs, licensing and recovery needs remain unknown. This report changes no files or settings."
+msgstr "%s 天仅是人工复核前的最低等待期，不代表允许删除。外部引用、缓存网址、许可和恢复用途仍需核对；本报告不修改文件或设置。"
 
 msgid "The Core file is missing or has an invalid size."
 msgstr "Core 文件缺失或大小无效。"
@@ -1901,6 +1964,9 @@ msgstr "角色状态已经改变，请刷新页面后重试。"
 msgid "The character texture cannot be decoded. Retry or choose another character."
 msgstr "角色贴图无法解码，请重试或选择其他角色"
 
+msgid "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
+msgstr "清理复核最多展示 500 行；子树统计仍包含扫描上限内读取的全部元数据。"
+
 msgid "The current reference is invalid; choose again"
 msgstr "当前引用无效，请重新选择"
 
@@ -1946,6 +2012,9 @@ msgstr "动作目录包含重复 ID 或无效文件引用。"
 msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 msgstr "新模型无法按文件路径保留现有 %s 动作。配置未改变；确认后勾选“允许重置不兼容动作”再上传。"
 
+msgid "The newest item in this subtree is still within the minimum waiting period."
+msgstr "此子树中最新修改的条目尚未达到最低等待期。"
+
 msgid "The path display is truncated; metadata counts cover the bounded scan."
 msgstr "路径列表已截断；元数据统计覆盖本次有界扫描。"
 
@@ -1975,6 +2044,9 @@ msgstr "运行组件无效，请重试"
 
 msgid "The runtime component is missing. Try again later."
 msgstr "运行组件不存在，请稍后重试"
+
+msgid "The scan, references or task state are incomplete or changed; no due review is available."
+msgstr "扫描、引用或任务状态不完整或已变化，暂不列出到期待复核条目。"
 
 msgid "The server could not accept the upload. Ask an administrator to check temporary upload storage and write permissions, then retry."
 msgstr "服务器无法接收上传。请让管理员检查临时上传目录的存储空间与写入权限，然后重试。"
@@ -2051,6 +2123,9 @@ msgstr "此偏好仅在本页生效；浏览器未允许保存。"
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr "此预览将在 15 分钟后过期。其他地方修改配置后，需要重新预览。"
 
+msgid "This subtree contains protected storage; preserve it as a whole."
+msgstr "此子树含有受保护存储，请整体保留。"
+
 msgid "This template preview expired or changed. Upload it again to review a fresh preview."
 msgstr "模板预览已过期或发生变化，请重新上传并查看新预览。"
 
@@ -2120,6 +2195,9 @@ msgstr "全部角色引用路径去重合计：%1$s。共享引用路径：%2$s�
 msgid "Unique subtotal: %s"
 msgstr "路径去重小计：%s"
 
+msgid "Unknown / preserve"
+msgstr "情况不明，保留"
+
 msgid "Unknown / protected"
 msgstr "未知／保护"
 
@@ -2179,6 +2257,9 @@ msgstr "查看角色入口状态"
 
 msgid "View character sources, terms and notices"
 msgstr "查看角色来源、使用条款及声明"
+
+msgid "Waiting period"
+msgstr "等待期内"
 
 msgid "Want a new topic? Start with a small question."
 msgstr "如果想换个话题，就从一个小问题开始吧。"
