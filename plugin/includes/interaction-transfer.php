@@ -57,8 +57,8 @@ function wzf_mascot_template_decode($raw) {
     }
     return ['type'=>'wzf-mascot-interactions','schema'=>1,'dialogue'=>$dialogue,'presets'=>$presets];
 }
-function wzf_mascot_template_json($template) {
-    $json = json_encode($template, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+function wzf_mascot_template_json($template, $pretty = true) {
+    $json = json_encode($template, ($pretty ? JSON_PRETTY_PRINT : 0) | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     wzf_mascot_template_decode($json); // Also bound exported files to the import limit.
     return $json;
 }
@@ -122,7 +122,9 @@ function wzf_mascot_template_signature($id, $version, $raw, $scope, $issued) {
 }
 function wzf_mascot_template_preview($id, $version, $raw, $scope) {
     $config = wzf_mascot_task_snapshot()['config'];
-    $raw = wzf_mascot_template_json(wzf_mascot_template_decode($raw));
+    // Native form submission normalizes literal newlines to CRLF. Sign a single
+    // line so the hidden value crosses that transport without changing bytes.
+    $raw = wzf_mascot_template_json(wzf_mascot_template_decode($raw), false);
     $plan = wzf_mascot_template_plan($config, $id, $version, $raw, $scope);
     $issued = (string)time();
     return ['plan'=>$plan,'character'=>$id,'version'=>$version,'payload'=>$raw,'scope'=>$scope,'issued'=>$issued,'signature'=>wzf_mascot_template_signature($id, $version, $raw, $scope, $issued)];

@@ -393,6 +393,9 @@ def main():
         assert code == 200 and 'Nothing has been saved.' in page and state() == template_base
         apply_form = next(f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_template_apply')
         assert apply_form['scope'] == 'dialogue'
+        # Native HTML form submission normalizes line endings even in hidden
+        # fields. Model that transport instead of only urllib's literal bytes.
+        apply_form['payload'] = re.sub(r'\r\n|\r|\n', '\r\n', apply_form['payload'])
         post(apply_form); assert state() == template_base  # Separate confirmation is required.
         changed = json.loads(apply_form['payload'])
         changed['dialogue']['welcome']['lines'] = ['Not the reviewed text']
@@ -422,6 +425,7 @@ def main():
         assert code == 200 and 'motion/extra.motion3.json' in page
         apply_form = next(f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_template_apply')
         assert apply_form['scope'] == 'dialogue-presets'
+        apply_form['payload'] = re.sub(r'\r\n|\r|\n', '\r\n', apply_form['payload'])
         post(dict(apply_form, confirm='1'))
         expected['characters']['23']['presets'] = template_base['config']['characters']['legacy_character']['presets']
         assert state()['config'] == expected

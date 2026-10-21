@@ -333,3 +333,17 @@ class InteractionTests(unittest.TestCase):
             for denied in ['', '$allowed=false;']:
                 result=self.php(setup+denied+handler+'();')
                 self.assertFalse(result['ok'])
+
+
+    def test_template_signed_payload_survives_native_form_newline_normalization(self):
+        result=self.php(self.transfer_setup()+'''
+        $options[WZF_MASCOT_OPTION]=['characters'=>['text'=>['root'=>'missing/']]];
+        $version=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        $export=wzf_mascot_template_export($options[WZF_MASCOT_OPTION],'text',$version);
+        $r=wzf_mascot_template_preview('text',$version,$raw,'dialogue');
+        $posted=preg_replace("/\\r\\n|\\r|\\n/", "\\r\\n", $r['payload']);
+        wzf_mascot_template_apply('text',$version,$posted,$r['scope'],$r['issued'],$r['signature'],'1');
+        echo json_encode(['sameBytes'=>$posted===$r['payload'],'compact'=>strpos($r['payload'],"\\n")===false && strpos($r['payload'],"\\r")===false,'readableExport'=>strpos($export,"\\n")!==false,'saved'=>$options[WZF_MASCOT_OPTION]['characters']['text']['dialogue']['welcome']['lines']]);
+        ''')
+        self.assertTrue(result['sameBytes']);self.assertTrue(result['compact']);self.assertTrue(result['readableExport'])
+        self.assertEqual(result['saved'],['New welcome'])
