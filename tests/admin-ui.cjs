@@ -6,15 +6,21 @@ const forms = [
   { elements: [{ name: 'name', type: 'text', value: 'Original' }] },
   { elements: [{ name: 'resource', type: 'file', files: [] }] },
   { elements: [{ name: 'page', type: 'hidden', value: 'wzf-mascot' }] },
+  ...['mascot_inventory','mascot_inventory_export'].map(name=>({elements:[
+    {name,type:'hidden',value:'1'},
+    {name:'cleanup_review',type:'checkbox',checked:false},
+    {name:'retention_days',type:'number',value:'30'},
+  ]})),
 ];
 forms.forEach((form) => { form.handlers = {}; form.addEventListener = (name, fn) => { form.handlers[name] = fn; }; });
 const windowHandlers = {};
 let confirmations = 0, approved = false;
-const root = { dataset: { unsavedMessage: '有尚未保存的修改。' }, querySelectorAll: (selector) => selector.includes('wzf-mascot-') ? [] : selector.includes('method') ? forms.slice(0, 2) : forms };
-vm.runInNewContext(fs.readFileSync('plugin/admin.js', 'utf8'), {
+const root = { dataset: { unsavedMessage: '有尚未保存的修改。' }, querySelectorAll: (selector) => selector.includes('wzf-mascot-') ? [] : selector.includes('method') ? forms.filter((form,index)=>index!==2) : forms };
+const mount = () => vm.runInNewContext(fs.readFileSync('plugin/admin.js', 'utf8'), {
   document: { querySelector: () => root },
   window: { confirm: (message) => { confirmations++; assert.equal(message, root.dataset.unsavedMessage); return approved; }, addEventListener: (name, fn) => { windowHandlers[name] = fn; } },
 });
+mount();
 const event = () => ({ prevented: false, preventDefault() { this.prevented = true; } });
 let e = event(); windowHandlers.beforeunload(e); assert.equal(e.prevented, false);
 forms[0].elements[0].value = 'Edited';
@@ -25,6 +31,21 @@ e = event(); forms[0].handlers.submit(e); assert.equal(e.prevented, true); asser
 forms[1].elements[0].files = [];
 e = event(); forms[0].handlers.submit(e); assert.equal(e.prevented, false); assert.equal(confirmations, 2);
 e = event(); windowHandlers.beforeunload(e); assert.equal(e.prevented, false);
+// Read-only review/export options never become unsaved settings. Other dirty
+// resource/upload forms still prompt when either scan form is submitted.
+mount();
+for(const form of forms.slice(3)) {form.elements[1].checked=true;form.elements[2].value='45';}
+e=event();windowHandlers.beforeunload(e);assert.equal(e.prevented,false);
+e=event();forms[2].handlers.submit(e);assert.equal(e.prevented,false);assert.equal(confirmations,2);
+mount();
+forms[1].elements[0].files=[{name:'another.zip',size:456,lastModified:2}];
+for(const form of forms.slice(3)) {e=event();form.handlers.submit(e);assert.equal(e.prevented,true);}
+assert.equal(confirmations,4);
+e=event();windowHandlers.beforeunload(e);assert.equal(e.prevented,true);
+approved=true;e=event();forms[4].handlers.submit(e);assert.equal(e.prevented,false);assert.equal(confirmations,5);
+e=event();windowHandlers.beforeunload(e);assert.equal(e.prevented,true);
+e=event();forms[1].handlers.submit(e);assert.equal(e.prevented,false);
+e=event();windowHandlers.beforeunload(e);assert.equal(e.prevented,false);
 // The actual translator preserves values verbatim and has an English local fallback.
 const loader = fs.readFileSync('src/loader.js', 'utf8');
 const translator = loader.slice(loader.indexOf('  const t ='), loader.indexOf('  const start ='));

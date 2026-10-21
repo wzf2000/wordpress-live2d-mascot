@@ -3,7 +3,10 @@
   'use strict';
   const root = document.querySelector('.wzf-mascot-admin');
   if (!root) return;
-  const forms = [...root.querySelectorAll('form[method="post"]')];
+  // Inventory options affect only a read-only scan, not saved settings.
+  const inventoryAction = form => [...form.elements].find(field => field.type === 'hidden' &&
+    ['mascot_inventory', 'mascot_inventory_export'].includes(field.name) && field.value === '1')?.name;
+  const forms = [...root.querySelectorAll('form[method="post"]')].filter(form => !inventoryAction(form));
   const snapshots = new Map();
   const snapshot = (form) => JSON.stringify([...form.elements].filter((field) =>
     field.name && !['hidden', 'submit', 'button'].includes(field.type),
@@ -57,7 +60,8 @@
   // still prompt; cancelling preserves both its inputs and the upload selection.
   root.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => {
     if (dirty(form) && !window.confirm(message)) { event.preventDefault(); return; }
-    submitting = true;
+    // JSON downloads keep this page open, so retain warnings for resource edits.
+    submitting = inventoryAction(form) !== 'mascot_inventory_export';
   }));
   window.addEventListener('beforeunload', (event) => {
     if (submitting || !dirty()) return;

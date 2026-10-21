@@ -145,7 +145,7 @@ function wzf_mascot_settings_post() {
 }
 function wzf_mascot_admin_styles($hook) {
     if (!in_array($hook, ['settings_page_wzf-mascot','profile.php','user-edit.php'], true)) return;
-    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.9.0', true);
+    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.10.0-rc.2', true);
     wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.10.0-rc.2');
 }
 function wzf_mascot_motion_select($key, $label, $motions, $value, $optional = false) {
