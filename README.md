@@ -1,4 +1,5 @@
-<p align="center"><picture><source media="(max-width: 600px)" srcset="docs/assets/hero-small.svg"><img src="docs/assets/hero.svg" alt="WordPress Live2D Mascot — 为阅读留出空间" width="100%"></picture></p>
+<p align="center"><picture><source media="(max-width: 600px)" srcset="docs/assets/hero-small.svg"><img src="docs/assets/hero.svg" alt="WordPress Live2D Mascot — 御坂美琴（本站自制模型）效果展示" width="100%"></picture></p>
+<p align="center"><sub>御坂美琴（本站自制模型）效果展示；模型不随插件提供。</sub></p>
 
 <h1 align="center">WordPress Live2D Mascot</h1>
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
