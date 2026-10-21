@@ -75,6 +75,7 @@
       layouts = {},
       loadController = null,
       loadAttempt = 0,
+      recoveryLoad = null,
       pageHidden = false,
       loadError = '';
     try {
@@ -875,6 +876,8 @@
     previewActions.append(commitButton, cancelPreview);
     panel.append(label, greeting, chatButton, presetControls, previewActions, characterSettings, moreSettings, state);
     document.body.append(panel);
+    const retryLoading = make('button', t("Retry loading"), 'wzf-haru-reset');
+    panel.insertBefore(retryLoading, greeting);
     const panelToggle = make('button', t("Interact"), 'wzf-haru-panel-toggle');
     panelToggle.hidden = true;
     panelToggle.setAttribute('aria-controls', panel.id);
@@ -1245,19 +1248,19 @@
     consent.append(title, text, link, make('br'), agree, cancel);
     document.body.append(consent);
     const displayWanted = () => (desktop.matches ? wanted : mobileOptIn);
-    const allowed = () =>
+    const permitted = () =>
       displayWanted() &&
       accepted &&
       (desktop.matches || config.mobileEnabled === true) &&
       !reduce.matches &&
       !document.hidden &&
       !pageHidden &&
-      !suspensions.size &&
-      !failed;
+      !suspensions.size;
+    const allowed = () => permitted() && !failed;
     const paint = () => {
-      const run = allowed();
+      const run = allowed(), recovery = permitted() && failed, focusedBefore = document.activeElement;
       syncIdle();
-      chatButton.hidden = !idleLines().length;
+      chatButton.hidden = !engine || failed || !idleLines().length;
       chatButton.disabled = dialogueMode === 'silent' || !run || !engine || loading || preview;
       idleLabel.hidden = !idleLines().length;
       if (!run) {
@@ -1291,10 +1294,14 @@
       button.setAttribute('aria-busy', String(loading));
       if (panelOpen && !desktop.matches) endDrag();
       dragHandle.hidden = !(run && engine && !loading && !(panelOpen && !desktop.matches));
-      panel.hidden = !(run && panelOpen);
+      panel.hidden = !(permitted() && panelOpen);
       syncThumbnail();
-      panelToggle.hidden = !(run && engine);
-      panelToggle.textContent = panelOpen ? t("Close interaction") : t("Interact");
+      panelToggle.hidden = !(run && (engine || (loading && panelOpen))) && !recovery;
+      panelToggle.textContent = panelOpen ? t("Close interaction") : recovery ? t("Choose another character") : t("Interact");
+      retryLoading.hidden = !recovery;
+      retryLoading.disabled = loading;
+      moreSettings.hidden = !engine || failed;
+      presetControls.hidden = !engine || failed || !presetControls.children.length;
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
       layoutDock();
       const supported=capabilities();
@@ -1304,7 +1311,7 @@
       captureSettings.hidden = characters[active].captureAllowed !== true || typeof engine?.captureFrame !== 'function';
       accountSettings.hidden = !config.accountEndpoint;
       dialogueSettings.hidden = !Object.values(characters[active].dialogue || {}).some(rule => rule?.enabled === true) && !livePresets.size;
-      greeting.hidden = !characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true;
+      greeting.hidden = !engine || failed || (!characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true);
       greeting.disabled = !run || !engine || loading;
       pointerStatus.textContent=supported.hitAreas.length?t("Model hit areas available: %1$s",supported.hitAreas.join(', ')):t("No model hit areas; normal greeting is used.");
       if (!run || loading || dragState || !gazeEnabled) engine?.resetGaze?.();
@@ -1351,6 +1358,9 @@
         else engine.pause();
       }
       layout();
+      const focused = document.activeElement;
+      if (recovery && (panel.contains(focusedBefore) || host?.contains(focusedBefore)) && !focusedBefore.getClientRects().length && (focused === focusedBefore || focused === document.body))
+        (panelOpen ? retryLoading : panelToggle).focus({ preventScroll: true });
     };
     characterSettings.addEventListener('toggle', syncThumbnail);
     diagnostics.addEventListener('toggle', () => {
@@ -1364,7 +1374,10 @@
       panelOpen = !panelOpen;
       paint();
       if (panelOpen && !panel.hidden) {
-        (greeting.hidden ? characterSettings.querySelector('summary') : greeting).focus({ preventScroll: true });
+        if (failed) {
+          characterSettings.open = true;
+          characterSelect.focus({ preventScroll: true });
+        } else (greeting.hidden ? characterSettings.querySelector('summary') : greeting).focus({ preventScroll: true });
       }
     };
     characterSearch.oninput = () => {
@@ -1417,7 +1430,7 @@
       }
       syncCharacterOptions(id);
       paint();
-      // Only the user's removal event moves focus; asynchronous paint never does.
+      // Favorites updates move focus only after this explicit removal event.
       if (favoritesFilter.checked && !characterSelect.options.length)
         favoritesFilter.focus({ preventScroll: true });
     };
@@ -1591,6 +1604,8 @@
     };
     const cancelLoad = () => {
       if (!loadController) return;
+      const cancelledRecovery = recoveryLoad?.attempt === loadAttempt && !engine ? recoveryLoad : null;
+      recoveryLoad = null;
       welcomeConsumed = true;
       if (currentLoad && currentLoad.status === 'loading') currentLoad.status = 'cancelled';
       interruptDiagnostics('load-cancelled');
@@ -1606,9 +1621,13 @@
       syncCharacterOptions(committed);
       preview = false;
       readLayout();
-      state.textContent = t("Loading cancelled");
+      if (cancelledRecovery) {
+        failed = true;
+        loadError = cancelledRecovery.error;
+      }
+      state.textContent = t("Loading cancelled") + (cancelledRecovery ? ' ' + loadError : '');
     };
-    const beginLoad = (id = committed) => {
+    const beginLoad = (id = committed, recoveryError = null) => {
       cancelPNG();captureStatus.textContent='';
       clearDialogue();
       interruptDiagnostics('load-started');
@@ -1620,6 +1639,7 @@
       const controller = new AbortController();
       loadController = controller;
       const attempt = ++loadAttempt;
+      recoveryLoad = recoveryError === null ? null : { attempt, error: recoveryError };
       loading = true;
       loadError = '';
       state.textContent = t("Loading character…");
@@ -1629,6 +1649,7 @@
     const finishLoad = (attempt) => {
       if (attempt !== loadAttempt) return;
       loadController = null;
+      recoveryLoad = null;
       loading = false;
       paint();
     };
@@ -1750,17 +1771,27 @@
       populate();
       diagnosticReady();
     };
+    const resetFailure = () => {
+      destroy();
+      host?.remove();
+      host = null;
+      canvas = null;
+      failed = false;
+    };
+    const loadRuntime = async (signal) => {
+      diagnosticPhase('core');
+      await script(config.core, () => !!window.Live2DCubismCore, signal);
+      diagnosticPhase('engine');
+      await script(config.engine, () => !!window.WZFHaruEngine, signal);
+      checkSignal(signal);
+    };
     const apply = async () => {
       if (!allowed()) cancelLoad();
       paint();
       if (!allowed() || engine || loading) return;
       const { signal, attempt } = beginLoad();
       try {
-        diagnosticPhase('core');
-        await script(config.core, () => !!window.Live2DCubismCore, signal);
-        diagnosticPhase('engine');
-        await script(config.engine, () => !!window.WZFHaruEngine, signal);
-        checkSignal(signal);
+        await loadRuntime(signal);
         await load(committed, signal);
         if (attempt !== loadAttempt) return;
         preview = false;
@@ -1777,11 +1808,17 @@
       }
     };
     const switchTo = async (id, isPreview) => {
-      if (!allowed() || loading || !engine || !Object.hasOwn(characters, id)) return;
+      const recovering = failed;
+      if (!permitted() || loading || (!engine && !recovering) || !Object.hasOwn(characters, id)) return;
+      const recoveryError = recovering ? loadError : null;
+      const handoffFocus = recovering && panelOpen && panel.contains(document.activeElement);
+      if (handoffFocus) button.focus({ preventScroll: true });
+      if (recovering) resetFailure();
       welcomeConsumed = true;
       cancelWelcome();
-      const { signal, attempt } = beginLoad(id);
+      const { signal, attempt } = beginLoad(id, recoveryError);
       try {
+        if (recovering) await loadRuntime(signal);
         await load(id, signal);
         if (attempt !== loadAttempt) return;
         preview = isPreview && id !== committed;
@@ -1790,6 +1827,16 @@
         if (attempt !== loadAttempt || signal.aborted || error?.name === 'AbortError') return;
         diagnosticError(error);
         const reason = errorMessage(error);
+        if (recovering) {
+          failed = true;
+          destroy();
+          preview = false;
+          active = committed;
+          syncCharacterOptions(id);
+          readLayout();
+          loadError = state.textContent = reason;
+          return;
+        }
         try {
           await load(committed, signal);
           if (attempt !== loadAttempt) return;
@@ -1809,6 +1856,8 @@
         }
       } finally {
         finishLoad(attempt);
+        if (attempt === loadAttempt && handoffFocus && panelOpen && !panel.hidden && document.activeElement === button)
+          (failed ? retryLoading : preview ? commitButton : characterSettings.querySelector('summary')).focus({ preventScroll: true });
       }
     };
     previewButton.onclick = () => switchTo(characterSelect.value, true);
@@ -1855,11 +1904,7 @@
         return;
       }
       if (failed && !loading) {
-        destroy();
-        host?.remove();
-        host = null;
-        canvas = null;
-        failed = false;
+        resetFailure();
         if (desktop.matches) wanted = true;
         else mobileOptIn = true;
       } else if (desktop.matches) wanted = !wanted;
@@ -1867,6 +1912,7 @@
       save();
       apply();
     };
+    retryLoading.onclick = () => { button.focus({ preventScroll: true }); button.click(); };
     const perform = async (type, id) => {
       if (!allowed() || !engine || loading) return;
       cancelPreset();

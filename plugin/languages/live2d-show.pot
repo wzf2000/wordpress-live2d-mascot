@@ -548,6 +548,9 @@ msgstr ""
 msgid "Choose an image"
 msgstr ""
 
+msgid "Choose another character"
+msgstr ""
+
 msgid "Choose character"
 msgstr ""
 
@@ -1569,6 +1572,9 @@ msgid "Restore the configured site terms file or its configuration backup. Share
 msgstr ""
 
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
+msgstr ""
+
+msgid "Retry loading"
 msgstr ""
 
 msgid "Return after absence"

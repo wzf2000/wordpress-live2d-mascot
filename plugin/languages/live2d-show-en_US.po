@@ -548,6 +548,9 @@ msgstr "Choose an existing hit area and a valid interaction preset."
 msgid "Choose an image"
 msgstr "Choose an image"
 
+msgid "Choose another character"
+msgstr "Choose another character"
+
 msgid "Choose character"
 msgstr "Choose character"
 
@@ -1570,6 +1573,9 @@ msgstr "Restore the configured site terms file or its configuration backup. Shar
 
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
+
+msgid "Retry loading"
+msgstr "Retry loading"
 
 msgid "Return after absence"
 msgstr "Return after absence"

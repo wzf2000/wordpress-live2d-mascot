@@ -545,6 +545,9 @@ msgstr "请选择模型已有区域和有效互动预设。"
 msgid "Choose an image"
 msgstr "选择图片"
 
+msgid "Choose another character"
+msgstr "选择其他角色"
+
 msgid "Choose character"
 msgstr "选择角色"
 
@@ -1567,6 +1570,9 @@ msgstr "请恢复已配置的站点条款文件或配置备份。共享条款失
 
 msgid "Retains character ID, name, credit, layout and other display settings. New resources use a separate directory; old files remain for caches and rollback. Rollback restores only resources and motions, preserving current display settings and status. Motions map by relative file path; incompatible changes are rejected by default."
 msgstr "保留角色 ID、名称、署名、布局与其他显示配置。使用新独立资源目录，旧文件保留供缓存与回退；回退只恢复资源和动作，保留当前显示信息与启用状态。动作按相对文件路径映射；无法保留时默认拒绝。"
+
+msgid "Retry loading"
+msgstr "重新加载"
 
 msgid "Return after absence"
 msgstr "离开后返回"

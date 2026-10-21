@@ -224,6 +224,8 @@ function wzf_mascot_frontend_translations() {
         'Pursed lips'=>__('Pursed lips', 'live2d-show'),
         'Raise hand to greet'=>__('Raise hand to greet', 'live2d-show'),
         'Ready'=>__('Ready', 'live2d-show'),
+        'Retry loading'=>__('Retry loading', 'live2d-show'),
+        'Choose another character'=>__('Choose another character', 'live2d-show'),
         'Reduced motion enabled'=>__('Reduced motion enabled', 'live2d-show'),
         'Rendering failed. Try again.'=>__('Rendering failed. Try again.', 'live2d-show'),
         'Reset defaults'=>__('Reset defaults', 'live2d-show'),
