@@ -107,6 +107,7 @@
       if (!bubble) return false;
       bubble.textContent = line;
       bubble.hidden = false;
+      placeDialogue();
       bubbleTimer = setTimeout(clearDialogue, 4500);
       return true;
     };
@@ -129,7 +130,9 @@
     };
     active = committed;
     let position = 'right',
-      size = 180;
+      size = 180,
+      anchor = null, dragState = null;
+    let dragHandle = null;
     let welcomeConsumed = false,
       welcomeCount = 0,
       welcomeTimer = null,
@@ -823,8 +826,30 @@
       size = Number.isFinite(saved.size)
         ? Math.max(140, Math.min(260, Math.round(saved.size / 10) * 10))
         : characters[active].size;
+      anchor = saved.anchor && Number.isFinite(saved.anchor.x) && Number.isFinite(saved.anchor.y) && saved.anchor.x >= 0 && saved.anchor.x <= 1 && saved.anchor.y >= 0 && saved.anchor.y <= 1 ? {x:saved.anchor.x,y:saved.anchor.y} : null;
       side.value = position;
       slider.value = String(size);
+    };
+    const safeProbe = make('div', '', 'wzf-haru-safe-area');
+    document.body.append(safeProbe);
+    const movementBounds = () => {
+      const css = getComputedStyle(safeProbe), view = window.visualViewport;
+      const left = (view?.offsetLeft || 0) + Math.max(6, parseFloat(css.paddingLeft) || 0);
+      const top = (view?.offsetTop || 0) + Math.max(6, parseFloat(css.paddingTop) || 0);
+      const right = (view?.offsetLeft || 0) + (view?.width || innerWidth) - Math.max(6, parseFloat(css.paddingRight) || 0);
+      const bottom = (view?.offsetTop || 0) + (view?.height || innerHeight) - Math.max(6, parseFloat(css.paddingBottom) || 0);
+      return {left,top,maxX:Math.max(left,right-(host?.offsetWidth || size)),maxY:Math.max(top,bottom-(host?.offsetHeight || size*1.5)),right,bottom};
+    };
+    const clamp = (n, low, high) => Math.max(low, Math.min(high,n));
+    const placeDialogue = () => {
+      if (!bubble || bubble.hidden || !host) return;
+      const bounds=movementBounds(), box=host.getBoundingClientRect();
+      bubble.style.maxHeight=Math.max(44,bounds.bottom-bounds.top-12)+'px';
+      const text=bubble.getBoundingClientRect();
+      const x=clamp(position==='right'?box.right-text.width:box.left,bounds.left,Math.max(bounds.left,bounds.right-text.width));
+      const y=clamp(box.top-text.height+30,bounds.top,Math.max(bounds.top,bounds.bottom-text.height));
+      bubble.style.right='auto';bubble.style.bottom='auto';
+      bubble.style.left=(x-box.left)+'px';bubble.style.top=(y-box.top)+'px';
     };
     const layout = () => {
       const renderedSize = desktop.matches
@@ -846,7 +871,18 @@
         host.style.transform = 'translateY(' + characters[active].offset + '%)';
         host.style.right = position === 'right' ? 'max(6px, env(safe-area-inset-right))' : 'auto';
         host.style.left = position === 'left' ? 'max(6px, env(safe-area-inset-left))' : 'auto';
-        if (bubble) { bubble.style.right = position === 'right' ? '0' : 'auto'; bubble.style.left = position === 'left' ? '0' : 'auto'; }
+        if (anchor) {
+          const bounds = movementBounds();
+          host.style.transform = 'none'; host.style.right = 'auto'; host.style.bottom = 'auto';
+          host.style.left = (bounds.left + anchor.x*(bounds.maxX-bounds.left))+'px';
+          host.style.top = (bounds.top + anchor.y*(bounds.maxY-bounds.top))+'px';
+        } else { host.style.top = 'auto'; host.style.bottom = '0'; }
+        if (dragHandle) {
+          const box=host.getBoundingClientRect(), bounds=movementBounds();
+          dragHandle.style.left=clamp(box.x+box.width/2-22,bounds.left,bounds.right-44)+'px';
+          dragHandle.style.top=clamp(box.bottom-44,bounds.top,bounds.bottom-44)+'px';
+        }
+        placeDialogue();
       }
       settings.hidden = !desktop.matches;
       mobileSize.hidden = desktop.matches;
@@ -862,7 +898,7 @@
         'px - env(safe-area-inset-bottom) - env(safe-area-inset-top))';
     };
     const rememberLayout = () => {
-      layouts[active] = { position, size };
+      layouts[active] = { position, size, ...(anchor ? {anchor:{...anchor}} : {}) };
       try {
         localStorage.setItem('wzf-mascot-layouts', JSON.stringify(layouts));
       } catch {}
@@ -870,6 +906,7 @@
     };
     side.onchange = () => {
       position = side.value;
+      if (anchor) anchor.x = position === 'left' ? 0 : 1;
       rememberLayout();
     };
     slider.oninput = () => {
@@ -878,10 +915,59 @@
     };
     reset.onclick = () => {
       position = 'right';
+      anchor = null;
       size = characters[active].size;
       side.value = position;
       slider.value = String(size);
       rememberLayout();
+    };
+    dragHandle = make('button', '↔', 'wzf-haru-drag-handle');
+    dragHandle.hidden = true;
+    dragHandle.setAttribute('aria-label', t("Move mascot: drag, use arrow keys, or Escape to reset"));
+    dragHandle.title = t("Move mascot");
+    document.body.append(dragHandle);
+    const endDrag = (commit = false) => {
+      if (!dragState) return;
+      const previous = dragState;
+      const pointer = previous.pointer;
+      dragState = null;
+      if (dragHandle.hasPointerCapture?.(pointer)) dragHandle.releasePointerCapture(pointer);
+      if (commit && anchor) {
+        position = anchor.x < 0.5 ? 'left' : 'right';
+        anchor.x = position === 'left' ? 0 : 1;
+        side.value = position; rememberLayout();
+      } else { anchor=previous.anchor; position=previous.position; layout(); }
+    };
+    const moveAnchor = (x,y) => {
+      const bounds=movementBounds();
+      anchor={x:(clamp(x,bounds.left,bounds.maxX)-bounds.left)/Math.max(1,bounds.maxX-bounds.left), y:(clamp(y,bounds.top,bounds.maxY)-bounds.top)/Math.max(1,bounds.maxY-bounds.top)};
+      layout();
+    };
+    dragHandle.onpointerdown = (event) => {
+      if (event.button !== 0 || !allowed() || !engine || loading) return;
+      const box=host.getBoundingClientRect();
+      dragState={pointer:event.pointerId,dx:event.clientX-box.x,dy:event.clientY-box.y,anchor:anchor?{...anchor}:null,position};
+      clearDialogue(); cancelWelcome(); cancelPreset();
+      dragHandle.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    };
+    dragHandle.onpointermove = (event) => {
+      if (!dragState || dragState.pointer !== event.pointerId) return;
+      moveAnchor(event.clientX-dragState.dx,event.clientY-dragState.dy);
+    };
+    dragHandle.onpointerup = (event) => { if (dragState?.pointer === event.pointerId) endDrag(true); };
+    dragHandle.onpointercancel = () => endDrag(false);
+    dragHandle.onlostpointercapture = () => endDrag(false);
+    dragHandle.onkeydown = (event) => {
+      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || !allowed() || !engine || loading) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); endDrag(); reset.click(); return; }
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
+      event.preventDefault(); event.stopPropagation();
+      clearDialogue(); cancelWelcome(); cancelPreset();
+      const box=host.getBoundingClientRect(), bounds=movementBounds();
+      const step=event.shiftKey ? 40 : 16;
+      moveAnchor(event.key==='ArrowLeft'?bounds.left:event.key==='ArrowRight'?bounds.maxX:box.x,box.y+(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0));
+      position=anchor.x<0.5?'left':'right'; side.value=position; rememberLayout();
     };
     readLayout();
     const consent = make('dialog', '', 'wzf-haru-consent'),
@@ -913,9 +999,9 @@
       !suspensions.size &&
       !failed;
     const paint = () => {
-      layout();
       const run = allowed();
       if (!run) {
+        endDrag();
         clearDialogue();
         cancelPreset();
         cancelWelcome();
@@ -939,6 +1025,7 @@
               : t("Show mascot");
       button.setAttribute('aria-pressed', String(displayWanted() && accepted));
       button.setAttribute('aria-busy', String(loading));
+      dragHandle.hidden = !(run && engine && !loading);
       panel.hidden = !(run && panelOpen);
       syncThumbnail();
       panelToggle.hidden = !(run && engine);
@@ -982,6 +1069,7 @@
         if (run && !loading) engine.resume();
         else engine.pause();
       }
+      layout();
     };
     diagnostics.addEventListener('toggle', () => {
       if (diagnostics.open) {
@@ -1248,6 +1336,7 @@
       paint();
     };
     const destroy = () => {
+      endDrag();
       cancelPreset();
       clearDialogue();
       cancelWelcome();
@@ -1318,6 +1407,8 @@
         bubble = make('div', '', 'wzf-haru-bubble');
         bubble.hidden = true;
         bubble.setAttribute('aria-live', 'polite');
+        bubble.setAttribute('aria-label', t("Character dialogue"));
+        bubble.tabIndex = 0;
         host.append(canvas, touch, bubble);
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
@@ -1560,7 +1651,7 @@
     stopMotion.onclick = () => restore('motion');
     resetFace.onclick = () => restore('expression');
     const greet = async () => {
-      if (!allowed() || !engine || loading) return;
+      if (!allowed() || !engine || loading || dragState) return;
       welcomeConsumed = true;
       dialogueWelcomeConsumed = true;
       cancelWelcome();
@@ -1810,7 +1901,7 @@
       // so moving a panel between a dock and dialog cannot briefly resume the mascot.
       const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel';
       const own = (node) =>
-        [button, panel, panelToggle, host, consent, controlsDock].some(
+        [button, panel, panelToggle, host, consent, controlsDock, dragHandle].some(
           (element) => element && (element === node || element.contains(node)),
         );
       const visible = (element) =>
@@ -1874,7 +1965,8 @@
     };
     document.addEventListener('focusin', syncMobileInput);
     document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
-    window.visualViewport?.addEventListener('resize', syncMobileInput);
+    window.visualViewport?.addEventListener('resize', () => { syncMobileInput(); layout(); layoutDock(); });
+    window.visualViewport?.addEventListener('scroll', layout);
     window.addEventListener('resize', () => {
       layout();
       layoutDock();

@@ -403,7 +403,8 @@
   font: 14px/1.5 system-ui, sans-serif;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  pointer-events: none;
+  overflow-y: auto;
+  pointer-events: auto;
 }
 .wzf-haru-bubble[hidden] { display: none; }
 
@@ -414,3 +415,8 @@
 .wzf-haru-presets { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
 .wzf-haru-presets[hidden] { display: none; }
 .wzf-haru-presets button { max-width: 100%; overflow-wrap: anywhere; }
+
+.wzf-haru-safe-area { position: fixed; visibility: hidden; pointer-events: none; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.wzf-haru-drag-handle { position: fixed; z-index: 900; width: 44px; height: 36px; padding: 4px; border: 1px solid #dbe5ed; border-radius: 6px; background: #fff; color: #49667f; cursor: move; touch-action: none; font: 16px/1 system-ui; }
+.wzf-haru-drag-handle[hidden] { display: none; }
+.wzf-haru-drag-handle:focus-visible { outline: 2px solid #276a93; outline-offset: 2px; }

@@ -878,6 +878,12 @@ msgstr ""
 msgid "Motions is invalid."
 msgstr ""
 
+msgid "Move mascot"
+msgstr ""
+
+msgid "Move mascot: drag, use arrow keys, or Escape to reset"
+msgstr ""
+
 msgid "Move to trash"
 msgstr ""
 

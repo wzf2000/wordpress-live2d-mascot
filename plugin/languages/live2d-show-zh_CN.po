@@ -875,6 +875,12 @@ msgstr "已停止动作，恢复待机"
 msgid "Motions is invalid."
 msgstr "Motions 无效。"
 
+msgid "Move mascot"
+msgstr "移动看板娘"
+
+msgid "Move mascot: drag, use arrow keys, or Escape to reset"
+msgstr "移动看板娘：拖动、方向键移动或 Escape 复位"
+
 msgid "Move to trash"
 msgstr "移入回收站"
 

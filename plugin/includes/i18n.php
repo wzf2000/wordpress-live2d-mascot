@@ -37,6 +37,9 @@ function wzf_mascot_import_guidance($kind) {
 
 function wzf_mascot_frontend_translations() {
     return [
+        'Character dialogue'=>__('Character dialogue', 'live2d-show'),
+        'Move mascot: drag, use arrow keys, or Escape to reset'=>__('Move mascot: drag, use arrow keys, or Escape to reset', 'live2d-show'),
+        'Move mascot'=>__('Move mascot', 'live2d-show'),
         'Some interactions could not load. Try again.'=>__('Some interactions could not load. Try again.', 'live2d-show'),
         'Quick interactions'=>__('Quick interactions', 'live2d-show'),
         'Dialogue mode'=>__('Dialogue mode', 'live2d-show'),

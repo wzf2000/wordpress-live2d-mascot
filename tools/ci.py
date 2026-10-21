@@ -34,7 +34,7 @@ def main():
     run('node', 'tests/admin-ui.cjs')
     run(sys.executable,'-m','unittest','discover','-s','tests','-p','test_*.py')
     for name in ['plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-task.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','plugin/includes/admin-inventory.php','plugin/includes/admin-listing.php','plugin/includes/admin-readiness.php','plugin/includes/interaction-settings.php','plugin/includes/i18n.php','tests/wordpress-fixture.php']:run('php','-l',name)
-    for name in ['src/loader.js','plugin/admin.js','tests/admin-ui.cjs','tests/release-smoke.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js']:run('node','--check',name)
+    for name in ['src/loader.js','plugin/admin.js','tests/admin-ui.cjs','tests/release-smoke.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js']:run('node','--check',name)
     run('node','tests/release-smoke.cjs','plugin')
     with tempfile.TemporaryDirectory(prefix='mascot-ci-') as temporary:
         temp=Path(temporary);rebuilt=temp/'rebuilt'

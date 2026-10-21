@@ -12,7 +12,7 @@ RUNTIME_FIXED = {'live2d-show.php','includes/admin-import.php','includes/admin-t
                  'usage-imported-resources.html','licenses/Framework-LICENSE.md','LICENSE','COPYING',
                  'README.md','DISTRIBUTION.md','DISTRIBUTION-NOTICE.txt'}
 SOURCE_FIXED = {'build.py','package.json','package-lock.json','LICENSE','COPYING','README.md',
-                'docs/DISTRIBUTION.md','tools/package_release.py','tools/ci.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
+                'docs/DISTRIBUTION.md','tools/package_release.py','tools/ci.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
                 'tests/test_release_package.py','tests/test_importer.py','tests/test_release_pipeline.py',
                 'tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','DISTRIBUTION-NOTICE.txt'}
 SOURCE_TOP = {'src/engine.ts','src/resources.ts','src/loader.js','src/style.css'}
