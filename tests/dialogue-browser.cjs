@@ -49,7 +49,13 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
       await page.clock.runFor(16000);
       await page.getByRole('button',{name:'Tap Alpha fixture to greet',exact:true}).click();
       for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
-        await page.setViewportSize(viewport);await page.clock.runFor(50);
+        await page.setViewportSize(viewport);
+        // Resize events arrive independently of the simulated dialogue clock.
+        // Wait for the shipped resize handler to place the bubble before measuring.
+        await page.waitForFunction(({width,height}) => {
+          const box=document.querySelector('.wzf-haru-bubble')?.getBoundingClientRect();
+          return innerWidth===width && innerHeight===height && box && box.x>=0 && box.y>=0 && box.right<=width && box.bottom<=height;
+        },viewport,{timeout:5000});
         const box=await bubble(page).boundingBox(); assert(box && box.x>=0 && box.y>=0 && box.x+box.width<=viewport.width && box.y+box.height<=viewport.height,JSON.stringify({box,viewport}));
         assert.equal(await bubble(page).evaluate((el)=>el.scrollHeight>el.clientHeight),false);
         if(output) await page.screenshot({path:path.join(output,language+'-'+viewport.width+'.png')});
