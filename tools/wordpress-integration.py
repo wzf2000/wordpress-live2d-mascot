@@ -25,6 +25,13 @@ PINS = {
     'wordpress': ('7.1.3', 'https://wordpress.org/wordpress-7.1.3.zip', 'eb58a90ed55147f90f7bd55d0d3334960a69b7e8a4cc142c8ddfea8965218227'),
     'wp-cli': ('2.12.0', 'https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar', 'ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c'),
 }
+PHP_RUNTIME = """echo json_encode([
+    'sapi' => PHP_SAPI, 'zts' => PHP_ZTS,
+    'ini' => array_map('ini_get', array_combine(
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'],
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'])),
+    'jit' => function_exists('opcache_get_status') ? (opcache_get_status(false)['jit'] ?? null) : null
+]);"""
 def png_chunk(kind, data):
     return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
 
@@ -53,6 +60,30 @@ def model_zip(path):
         z.writestr('Model.moc3', b'MOC3synthetic-only')
         z.writestr('texture.png', PNG)
         z.writestr('motion/idle.motion3.json', '{"Version":3}')
+
+
+def server_diagnostics(path, site):
+    """Keep error categories and source locations, never messages or request data."""
+    counts = {}
+    locations = []
+    for line in path.read_text(errors='replace').splitlines():
+        level = re.search(r'PHP (Fatal error|Parse error|Warning|Deprecated|Notice):', line)
+        if not level:
+            continue
+        severity = level.group(1)
+        counts[severity] = counts.get(severity, 0) + 1
+        match = re.search(r' in (/[^\r\n]+?)(?::| on line )(\d+)(?:\D|$)', line)
+        if match:
+            try:
+                relative = Path(match.group(1)).relative_to(site).as_posix()
+            except ValueError:
+                continue
+            if not re.fullmatch(r'[A-Za-z0-9_./-]+\.php', relative) or '..' in Path(relative).parts:
+                continue
+            item = {'severity': severity, 'file': relative, 'line': int(match.group(2))}
+            if item not in locations and len(locations) < 8:
+                locations.append(item)
+    return {'counts': counts, 'locations': locations}
 
 
 def main():
@@ -146,16 +177,22 @@ def main():
     state = json.loads(wp('option', 'get', 'wzf_mascot_resources_v1', '--format=json'))
     assert state == {'characters': [], 'upgradeMarker': 'synthetic-retained'}
     router = lab / 'router.php'
-    router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; if (is_dir($_SERVER['DOCUMENT_ROOT'].$p) && is_file(rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php')) { require rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php'; return; } require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
+    router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if ($p === '/__mascot-ci-runtime') { header('Content-Type: application/json'); " + PHP_RUNTIME + " return; } if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; if (is_dir($_SERVER['DOCUMENT_ROOT'].$p) && is_file(rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php')) { require rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php'; return; } require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
     logfile = (lab / 'http.log').open('w')
     server = subprocess.Popen(['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)], env=env, stdout=logfile, stderr=logfile)
     checks = []
     completed = False
+    failure = None
+    last_request = None
+    http_runtime = None
 
     def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     anonymous, admin, reader = client(), client(), client()
 
     def request(opener, path, data=None, files=None, with_headers=False):
+        nonlocal last_request
+        last_request = {'method': 'GET' if data is None and files is None else 'POST',
+                        'path': urllib.parse.urlsplit(path).path}
         url = origin + path
         headers = {}
         if files:
@@ -190,6 +227,9 @@ def main():
         for _ in range(50):
             try: request(anonymous, '/wp-login.php'); break
             except (urllib.error.URLError, ConnectionError): time.sleep(.1)
+        status, runtime_body = request(anonymous, '/__mascot-ci-runtime')
+        assert status == 200
+        http_runtime = json.loads(runtime_body)
         assert front() is None; record('real install/upgrade preserves existing option; empty resources emit nothing')
         for opener, user in [(admin, 'mascot-admin'), (reader, 'mascot-reader')]:
             request(opener, '/wp-login.php')
@@ -435,9 +475,21 @@ def main():
         if len(checks) != 23:
             raise RuntimeError(f'Expected 23 completed integration groups, got {len(checks)}')
         completed = True
+    except BaseException as error:
+        failure = {'type': type(error).__name__, 'request': last_request}
+        raise
     finally:
-        server.terminate(); server.wait(timeout=10); logfile.close()
+        exit_before_cleanup = server.poll()
+        if exit_before_cleanup is None:
+            server.terminate()
+        server.wait(timeout=10); logfile.close()
         report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': completed, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
+        report['http_server'] = {'exit_before_cleanup': exit_before_cleanup,
+                                 'exit_after_cleanup': server.returncode,
+                                 'runtime': http_runtime,
+                                 'log': server_diagnostics(lab / 'http.log', site)}
+        if failure is not None:
+            report['failure'] = failure
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
 
