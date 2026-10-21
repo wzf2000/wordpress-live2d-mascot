@@ -51,7 +51,7 @@ function wzf_mascot_manage_character($id, $version, $operation) {
             $config['history'][$id] = $c; $c = $rollback;
         } else throw new RuntimeException(__('The character status has changed. Refresh before trying again.', 'live2d-show'));
         $config['characters'][$id] = $c;
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character management changes.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character management changes.', 'live2d-show'));
     });
 }
 function wzf_mascot_remap_motions($character, $old, $new, $default_idle, $reset) {
@@ -109,7 +109,7 @@ function wzf_mascot_replace_resource($file, $id, $version, $reset = false) {
             $stage = null;
             $config['history'][$id] = $c;
             $config['characters'][$id] = array_replace($c, $mapped, ['root'=>$dirname . '/', 'file'=>$model['file']]);
-            if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save the character resource update.', 'live2d-show'));
+            if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save the character resource update.', 'live2d-show'));
             $saved = true;
         } finally {
             if ($owned && !$saved) wzf_mascot_cleanup($stage ?? $final);

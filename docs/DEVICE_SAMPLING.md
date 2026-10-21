@@ -37,6 +37,58 @@ Only a signed-in WordPress administrator with `manage_options` can access local 
 加载。`cpuDrawMsAvg` 是 CPU 调用耗时，**不是 GPU 执行时间**。长驻测试的稳定性、
 画面、触屏及键盘结论由操作员记录，JSON 不能替代这些观察。
 
+## 新版互动的人工检查
+
+性能 JSON 与人工操作记录分开保存。每组浏览器先填写插件版本、源码提交、模型资源版本、
+系统与浏览器版本、电源模式、缓存清理方式和屏幕方向；不知道的写“未知”。旧版本采样
+保留原版本，不填入新版的结果栏。相同设备换浏览器也要另开一组。
+
+建议先在 Windows 的 Edge／Chrome、Android 的系统浏览器／Chrome 完成下表，再复查
+macOS Safari／Chrome 和 iPhone Safari／Chrome。设备没有的浏览器或模型没有的能力写
+`not-run` 并说明原因；例如没有表情／命中区域时入口隐藏可以是正确行为。
+
+| 检查 | 操作与观察 |
+| --- | --- |
+| 首次失败恢复 | 在隔离环境制造一次模型资源加载失败，检查重试和选择其他角色；加载中暂停阅读或切后台，返回后不会擅自重试失败角色；确认前不改变保存选择。不要在生产删除资源来制造失败。 |
+| 换角与偏好 | 预览、取消、确认并刷新；在两个标签页修改收藏或布局，检查另一页的变化提示；账号偏好只有主动读取／保存才请求服务端。 |
+| 账号冲突与失败 | 仅用合成测试账号，读取后在另一页保存，再尝试旧页保存；检查冲突提示及重新读取。拒绝存储或断网后保留本页选择，不把请求超时当作保存失败的确证。 |
+| 台词与快捷互动 | 检查招呼、可用动作／表情和预设；分别停止动作、重置表情；静默和仅主动模式符合选择，闲聊不自行开启。 |
+| 长台词阅读 | 测试最长中文、英文及多行台词，Tab 聚焦后滚动阅读；焦点／指针阅读期间不消失。收起角色或打开阅读面板后不留下隐藏焦点。 |
+| 小屏与键盘 | 搜索角色时展开软键盘，再收起、旋转；搜索、结果和确认按钮均能滚动到。桌面检查 Tab、Shift+Tab、Enter、Escape 和输入法组合键。 |
+| 移动与安全区 | 触摸拖动及键盘方向键移动，检查四边、刘海／底部安全区与矮窗口；移动柄不遮挡人物，取消拖动不会保存中间位置。 |
+| 可选能力 | 检查有／无视线、模型区域绑定及 PNG 许可的角色；PNG 只在管理员已经确认授权的测试角色上下载。缺少能力不记作渲染失败。 |
+| 长驻与恢复 | 至少运行 15 分钟，分别记录开始、中段、结束；包含一次后台返回、阅读暂停、手机键盘展开和关闭。采样窗口被中断时保留中断事实。 |
+
+每项用 `pass`、`fail` 或 `not-run` 记录，失败附最短操作步骤、实际结果与截图编号。
+截图避免账号、正文输入和私人内容；人工记录不写 Cookie、密码、诊断端点或资源下载地址。
+“全部操作通过”也不替代冷暖三轮和长驻的性能样本。
+
+可复制以下记录骨架；这是操作员记录，不是诊断 JSON，现有离线统计工具不会把它当作
+性能数据或自动给出设备验收结论：
+
+```json
+{
+  "pluginVersion": "填写实际版本",
+  "sourceCommit": "填写实际提交",
+  "modelResourceVersion": "填写模型版本或摘要记录编号",
+  "device": "设备型号，不含序列号",
+  "os": "系统与版本",
+  "browser": "浏览器与版本",
+  "conditions": "电源、缓存清理方式、方向、缩放",
+  "checks": [
+    { "id": "failure-recovery", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "preferences-two-tabs", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "account-conflict", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "interaction", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "long-dialogue", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "keyboard-and-rotation", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "movement", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "optional-capabilities", "result": "not-run", "note": "", "evidence": [] },
+    { "id": "soak-15-minutes", "result": "not-run", "note": "", "evidence": [] }
+  ]
+}
+```
+
 ## 连采与下载
 
 只有明确点击“开启本地诊断”才采集 GPU 信息。点击“连续采样 3 组”启动 3×3 秒，

@@ -45,7 +45,7 @@
     const recentKey='wzf-mascot-recent-v1';
     const historyId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     try{const saved=JSON.parse(localStorage.getItem(recentKey)||'[]');if(Array.isArray(saved))recent=[...new Set(saved.filter(historyId))].slice(0,8);}catch{}
-    const pendingFavorites = new Map();
+    const pendingFavorites = new Map(), pendingLayouts = new Map();
     // Favorites storage must not interrupt the existing visibility/consent reads.
     try {
       favorites = readFavorites();
@@ -70,11 +70,13 @@
       touchPending = false,
       manualPending = new Set(),
       committed = defaultCharacter,
+      preferredCharacter = defaultCharacter,
       active = defaultCharacter,
       preview = false,
       layouts = {},
       loadController = null,
       loadAttempt = 0,
+      recoveryLoad = null,
       pageHidden = false,
       loadError = '';
     try {
@@ -82,12 +84,13 @@
       mobileOptIn = localStorage.getItem('wzf-mascot-mobile-v1') === 'enabled';
       accepted = localStorage.getItem('wzf-haru-terms') === config.termsVersion;
       const saved = localStorage.getItem('wzf-mascot-character');
+      if (historyId(saved)) preferredCharacter = saved;
       if (Object.hasOwn(characters, saved)) committed = saved;
       const parsed = JSON.parse(localStorage.getItem('wzf-mascot-layouts') || '{}');
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) layouts = parsed;
       if (!layouts.haru) {
         const old = JSON.parse(localStorage.getItem('wzf-haru-layout') || 'null');
-        if (old && typeof old === 'object') layouts.haru = old;
+        if (old && typeof old === 'object') { layouts.haru = old; pendingLayouts.set('haru',old); }
       }
     } catch {}
     let dialogueMode = 'auto';
@@ -97,24 +100,37 @@
     } catch {}
     const dialogueShown = new Map();
     let bubble = null, bubbleTimer = null, dialogueWelcomeConsumed = false,
-      lastDialogue = -Infinity, awayAt = null;
-    const clearDialogue = () => {
+      lastDialogue = -Infinity, awayAt = null, bubbleMoving = false, bubbleTouch = false;
+    const dialogueDuration = () => Math.max(4500, Math.min(30000, 1500 + [...(bubble?.textContent || '')].reduce((time, char) => time + (/[\u2e80-\u9fff\uac00-\ud7af\uf900-\ufaff]/u.test(char) ? 180 : 45), 0)));
+    const scheduleDialogueHide = () => {
+      clearTimeout(bubbleTimer); bubbleTimer = null;
+      if (!bubble || bubble.hidden || bubbleMoving || bubbleTouch || bubble === document.activeElement || bubble.matches(':hover')) return;
+      bubbleTimer = setTimeout(clearDialogue, dialogueDuration());
+    };
+    const clearDialogue = (replacing = false) => {
       clearTimeout(bubbleTimer);
       bubbleTimer = null;
-      if (bubble) { bubble.textContent = ''; bubble.hidden = true; }
+      if (bubble) {
+        if (!replacing && document.activeElement === bubble) {
+          const target = permitted() ? (!panelToggle.hidden ? panelToggle : !button.hidden ? button : null) : null;
+          if (target) target.focus({preventScroll:true}); else bubble.blur();
+        }
+        bubble.textContent = '';
+        if (!replacing) { bubble.hidden = true; bubbleTouch = false; if(dragHandle)dragHandle.style.zIndex=''; }
+      }
     };
     const showLine = (line, proactive = false) => {
       if (!allowed() || !engine || loading || dialogueMode === 'silent' ||
           (proactive && (dialogueMode !== 'auto' || preview))) return false;
       if (typeof line !== 'string' || !line.trim() || new TextEncoder().encode(line).length > 300 || /[\u0000-\u001f\u007f]/.test(line)) return false;
-      clearDialogue();
+      clearDialogue(true);
       if (!bubble) return false;
       lastDialogue = performance.now();
       cancelIdle();
       bubble.textContent = line;
       bubble.hidden = false;
       placeDialogue();
-      bubbleTimer = setTimeout(clearDialogue, Math.max(4500,Math.min(12000,[...line].length*40)));
+      scheduleDialogueHide();
       syncIdle();
       return true;
     };
@@ -772,6 +788,11 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const saveLocalPreference = (key, value) => {
+      const notice = t("This preference applies only to this page; the browser did not allow saving.");
+      try { localStorage.setItem(key, value); if (state.textContent === notice) state.textContent = ''; }
+      catch { state.textContent = notice; }
+    };
     const livePresets = new Map();
     let nextHit = 0, gazeEnabled = false;
     try { gazeEnabled = localStorage.getItem('wzf-mascot-gaze-v1') === 'enabled'; } catch {}
@@ -790,7 +811,7 @@
       dialogueMode = dialogueChoice.value;
       clearDialogue();
       dialogueWelcomeConsumed = true;
-      try { localStorage.setItem('wzf-mascot-dialogue-v1', dialogueMode); } catch {}
+      saveLocalPreference('wzf-mascot-dialogue-v1', dialogueMode);
       paint();
     };
     let idleEnabled = false, idleTimer = null, idleTimerCharacter = null;
@@ -841,7 +862,7 @@
         syncIdle();
       },delay*(1+Math.random())*1000);
     };
-    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;try{localStorage.setItem('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');}catch{}syncIdle();};
+    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -855,7 +876,7 @@
     gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
     gazeLabel.append(gazeChoice,document.createTextNode(t("Follow pointer gently")));
     pointerSettings.append(make('summary',t("Pointer interactions")),gazeLabel,pointerStatus);
-    gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();try{localStorage.setItem('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');}catch{}};
+    gazeChoice.onchange=()=>{gazeEnabled=gazeChoice.checked;engine?.resetGaze?.();saveLocalPreference('wzf-mascot-gaze-v1',gazeEnabled?'enabled':'disabled');};
     const characterSettings = make('details', '', 'wzf-haru-layout wzf-haru-character-settings');
     characterSettings.append(make('summary', t("Change character")), searchRow, searchResults,
       characterSelect, randomFavorite, recentSettings, candidatePreview, previewButton,
@@ -875,6 +896,8 @@
     previewActions.append(commitButton, cancelPreview);
     panel.append(label, greeting, chatButton, presetControls, previewActions, characterSettings, moreSettings, state);
     document.body.append(panel);
+    const retryLoading = make('button', t("Retry loading"), 'wzf-haru-reset');
+    panel.insertBefore(retryLoading, greeting);
     const panelToggle = make('button', t("Interact"), 'wzf-haru-panel-toggle');
     panelToggle.hidden = true;
     panelToggle.setAttribute('aria-controls', panel.id);
@@ -944,7 +967,10 @@
     accountActions.append(accountRead,accountSave,accountUse,accountKeep);
     accountSettings.append(accountActions,accountStatus);
     advancedControls.insertBefore(accountSettings,credit);
-    let accountState=null,accountNonce='',accountPending=false;
+    let accountState=null,accountNonce='',accountPending=false,accountEpoch=0;
+    const preferenceKeys=['wzf-mascot-character',favoritesKey,'wzf-mascot-layouts'];
+    const preferenceBaseline=()=>preferenceKeys.map(key=>[key,localStorage.getItem(key)]);
+    const samePreferenceBaseline=(baseline)=>baseline.every(([key,value])=>localStorage.getItem(key)===value);
     const preferenceId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     const exactFields=(value,allowed,required=allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(key=>allowed.includes(key))&&required.every(key=>Object.hasOwn(value,key));
     const validPreferences=(value)=>{
@@ -958,8 +984,9 @@
       return true;
     };
     const browserPreferences=()=>{
-      let character=committed;
-      try{const saved=localStorage.getItem('wzf-mascot-character');if(preferenceId(saved))character=saved;}catch{}
+      // Export one coherent page snapshot, including an unavailable saved ID;
+      // never mix another tab's live character key with this page's collections.
+      const character=preferredCharacter;
       const rows=[];
       for(const [id,row] of Object.entries(layouts)){
         if(!preferenceId(id)||!row||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)continue;
@@ -975,6 +1002,13 @@
       accountUse.disabled=accountPending||!accountState?.preferences||!engine||loading||preview||!allowed();
       accountKeep.disabled=accountPending||!accountState;
     };
+    const browserChangedNotice=()=>t("Browser preferences changed in another tab. Read account preferences again before using or saving them.");
+    const invalidateAccount=()=>{accountEpoch++;accountState=null;accountNonce='';accountStatus.textContent=browserChangedNotice();accountUpdate();};
+    window.addEventListener('storage',(event)=>{
+      let area;try{area=localStorage;}catch{return;}
+      if(event.storageArea!==area || (event.key!==null && !preferenceKeys.includes(event.key)))return;
+      invalidateAccount();
+    });
     const accountRequest=async(operation,extra={})=>{
       const url=new URL(config.accountEndpoint,location.href);
       if(!config.accountEndpoint||url.origin!==location.origin)throw Error('unavailable');
@@ -989,11 +1023,12 @@
       }catch(error){if(error.name==='AbortError')throw Error('request-timeout');throw error;}
       finally{clearTimeout(timer);}
     };
-    const accountError=(code)=>code==='request-timeout'?t("The request timed out. A save may have completed. Read account preferences again before saving."):code==='sign-in-required'?t("Sign in to read or save account preferences."):code==='account-busy'?t("Account preferences are busy. Try again."):t("Account preferences could not be read or saved. Your browser preferences are retained.");
+    const accountError=(code)=>code==='browser-changed'?browserChangedNotice():code==='request-timeout'?t("The request timed out. A save may have completed. Read account preferences again before saving."):code==='sign-in-required'?t("Sign in to read or save account preferences."):code==='account-busy'?t("Account preferences are busy. Try again."):t("Account preferences could not be read or saved. Your browser preferences are retained.");
     accountRead.onclick=async()=>{
-      if(accountPending)return;accountState=null;accountNonce='';accountPending=true;accountUpdate();accountStatus.textContent=t("Reading account preferences…");
+      if(accountPending)return;const epoch=accountEpoch;accountState=null;accountNonce='';accountPending=true;accountUpdate();accountStatus.textContent=t("Reading account preferences…");
       try{
         const result=await accountRequest('bootstrap');
+        if(epoch!==accountEpoch)throw Error('browser-changed');
         if(!result.success||!result.data.state||typeof result.data.nonce!=='string'||result.data.nonce.length>128)throw Error(result.data.code||'invalid-response');
         accountState=result.data.state;accountNonce=result.data.nonce;
         accountStatus.textContent=!accountState.preferences?t("No account preferences saved. Saving is optional."):JSON.stringify(accountState.preferences)===JSON.stringify(browserPreferences())?t("Account and browser preferences match."):t("Account and browser differ. Choose which preferences to use; saving to the account is a separate action.");
@@ -1001,9 +1036,10 @@
       finally{accountPending=false;accountUpdate();}
     };
     accountSave.onclick=async()=>{
-      if(accountPending||!accountState)return;const preferences=browserPreferences();accountPending=true;accountUpdate();accountStatus.textContent=t("Saving account preferences…");
+      if(accountPending||!accountState)return;const preferences=browserPreferences(),epoch=accountEpoch;accountPending=true;accountUpdate();accountStatus.textContent=t("Saving account preferences…");
       try{
         const result=await accountRequest('save',{nonce:accountNonce,revision:String(accountState.revision),preferences:JSON.stringify(preferences)});
+        if(epoch!==accountEpoch)throw Error('browser-changed');
         if(!result.success){if(result.data.code==='conflict'&&result.data.state){accountState=result.data.state;accountStatus.textContent=t("The account changed elsewhere. Nothing was overwritten. Use the account version or keep this browser; press Save again only to replace the newly read account version.");}else throw Error(result.data.code||'invalid-response');}
         else{if(!result.data.state)throw Error('invalid-response');accountState=result.data.state;accountStatus.textContent=t("Account preferences saved. Any later browser changes remain local.");}
       }catch(error){accountState=null;accountNonce='';accountStatus.textContent=accountError(error.message);}
@@ -1012,7 +1048,9 @@
     accountKeep.onclick=()=>{accountStatus.textContent=t("Keeping browser preferences. The account was not changed.");};
     accountUse.onclick=async()=>{
       if(accountPending||!accountState?.preferences||loading||preview||!allowed()||!engine)return;
-      const value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
+      let baseline;
+      try{baseline=preferenceBaseline();}catch{accountStatus.textContent=t("The browser did not allow saving account preferences locally. Current preferences are retained.");return;}
+      const epoch=accountEpoch,value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
       for(const row of value.layouts){nextLayouts[row.id]={position:row.position,size:row.size,...(row.anchor?{anchor:{...row.anchor}}:{})};}
       const changes=[['wzf-mascot-character',value.character],[favoritesKey,JSON.stringify(value.favorites)],['wzf-mascot-layouts',JSON.stringify(nextLayouts)]];
       const previous=[];
@@ -1029,9 +1067,13 @@
         if(available&&(active!==value.character||!engine||failed||loading||!allowed())){
           await rollbackPreview();accountStatus.textContent=t("The account character could not load. Browser preferences were not changed.");return;
         }
+        let unchanged=false;
+        try{unchanged=epoch===accountEpoch&&samePreferenceBaseline(baseline);}
+        catch{await rollbackPreview();accountState=null;accountNonce='';accountStatus.textContent=t("The browser did not allow saving account preferences locally. Current preferences are retained.");return;}
+        if(!unchanged){await rollbackPreview();invalidateAccount();return;}
         try{for(const [key]of changes)previous.push([key,localStorage.getItem(key)]);for(const [key,text]of changes)localStorage.setItem(key,text);}
         catch{for(const [key,text]of previous){try{text===null?localStorage.removeItem(key):localStorage.setItem(key,text);}catch{}}let restored=false;try{restored=previous.length===changes.length&&previous.every(([key,text])=>localStorage.getItem(key)===text);}catch{}await rollbackPreview();accountStatus.textContent=restored?t("The browser did not allow saving account preferences locally. Current preferences are retained."):t("This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again.");return;}
-        layouts=nextLayouts;favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
+        preferredCharacter=value.character;layouts=nextLayouts;pendingLayouts.clear();favorites=new Set(value.favorites);pendingFavorites.clear();favoritesNotice='';
         if(available){committed=active;preview=false;rememberRecent(active);}
         syncCharacterOptions(active);readLayout();paint();
         accountStatus.textContent=(available?t("Account preferences applied to this browser."):t("Account preferences saved in this browser. The selected character is unavailable now; the current display is retained."))+(recentNotice?' '+recentNotice:'');
@@ -1050,31 +1092,61 @@
     };
     const safeProbe = make('div', '', 'wzf-haru-safe-area');
     document.body.append(safeProbe);
-    const movementBounds = () => {
+    const visibleViewport = () => {
       const css = getComputedStyle(safeProbe), view = window.visualViewport;
-      const left = (view?.offsetLeft || 0) + Math.max(6, parseFloat(css.paddingLeft) || 0);
-      const top = (view?.offsetTop || 0) + Math.max(6, parseFloat(css.paddingTop) || 0);
-      const right = (view?.offsetLeft || 0) + (view?.width || innerWidth) - Math.max(6, parseFloat(css.paddingRight) || 0);
-      const bottom = (view?.offsetTop || 0) + (view?.height || innerHeight) - Math.max(6, parseFloat(css.paddingBottom) || 0);
+      return {left:view?.offsetLeft || 0, top:view?.offsetTop || 0,
+        right:(view?.offsetLeft || 0)+(view?.width || innerWidth), bottom:(view?.offsetTop || 0)+(view?.height || innerHeight),
+        safeLeft:parseFloat(css.paddingLeft)||0, safeTop:parseFloat(css.paddingTop)||0,
+        safeRight:parseFloat(css.paddingRight)||0, safeBottom:parseFloat(css.paddingBottom)||0};
+    };
+    const movementBounds = () => {
+      const view = visibleViewport();
+      const left = view.left + Math.max(6, view.safeLeft), top = view.top + Math.max(6, view.safeTop);
+      const right = view.right - Math.max(6, view.safeRight), bottom = view.bottom - Math.max(6, view.safeBottom);
       return {left,top,maxX:Math.max(left,right-(host?.offsetWidth || size)),maxY:Math.max(top,bottom-(host?.offsetHeight || size*1.5)),right,bottom};
     };
     const clamp = (n, low, high) => Math.max(low, Math.min(high,n));
+    const moveDialogue = (parent, before = null) => {
+      if (bubble.parentElement === parent) return;
+      bubbleMoving = true;
+      parent.insertBefore(bubble, before);
+    };
+    const avoidDialogueHandle = (bounds) => {
+      if(!dragHandle || dragHandle.hidden)return;
+      dragHandle.style.zIndex='';
+      const text=bubble.getBoundingClientRect(), handle=dragHandle.getBoundingClientRect(), model=host.getBoundingClientRect();
+      const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+      if(!overlaps(text,handle))return;
+      for(const left of [text.left-handle.width-8,text.right+8]) {
+        const next={left,right:left+handle.width,top:handle.top,bottom:handle.bottom};
+        if(next.left>=bounds.left&&next.right<=bounds.right&&!overlaps(next,model)) {dragHandle.style.left=left+'px';return;}
+      }
+      // When space cannot fit both, text stays readable above the move handle.
+      dragHandle.style.zIndex='898';
+    };
     const placeDialogue = () => {
       if (!bubble || bubble.hidden || !host) return;
-      const bounds=movementBounds(), box=host.getBoundingClientRect();
+      const bounds=movementBounds(), box=host.getBoundingClientRect(), scroll=bubble.scrollTop, focused=document.activeElement===bubble;
       if (panelOpen && !desktop.matches && !panel.hidden) {
-        if(bubble.parentElement!==panel)panel.insertBefore(bubble,previewActions);
+        moveDialogue(panel,previewActions);
         bubble.style.left='';bubble.style.top='';bubble.style.right='';bubble.style.bottom='';
         bubble.style.maxHeight=Math.max(44,Math.min(160,(bounds.bottom-bounds.top)*0.3))+'px';
+        bubble.scrollTop=scroll;
+        if(focused)bubble.focus({preventScroll:true});
+        if(bubbleMoving){bubbleMoving=false; scheduleDialogueHide();}
         return;
       }
-      if(bubble.parentElement!==host)host.append(bubble);
+      moveDialogue(host);
       bubble.style.maxHeight=Math.max(44,bounds.bottom-bounds.top-12)+'px';
       const text=bubble.getBoundingClientRect();
       const x=clamp(position==='right'?box.right-text.width:box.left,bounds.left,Math.max(bounds.left,bounds.right-text.width));
       const y=clamp(box.top-text.height+30,bounds.top,Math.max(bounds.top,bounds.bottom-text.height));
       bubble.style.right='auto';bubble.style.bottom='auto';
       bubble.style.left=(x-box.left)+'px';bubble.style.top=(y-box.top)+'px';
+      bubble.scrollTop=scroll;
+      if(focused)bubble.focus({preventScroll:true});
+      if(bubbleMoving){bubbleMoving=false; scheduleDialogueHide();}
+      avoidDialogueHandle(bounds);
     };
     const layout = () => {
       let renderedSize = desktop.matches
@@ -1083,11 +1155,7 @@
       const visibleBounds = movementBounds();
       renderedSize = Math.max(1, Math.min(renderedSize, visibleBounds.right-visibleBounds.left, (visibleBounds.bottom-visibleBounds.top)/1.5));
       const leftControls = position === 'right';
-      const edge = 'max(16px, env(safe-area-inset-' + (leftControls ? 'left' : 'right') + '))';
-      for (const element of [panel, controlsDock]) {
-        element.style.left = leftControls ? edge : 'auto';
-        element.style.right = leftControls ? 'auto' : edge;
-      }
+      layoutDock();
       controlsDock.style.alignItems = leftControls ? 'flex-start' : 'flex-end';
       diagnosticBody.style.left = leftControls ? '0' : 'auto';
       diagnosticBody.style.right = leftControls ? 'auto' : '0';
@@ -1143,18 +1211,34 @@
       output.textContent = t("%1$s pixels", size);
     };
     const layoutDock = () => {
-      const bottom = 24 + controlsDock.offsetHeight;
-      panel.style.bottom = 'calc(' + bottom + 'px + env(safe-area-inset-bottom))';
-      panel.style.maxHeight =
-        'calc(100dvh - ' +
-        (bottom + 16) +
-        'px - env(safe-area-inset-bottom) - env(safe-area-inset-top))';
+      const view = visibleViewport();
+      const left=view.left+Math.max(16,view.safeLeft), right=view.right-Math.max(16,view.safeRight);
+      for(const element of [panel,controlsDock]) {
+        element.style.left=position==='right'?left+'px':'auto';
+        element.style.right=position==='left'?Math.max(0,innerWidth-right)+'px':'auto';
+        element.style.maxWidth=Math.max(0,right-left)+'px';
+      }
+      const dockBottom = Math.max(0, innerHeight-view.bottom)+Math.max(16,view.safeBottom);
+      controlsDock.style.bottom = dockBottom+'px';
+      const bottom = dockBottom+controlsDock.offsetHeight+8;
+      panel.style.bottom = bottom+'px';
+      panel.style.maxHeight = Math.max(44,innerHeight-bottom-view.top-Math.max(16,view.safeTop))+'px';
     };
     const rememberLayout = () => {
-      layouts[active] = { position, size, ...(anchor ? {anchor:{...anchor}} : {}) };
+      const row={position,size,...(anchor?{anchor:{...anchor}}:{})};
+      layouts[active]=row;pendingLayouts.set(active,row);
       try {
-        localStorage.setItem('wzf-mascot-layouts', JSON.stringify(layouts));
-      } catch {}
+        const raw=localStorage.getItem('wzf-mascot-layouts');
+        let latest;try{latest=JSON.parse(raw||'{}');}catch{latest=null;}
+        // A readable malformed value can be repaired by this explicit edit.
+        // Access failures still reach the page-only notice without overwriting.
+        if(!latest||typeof latest!=='object'||Array.isArray(latest))latest=Object.create(null);
+        const merged=Object.assign(Object.create(null),latest);
+        for(const [id,value]of pendingLayouts)merged[id]=value;
+        // Best effort only: localStorage has no cross-tab compare-and-swap.
+        localStorage.setItem('wzf-mascot-layouts',JSON.stringify(merged));
+        layouts=merged;pendingLayouts.clear();
+      } catch {state.textContent=t("Layout applies only to this page; the browser did not allow saving.");}
       layout();
     };
     side.onchange = () => {
@@ -1245,19 +1329,19 @@
     consent.append(title, text, link, make('br'), agree, cancel);
     document.body.append(consent);
     const displayWanted = () => (desktop.matches ? wanted : mobileOptIn);
-    const allowed = () =>
+    const permitted = () =>
       displayWanted() &&
       accepted &&
       (desktop.matches || config.mobileEnabled === true) &&
       !reduce.matches &&
       !document.hidden &&
       !pageHidden &&
-      !suspensions.size &&
-      !failed;
+      !suspensions.size;
+    const allowed = () => permitted() && !failed;
     const paint = () => {
-      const run = allowed();
+      const run = allowed(), recovery = permitted() && failed, focusedBefore = document.activeElement;
       syncIdle();
-      chatButton.hidden = !idleLines().length;
+      chatButton.hidden = !engine || failed || !idleLines().length;
       chatButton.disabled = dialogueMode === 'silent' || !run || !engine || loading || preview;
       idleLabel.hidden = !idleLines().length;
       if (!run) {
@@ -1291,10 +1375,14 @@
       button.setAttribute('aria-busy', String(loading));
       if (panelOpen && !desktop.matches) endDrag();
       dragHandle.hidden = !(run && engine && !loading && !(panelOpen && !desktop.matches));
-      panel.hidden = !(run && panelOpen);
+      panel.hidden = !(permitted() && panelOpen);
       syncThumbnail();
-      panelToggle.hidden = !(run && engine);
-      panelToggle.textContent = panelOpen ? t("Close interaction") : t("Interact");
+      panelToggle.hidden = !(run && (engine || (loading && panelOpen))) && !recovery;
+      panelToggle.textContent = panelOpen ? t("Close interaction") : recovery ? t("Choose another character") : t("Interact");
+      retryLoading.hidden = !recovery;
+      retryLoading.disabled = loading;
+      moreSettings.hidden = !engine || failed;
+      presetControls.hidden = !engine || failed || !presetControls.children.length;
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
       layoutDock();
       const supported=capabilities();
@@ -1304,7 +1392,7 @@
       captureSettings.hidden = characters[active].captureAllowed !== true || typeof engine?.captureFrame !== 'function';
       accountSettings.hidden = !config.accountEndpoint;
       dialogueSettings.hidden = !Object.values(characters[active].dialogue || {}).some(rule => rule?.enabled === true) && !livePresets.size;
-      greeting.hidden = !characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true;
+      greeting.hidden = !engine || failed || (!characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true);
       greeting.disabled = !run || !engine || loading;
       pointerStatus.textContent=supported.hitAreas.length?t("Model hit areas available: %1$s",supported.hitAreas.join(', ')):t("No model hit areas; normal greeting is used.");
       if (!run || loading || dragState || !gazeEnabled) engine?.resetGaze?.();
@@ -1351,6 +1439,9 @@
         else engine.pause();
       }
       layout();
+      const focused = document.activeElement;
+      if (recovery && (panel.contains(focusedBefore) || host?.contains(focusedBefore)) && !focusedBefore.getClientRects().length && (focused === focusedBefore || focused === document.body))
+        (panelOpen ? retryLoading : panelToggle).focus({ preventScroll: true });
     };
     characterSettings.addEventListener('toggle', syncThumbnail);
     diagnostics.addEventListener('toggle', () => {
@@ -1364,7 +1455,13 @@
       panelOpen = !panelOpen;
       paint();
       if (panelOpen && !panel.hidden) {
-        (greeting.hidden ? characterSettings.querySelector('summary') : greeting).focus({ preventScroll: true });
+        if (failed) {
+          characterSettings.open = true;
+          characterSelect.focus({ preventScroll: true });
+        } else {
+          const first = [greeting,chatButton,...presetControls.querySelectorAll('button')].find(element => !element.hidden && !element.disabled && element.getClientRects().length);
+          (first || characterSettings.querySelector('summary')).focus({preventScroll:true});
+        }
       }
     };
     characterSearch.oninput = () => {
@@ -1417,7 +1514,7 @@
       }
       syncCharacterOptions(id);
       paint();
-      // Only the user's removal event moves focus; asynchronous paint never does.
+      // Favorites updates move focus only after this explicit removal event.
       if (favoritesFilter.checked && !characterSelect.options.length)
         favoritesFilter.focus({ preventScroll: true });
     };
@@ -1591,6 +1688,8 @@
     };
     const cancelLoad = () => {
       if (!loadController) return;
+      const cancelledRecovery = recoveryLoad?.attempt === loadAttempt && !engine ? recoveryLoad : null;
+      recoveryLoad = null;
       welcomeConsumed = true;
       if (currentLoad && currentLoad.status === 'loading') currentLoad.status = 'cancelled';
       interruptDiagnostics('load-cancelled');
@@ -1606,9 +1705,13 @@
       syncCharacterOptions(committed);
       preview = false;
       readLayout();
-      state.textContent = t("Loading cancelled");
+      if (cancelledRecovery) {
+        failed = true;
+        loadError = cancelledRecovery.error;
+      }
+      state.textContent = t("Loading cancelled") + (cancelledRecovery ? ' ' + loadError : '');
     };
-    const beginLoad = (id = committed) => {
+    const beginLoad = (id = committed, recoveryError = null) => {
       cancelPNG();captureStatus.textContent='';
       clearDialogue();
       interruptDiagnostics('load-started');
@@ -1620,6 +1723,7 @@
       const controller = new AbortController();
       loadController = controller;
       const attempt = ++loadAttempt;
+      recoveryLoad = recoveryError === null ? null : { attempt, error: recoveryError };
       loading = true;
       loadError = '';
       state.textContent = t("Loading character…");
@@ -1629,6 +1733,7 @@
     const finishLoad = (attempt) => {
       if (attempt !== loadAttempt) return;
       loadController = null;
+      recoveryLoad = null;
       loading = false;
       paint();
     };
@@ -1709,9 +1814,10 @@
         bubble.setAttribute('aria-live', 'polite');
         bubble.setAttribute('aria-label', t("Character dialogue"));
         bubble.tabIndex = 0;
-        bubble.onfocus=()=>{clearTimeout(bubbleTimer);bubbleTimer=null;};
-        bubble.onblur=()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,2000);}};
-        bubble.addEventListener('wheel',()=>{if(!bubble.hidden){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(clearDialogue,12000);}},{passive:true});
+        bubble.onfocus = bubble.onblur = bubble.onpointerenter = bubble.onpointerleave = scheduleDialogueHide;
+        bubble.addEventListener('pointerdown', event => { if (event.pointerType === 'touch') { bubbleTouch=true; scheduleDialogueHide(); } });
+        for (const name of ['pointerup','pointercancel']) bubble.addEventListener(name, () => { bubbleTouch=false; scheduleDialogueHide(); });
+        for (const name of ['wheel','scroll']) bubble.addEventListener(name, scheduleDialogueHide, {passive:true});
         host.append(canvas, touch, bubble);
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
@@ -1750,17 +1856,27 @@
       populate();
       diagnosticReady();
     };
+    const resetFailure = () => {
+      destroy();
+      host?.remove();
+      host = null;
+      canvas = null;
+      failed = false;
+    };
+    const loadRuntime = async (signal) => {
+      diagnosticPhase('core');
+      await script(config.core, () => !!window.Live2DCubismCore, signal);
+      diagnosticPhase('engine');
+      await script(config.engine, () => !!window.WZFHaruEngine, signal);
+      checkSignal(signal);
+    };
     const apply = async () => {
       if (!allowed()) cancelLoad();
       paint();
       if (!allowed() || engine || loading) return;
       const { signal, attempt } = beginLoad();
       try {
-        diagnosticPhase('core');
-        await script(config.core, () => !!window.Live2DCubismCore, signal);
-        diagnosticPhase('engine');
-        await script(config.engine, () => !!window.WZFHaruEngine, signal);
-        checkSignal(signal);
+        await loadRuntime(signal);
         await load(committed, signal);
         if (attempt !== loadAttempt) return;
         preview = false;
@@ -1777,11 +1893,17 @@
       }
     };
     const switchTo = async (id, isPreview) => {
-      if (!allowed() || loading || !engine || !Object.hasOwn(characters, id)) return;
+      const recovering = failed;
+      if (!permitted() || loading || (!engine && !recovering) || !Object.hasOwn(characters, id)) return;
+      const recoveryError = recovering ? loadError : null;
+      const handoffFocus = panelOpen && ((recovering && panel.contains(document.activeElement)) || document.activeElement === previewButton || document.activeElement === cancelPreview);
+      if (handoffFocus) button.focus({ preventScroll: true });
+      if (recovering) resetFailure();
       welcomeConsumed = true;
       cancelWelcome();
-      const { signal, attempt } = beginLoad(id);
+      const { signal, attempt } = beginLoad(id, recoveryError);
       try {
+        if (recovering) await loadRuntime(signal);
         await load(id, signal);
         if (attempt !== loadAttempt) return;
         preview = isPreview && id !== committed;
@@ -1790,6 +1912,16 @@
         if (attempt !== loadAttempt || signal.aborted || error?.name === 'AbortError') return;
         diagnosticError(error);
         const reason = errorMessage(error);
+        if (recovering) {
+          failed = true;
+          destroy();
+          preview = false;
+          active = committed;
+          syncCharacterOptions(id);
+          readLayout();
+          loadError = state.textContent = reason;
+          return;
+        }
         try {
           await load(committed, signal);
           if (attempt !== loadAttempt) return;
@@ -1809,16 +1941,19 @@
         }
       } finally {
         finishLoad(attempt);
+        if (attempt === loadAttempt && handoffFocus && panelOpen && !panel.hidden && document.activeElement === button)
+          (failed ? retryLoading : preview ? commitButton : characterSettings.querySelector('summary')).focus({ preventScroll: true });
       }
     };
     previewButton.onclick = () => switchTo(characterSelect.value, true);
     const previewReturnFocus = () => { if (panelOpen && !panel.hidden && !preview) characterSettings.querySelector('summary').focus({preventScroll:true}); };
-    cancelPreview.onclick = async () => { await switchTo(committed, false); previewReturnFocus(); };
+    cancelPreview.onclick = () => switchTo(committed, false);
     commitButton.onclick = () => {
       if (!allowed() || loading || !engine || !preview) return;
       try {
         localStorage.setItem('wzf-mascot-character', active);
         committed = active;
+        preferredCharacter = active;
         preview = false;
         rememberRecent(active);
         state.textContent = t("Using %1$s; this browser will remember your selection.", characters[active].name)+(recentNotice?' '+recentNotice:'');
@@ -1855,11 +1990,7 @@
         return;
       }
       if (failed && !loading) {
-        destroy();
-        host?.remove();
-        host = null;
-        canvas = null;
-        failed = false;
+        resetFailure();
         if (desktop.matches) wanted = true;
         else mobileOptIn = true;
       } else if (desktop.matches) wanted = !wanted;
@@ -1867,6 +1998,7 @@
       save();
       apply();
     };
+    retryLoading.onclick = () => { button.focus({ preventScroll: true }); button.click(); };
     const perform = async (type, id) => {
       if (!allowed() || !engine || loading) return;
       cancelPreset();
@@ -2313,7 +2445,7 @@
     document.addEventListener('focusin', syncMobileInput);
     document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
     window.visualViewport?.addEventListener('resize', () => { syncMobileInput(); layout(); layoutDock(); });
-    window.visualViewport?.addEventListener('scroll', layout);
+    window.visualViewport?.addEventListener('scroll', () => { layout(); layoutDock(); });
     window.addEventListener('resize', () => {
       layout();
       layoutDock();

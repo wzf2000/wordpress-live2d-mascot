@@ -382,3 +382,31 @@ class InteractionTests(unittest.TestCase):
         ''')
         self.assertEqual(result['exactOccurrences'],4)
         self.assertEqual(result['canonicalLine'],'Literal &amp; &quot; &copy; "quotes" 中文 & café')
+
+
+    def test_account_guard_is_per_user_and_blog_and_parallel_with_resource_tasks(self):
+        result=self.account('''
+        $file=hash('sha256',wzf_mascot_preference_key()."\\0".'7').'.guard';
+        $scope=wzf_mascot_guard_scope_begin('account',true,$file);$blocked=false;
+        try{wzf_mascot_save_preferences(7,0,$preferences);}catch(Throwable $e){$blocked=$e->getMessage()==='account-busy';}
+        $test_uid=8;$other=wzf_mascot_save_preferences(8,0,$preferences);
+        $test_blog=2;$test_uid=7;$blog=wzf_mascot_save_preferences(7,0,$preferences);
+        $task=wzf_mascot_task_begin('settings');$during=wzf_mascot_save_preferences(7,1,$preferences);$running=wzf_mascot_task_status();
+        wzf_mascot_task_end($task);$idle=wzf_mascot_task_status();wzf_mascot_guard_scope_end($scope);
+        echo json_encode(['blocked'=>$blocked,'other'=>$other['ok'],'blog'=>$blog['ok'],'during'=>$during['ok'],'running'=>$running['status'],'idle'=>$idle['status'],'writes'=>$test_writes]);
+        ''')
+        self.assertTrue(result['blocked']);self.assertTrue(result['other']);self.assertTrue(result['blog']);self.assertTrue(result['during'])
+        self.assertEqual(result['running'],'running');self.assertEqual(result['idle'],'idle');self.assertEqual(result['writes'],3)
+
+    def test_account_root_changes_before_write_are_unavailable_without_writes(self):
+        result=self.account('''
+        $original_uploads=getenv('TEST_UPLOADS');
+        class RootChangingPreferenceDatabase extends PreferenceDatabase {
+            function get_results(...$args){global $original_uploads;$rows=parent::get_results(...$args);if(strpos($args[0]??'','meta_value')!==false)putenv('TEST_UPLOADS='.$original_uploads.'-changed');return $rows;}
+        }
+        $wpdb=new RootChangingPreferenceDatabase();$blocked=false;
+        try{wzf_mascot_save_preferences(7,0,$preferences);}catch(Throwable $e){$blocked=$e->getMessage()==='account-unavailable';}
+        putenv('TEST_UPLOADS='.$original_uploads);
+        echo json_encode(['blocked'=>$blocked,'writes'=>$test_writes,'created'=>file_exists($original_uploads.'-changed'),'options'=>$options]);
+        ''')
+        self.assertTrue(result['blocked']);self.assertEqual(result['writes'],0);self.assertFalse(result['created']);self.assertEqual(result['options'],[])

@@ -112,7 +112,7 @@ class AdminInventoryTests(unittest.TestCase):
     def test_capability_nonce_and_get_without_scan(self):
         report = self.php("$allowed=false;echo json_encode(wzf_mascot_disk_inventory(['characters'=>[]]));")
         self.assertFalse(report['ok'])
-        report = self.php("$_GET['page']='wzf-mascot';$_POST['mascot_inventory']='1';wzf_mascot_inventory_gate();echo json_encode(['ok'=>true]);")
+        report = self.php("$_GET['page']='wzf-mascot';$_POST['mascot_inventory']='1';$_SERVER['REQUEST_METHOD']='POST';wzf_mascot_inventory_gate();echo json_encode(['ok'=>true]);")
         self.assertFalse(report['ok']); self.assertEqual(report['error'], 'nonce rejected')
         report = self.php("$_GET['page']='wzf-mascot';wzf_mascot_inventory_gate();echo json_encode(['reads'=>$wpdb->reads]);")
         self.assertEqual(report['reads'], 0)
@@ -245,6 +245,168 @@ class AdminInventoryTests(unittest.TestCase):
         self.assertNotIn('/private', result['type']); self.assertNotIn('private parse', result['json']); self.assertIn('upload_max_filesize', result['upload'])
         self.assertEqual(result['dictionary']['Using %1$s; this browser will remember your selection.'], 'Using %1$s; this browser will remember your selection.');
         self.assertEqual(result['dictionary']['Show mascot'], 'Show mascot'); self.assertNotIn('Disk inventory', result['dictionary'])
+
+
+    def test_resource_and_account_guard_subtrees_are_always_protected(self):
+        report=self.php(self.setup()+'''
+        $account=wzf_mascot_guard_scope_begin('account',true,str_repeat('a',64).'.guard');
+        $report=wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION]);wzf_mascot_guard_scope_end($account);echo json_encode($report);
+        ''')
+        self.assertTrue(report['complete'])
+        rows={row['path']:row['kind'] for row in report['paths']}
+        self.assertEqual(rows['.task-guard'],'directory-guard');self.assertEqual(rows['.resource-guard'],'directory-guard')
+        self.assertEqual(rows['.account-guards'],'directory-guard')
+        self.assertEqual(rows['.account-guards/'+'a'*64+'.guard'],'directory-guard')
+
+
+    @staticmethod
+    def review_setup():
+        return """$u=wzf_mascot_uploads(true);$options[WZF_MASCOT_OPTION]=['characters'=>[]];$old=time()-40*86400;"""
+
+    def test_review_subtree_age_counts_and_parent_child_rows_do_not_overlap(self):
+        report=self.php(self.review_setup()+'''
+        mkdir($u['path'].'/old');mkdir($u['path'].'/old/nested');
+        file_put_contents($u['path'].'/old/nested/a','1234');file_put_contents($u['path'].'/old/b','12345');
+        foreach(['old/nested/a','old/b','old/nested','old'] as $p)touch($u['path'].'/'.$p,$old);
+        mkdir($u['path'].'/recent');file_put_contents($u['path'].'/recent/new','x');touch($u['path'].'/recent',$old);
+        mkdir($u['path'].'/boundary');touch($u['path'].'/boundary',time()-30*86400);
+        mkdir($u['path'].'/waiting');touch($u['path'].'/waiting',time()-30*86400+60);
+        echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));''')
+        review=report['cleanupReview'];self.assertEqual(review['schema'],1);self.assertTrue(review['readOnly']);self.assertTrue(review['complete'])
+        self.assertEqual(review['retentionDays'],30);self.assertIsInstance(review['scanTime'],int)
+        rows={r['path']:r for r in review['rows']}
+        self.assertEqual(rows['old']['status'],'due');self.assertEqual(rows['old']['bytes'],9);self.assertEqual(rows['old']['files'],2)
+        self.assertNotIn('old/nested',rows);self.assertNotIn('old/nested/a',rows)
+        self.assertEqual(rows['recent']['status'],'waiting');self.assertGreater(rows['recent']['latestMtime'],rows['old']['latestMtime'])
+        self.assertEqual(rows['boundary']['status'],'due');self.assertEqual(rows['waiting']['status'],'waiting')
+        self.assertNotIn('safeToDelete',json.dumps(review))
+
+    def test_review_metadata_and_rows_limits_are_independent(self):
+        result=self.php(self.review_setup()+'''
+        mkdir($u['path'].'/many');for($i=0;$i<620;$i++){file_put_contents($u['path'].'/many/f'.$i,'123');touch($u['path'].'/many/f'.$i,$old);}touch($u['path'].'/many',$old);
+        $report=wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],['rows'=>1],30);
+        $truncated=wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],['reviewRows'=>1],30);
+        $bounded=wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],['entries'=>1],30);
+        echo json_encode(['report'=>$report,'truncated'=>$truncated,'bounded'=>$bounded]);''')
+        report=result['report'];self.assertTrue(report['displayTruncated']);self.assertTrue(report['cleanupReview']['complete'])
+        row=next(r for r in report['cleanupReview']['rows'] if r['path']=='many')
+        self.assertEqual(row['bytes'],1860);self.assertEqual(row['files'],620);self.assertEqual(row['status'],'due')
+        self.assertTrue(result['truncated']['cleanupReview']['rowsTruncated']);self.assertEqual(len(result['truncated']['cleanupReview']['rows']),1)
+        self.assertFalse(result['bounded']['cleanupReview']['complete']);self.assertNotIn('due',[r['status'] for r in result['bounded']['cleanupReview']['rows']])
+
+    def test_review_preserves_all_references_and_special_storage(self):
+        report=self.php(self.setup()+'''
+        $old=time()-40*86400;mkdir($u['path'].'/core-retained-old');file_put_contents($u['path'].'/core-retained-old/a','core');
+        mkdir($u['path'].'/stage-old');file_put_contents($u['path'].'/stage-old/a','stage');
+        mkdir($u['path'].'/nested-protected');mkdir($u['path'].'/nested-protected/deeper');mkdir($u['path'].'/nested-protected/deeper/core-old');file_put_contents($u['path'].'/nested-protected/deeper/core-old/file','protected');
+        mkdir($u['path'].'/nested-stage');mkdir($u['path'].'/nested-stage/stage-old');file_put_contents($u['path'].'/nested-stage/stage-old/file','protected');
+        file_put_contents($u['path'].'/terms.html','terms');$options[WZF_MASCOT_OPTION]['presentation']=['terms'=>'terms.html'];
+        $scope=wzf_mascot_guard_scope_begin('account',true,str_repeat('a',64).'.guard');wzf_mascot_guard_scope_end($scope);
+        $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($u['path'],FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);
+        foreach($iterator as $p)touch($p->getPathname(),$old);
+        echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));''')
+        review=report['cleanupReview'];self.assertTrue(review['complete']);rows={r['path']:r for r in review['rows']}
+        for path in ['core-retained-old','stage-old','core.js','terms.html','.task-guard','.resource-guard','.account-guards','index.html']:
+            self.assertEqual(rows[path]['status'],'protected',path)
+        for path in ['nested-protected','nested-stage']:
+            self.assertEqual(rows[path]['status'],'protected');self.assertIn('protected-descendant',rows[path]['reasons'])
+            self.assertIn('protected',rows[path]['reasons']);self.assertEqual(rows[path]['reason'],'This subtree contains protected storage; preserve it as a whole.')
+        self.assertNotIn('nested-protected/deeper/core-old',rows)
+        model=next(r for r in review['rows'] if 'current-model' in next(p['kind'] for p in report['paths'] if p['path']==r['path']))
+        self.assertEqual(model['status'],'protected')
+        self.assertTrue(any(ref['characterId']=='disabled' for ref in report['references']))
+        self.assertTrue(any(ref['characterId']=='trash' for ref in report['references']))
+        self.assertTrue(any(ref['kind']=='previous-model' for ref in report['references']))
+
+    def test_review_bad_times_hardlinks_links_and_special_files_never_become_due(self):
+        report=self.php(self.review_setup()+'''
+        file_put_contents($u['path'].'/hard','x');link($u['path'].'/hard',$u['path'].'/hard-again');touch($u['path'].'/hard',$old);
+        mkdir($u['path'].'/future');file_put_contents($u['path'].'/future/file','x');touch($u['path'].'/future/file',time()+86400);touch($u['path'].'/future',$old);
+        file_put_contents($u['path'].'/zero','x');touch($u['path'].'/zero',0);
+        echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));''')
+        rows={r['path']:r for r in report['cleanupReview']['rows']}
+        for path,reason in [('hard','hardlink'),('hard-again','hardlink'),('future','future-mtime'),('zero','invalid-mtime')]:
+            self.assertEqual(rows[path]['status'],'unknown');self.assertIn(reason,rows[path]['reasons'])
+        for change in ["symlink('/tmp',$u['path'].'/link');", "posix_mkfifo($u['path'].'/fifo',0600);"]:
+            helper=test_importer.ImporterTests();helper.setUp()
+            try: report=helper.php(STATE+self.review_setup()+change+"echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));")
+            finally: helper.tearDown()
+            self.assertFalse(report['cleanupReview']['complete']);self.assertNotIn('due',[r['status'] for r in report['cleanupReview']['rows']])
+
+    def test_review_unknown_references_concurrent_changes_and_legacy_busy_are_withheld(self):
+        for change in ["$options[WZF_MASCOT_OPTION]['characters']['bad']=['root'=>'missing/'];",
+                       "$concurrent=$options;$concurrent[WZF_MASCOT_OPTION]['changed']=true;",
+                       "$concurrent=$options;$concurrent[WZF_MASCOT_LOCK]=['token'=>'other'];",
+                       "$bridge=wzf_mascot_guard_scope_begin('legacy',true);"]:
+            helper=test_importer.ImporterTests();helper.setUp()
+            try: report=helper.php(STATE+self.review_setup()+"file_put_contents($u['path'].'/old','x');touch($u['path'].'/old',$old);"+change+"echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));")
+            finally: helper.tearDown()
+            self.assertFalse(report['cleanupReview']['complete'],change)
+            self.assertNotIn('due',[r['status'] for r in report['cleanupReview']['rows']])
+
+    def test_review_explicit_scope_parameter_validation_and_export_errors(self):
+        self.assertIsNone(self.php("echo json_encode(wzf_mascot_inventory_requested_review());"))
+        for value in ['0','3651','abc','1.5',[],None,False]:
+            result=self.php("echo json_encode(wzf_mascot_inventory_retention_days(json_decode("+json.dumps(json.dumps(value))+",true)));")
+            self.assertFalse(result['ok'],value);self.assertIn('1 to 3650',result['error'])
+        for value in [1,30,3650]: self.assertEqual(self.php("echo json_encode(wzf_mascot_inventory_retention_days("+str(value)+"));"),value)
+        for value in ['0','3651','abc',[]]:
+            result=self.php("function esc_html($s){return htmlspecialchars($s,ENT_QUOTES,'UTF-8',false);}$test_nonce_valid=true;$_GET['page']='wzf-mascot';$_SERVER['REQUEST_METHOD']='POST';$_POST=['mascot_inventory_export'=>'1','cleanup_review'=>'1','retention_days'=>json_decode("+json.dumps(json.dumps(value))+",true)];try{wzf_mascot_inventory_export_gate();}catch(Throwable $e){echo json_encode(['response'=>$test_die_response,'reads'=>$wpdb->reads,'created'=>file_exists(getenv('TEST_UPLOADS'))]);}")
+            self.assertEqual(result['response'],400);self.assertEqual(result['reads'],0);self.assertFalse(result['created'])
+        result=self.php("$_GET['page']='wzf-mascot';$_SERVER['REQUEST_METHOD']='GET';$_POST=['mascot_inventory'=>'1','cleanup_review'=>'1','retention_days'=>'30'];try{wzf_mascot_inventory_gate();}catch(Throwable $e){echo json_encode(['response'=>$test_die_response,'reads'=>$wpdb->reads]);}")
+        self.assertEqual(result['response'],403);self.assertEqual(result['reads'],0)
+
+    def test_review_export_is_fresh_readonly_and_literal_entities_are_preserved(self):
+        result=self.php(self.review_setup()+'''
+        function wp_json_encode($v,$flags=0){return json_encode($v,$flags);}
+        function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8',false);}
+        mkdir($u['path'].'/old&amp;&quot;中文');file_put_contents($u['path'].'/old&amp;&quot;中文/file','literal');touch($u['path'].'/old&amp;&quot;中文/file',$old);touch($u['path'].'/old&amp;&quot;中文',$old);
+        $snapshot=function()use($u){$out=[];foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($u['path'],FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::SELF_FIRST)as$p)$out[$p->getPathname()]=[$p->getMTime(),$p->getSize(),$p->isFile()?hash_file('sha256',$p->getPathname()):null];ksort($out);return$out;};
+        $before=$snapshot();$optionsBefore=$options;$json=wzf_mascot_inventory_export_json(30);$report=json_decode($json,true);
+        ob_start();wzf_mascot_inventory_review_panel($report['cleanupReview']);$html=ob_get_clean();
+        echo json_encode(['plain'=>json_decode(wzf_mascot_inventory_export_json(),true),'report'=>$report,'html'=>$html,'same'=>$before===$snapshot()&&$optionsBefore===$options]);''')
+        self.assertTrue(result['same']);self.assertNotIn('cleanupReview',result['plain'])
+        self.assertTrue(result['report']['cleanupReview']['readOnly'])
+        from html import unescape
+        self.assertIn('old&amp;&quot;中文',unescape(result['html']))
+        self.assertIn('wzf-mascot-cleanup-review',result['html'])
+        self.assertIn('role="region" tabindex="0" aria-labelledby="wzf-mascot-cleanup-review-title"',result['html'])
+        self.assertIn('id="wzf-mascot-cleanup-review-title"',result['html']);self.assertIn('wzf-mascot-cleanup-table',result['html'])
+        self.assertNotIn(str(self.helper.root),json.dumps(result['report']))
+
+
+    def test_review_invalid_panel_parameter_is_visible_without_scanning(self):
+        result=self.php('''
+        function admin_url($s){return '/wp-admin/'.$s;}
+        function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8',false);}
+        function esc_attr($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8',false);}
+        function esc_url($s){return htmlspecialchars((string)$s,ENT_QUOTES);}
+        function wp_nonce_field(...$x){echo '<input type="hidden" name="nonce" value="stub">';}
+        function submit_button($s,...$x){echo '<button>'.$s.'</button>';}
+        $test_nonce_valid=true;$_SERVER['REQUEST_METHOD']='POST';$_POST=['mascot_inventory'=>'1','cleanup_review'=>'1','retention_days'=>'0'];
+        ob_start();wzf_mascot_inventory_panel(['characters'=>[]]);$html=ob_get_clean();
+        echo json_encode(['html'=>$html,'reads'=>$wpdb->reads,'created'=>file_exists(getenv('TEST_UPLOADS'))]);''')
+        self.assertIn('role="alert"',result['html']);self.assertIn('1 to 3650',result['html'])
+        self.assertEqual(result['reads'],0);self.assertFalse(result['created'])
+
+
+    def test_review_numeric_names_remain_exact_strings(self):
+        report=self.php(self.review_setup()+'''
+        file_put_contents($u['path'].'/123','number');mkdir($u['path'].'/0');file_put_contents($u['path'].'/0/456','nested');
+        mkdir($u['path'].'/protected');mkdir($u['path'].'/protected/789');file_put_contents($u['path'].'/protected/789/0','nested');
+        mkdir($u['path'].'/protected/model');$options[WZF_MASCOT_OPTION]['characters']['model']=['root'=>'protected/model/'];
+        echo json_encode(wzf_mascot_disk_inventory($options[WZF_MASCOT_OPTION],[],30));''')
+        rows=report['cleanupReview']['rows'];self.assertTrue(all(isinstance(r['path'],str) for r in rows))
+        paths=[r['path'] for r in rows]
+        self.assertIn('123',paths);self.assertIn('0',paths);self.assertIn('protected/789',paths)
+        self.assertIn('0/456',[r['path'] for r in report['paths']])
+        self.assertEqual(self.php("$_POST=['cleanup_review'=>'1'];echo json_encode(wzf_mascot_inventory_requested_review());"),30)
+
+
+    def test_review_empty_install_does_not_create_storage_or_guards(self):
+        result=self.php("function wp_json_encode($v,$flags=0){return json_encode($v,$flags);}$before=$options;$json=wzf_mascot_inventory_export_json(30);echo json_encode(['report'=>json_decode($json,true),'same'=>$before===$options,'created'=>file_exists(getenv('TEST_UPLOADS'))]);")
+        self.assertTrue(result['same']);self.assertFalse(result['created'])
+        self.assertTrue(result['report']['cleanupReview']['complete']);self.assertEqual(result['report']['cleanupReview']['rows'],[])
 
 
 if __name__ == '__main__': unittest.main()

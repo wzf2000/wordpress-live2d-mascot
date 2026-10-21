@@ -43,7 +43,7 @@ function wzf_mascot_save_interaction($id, $version, $dialogue) {
         if (!is_array($config['characters'][$id] ?? null)) throw new RuntimeException(__('The character does not exist or its configuration is invalid.', 'live2d-show'));
         if (($config['characters'][$id]['dialogue'] ?? null) === $dialogue) return;
         $config['characters'][$id]['dialogue'] = $dialogue;
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     } finally { wzf_mascot_task_end($task); }
 }
 function wzf_mascot_interaction_post() {
@@ -263,7 +263,7 @@ function wzf_mascot_save_presets($id, $version, $presets) {
             $config['characters'][$id]['hitBindings'] = $filtered;
             $config['characters'][$id]['hitWarnings'] = is_array($c['hitBindings']) ? max(0,count($c['hitBindings'])-count($filtered)) : 1;
         }
-        if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
 function wzf_mascot_presets_post() {

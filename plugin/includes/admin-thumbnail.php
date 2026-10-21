@@ -45,7 +45,7 @@ function wzf_mascot_save_thumbnail($id, $version, $file = null) {
         if ($bytes === null) {
             if (!array_key_exists('thumbnail', $config['characters'][$id])) return;
             unset($config['characters'][$id]['thumbnail']);
-            if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot clear the thumbnail reference.', 'live2d-show'));
+            if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot clear the thumbnail reference.', 'live2d-show'));
             return;
         }
         $u = wzf_mascot_uploads(true);
@@ -60,7 +60,7 @@ function wzf_mascot_save_thumbnail($id, $version, $file = null) {
             if (!rename($stage, $final)) throw new RuntimeException(__('Thumbnail commit failed.', 'live2d-show'));
             $stage = null;
             $config['characters'][$id]['thumbnail'] = $dirname . '/image.png';
-            if (!update_option(WZF_MASCOT_OPTION, $config, false)) throw new RuntimeException(__('Cannot save thumbnail configuration.', 'live2d-show'));
+            if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save thumbnail configuration.', 'live2d-show'));
             $saved = true;
         } finally { if ($owned && !$saved) wzf_mascot_cleanup($stage ?? $final); }
     }, 'thumbnail');

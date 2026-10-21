@@ -46,7 +46,9 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 
 检查入口还覆盖翻译目录完整性与占位符、PO/MO 编译重现、未保存提醒、离线采样输入边界，以及真实后台的搜索／状态筛选、盘点权限与只读行为、英文／中文页面。资源仍全部使用合成样例；GitHub 流水线运行结果以对应提交为准。
 
-3.10 开发候选另增加互动模板的真实 HTTP 路径：管理员 JSON 导出、multipart 预览、签名／明确确认、过期配置拒绝、默认仅台词与闲聊状态保留、预设路径映射及命中区域绑定阻止。预览不落 transient；应用仍在现有资源任务守卫内重新读取配置并核对版本。CI 故障摘要保留 PHP HTTP 服务清理前／后的退出码、错误等级／源码位置与 HTTP SAPI 的 OPcache／JIT 白名单状态，不上传原始消息、请求体或服务日志。
+3.10 开发候选另增加互动模板的真实 HTTP 路径：管理员 JSON 导出、multipart 预览、签名／明确确认、过期配置拒绝、默认仅台词与闲聊状态保留、预设路径映射及命中区域绑定阻止。预览不落 transient；应用仍在现有资源任务守卫内重新读取配置并核对版本。rc.2 还检查清理复核的显式选择、子树等待期、旧 Core 目录保留、非法天数、权限与 nonce，并核对配置和文件摘要不变。CI 故障摘要保留 PHP HTTP 服务清理前／后的退出码、错误等级／源码位置与 HTTP SAPI 的 OPcache／JIT 白名单状态，不上传原始消息、请求体或服务日志。
+
+3.10.0-rc.2 的真实 HTTP 测试还使用独立 WP-CLI 进程持有实际任务守卫，核对同一账号保存冲突、不同账号与管理员设置并行，以及旧版独占桥接锁在两个方向的互斥。管理员任务持有永久 `.task-guard` 的共享锁和 `.resource-guard` 的独占锁；账号保存持有同一个桥接共享锁和按站点／用户划分的账号独占锁。守卫文件不删除、截断或替换。所有参与进程须使用同一个稳定的 uploads 资源根；迁移资源根需先停止旧根和新根的写入方，不支持热迁移或动态跨节点根。
 
 ## 本地前台浏览器回归
 
@@ -66,7 +68,7 @@ npm run test:browser -- --out /tmp/mascot-browser-review
 
 独立 `browser` CI job 固定 **Ubuntu 24.04**，使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
 
-整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
+整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；首次加载失败后的换角预览、暂停取消与迟到候选销毁；跨标签页偏好失效及异步应用前的三键基线复核；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
 
 Local whole-page browser tests use only shipped loader/CSS and public synthetic contract fixtures. Run `npm run test:browser` after installing the pinned development dependencies and matching Chromium. Optional `MASCOT_PLAYWRIGHT` (module directory) and `MASCOT_CHROMIUM` (browser executable) reuse local tools; neither is a required installation path or bundled dependency. An explicitly overridden browser version is recorded in the result and is distinct from CI's Playwright-matched revision. Output contains only a synthetic summary and selected screenshots; no trace, cookies, storage state or automatic upload is produced locally.
 

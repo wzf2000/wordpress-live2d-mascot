@@ -35,9 +35,10 @@ function wzf_mascot_preference_schema($value) {
 }
 // One atomic metadata value, read directly under the short per-user guard when saving.
 // Writes remain WordPress API writes, with user-meta caches invalidated first.
-function wzf_mascot_preference_snapshot($uid) {
+function wzf_mascot_preference_snapshot($uid, $key = null) {
+    $key = $key ?? wzf_mascot_preference_key();
     global $wpdb;
-    $rows = $wpdb->get_results($wpdb->prepare("SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id LIMIT 2", $uid, wzf_mascot_preference_key()), ARRAY_A);
+    $rows = $wpdb->get_results($wpdb->prepare("SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id LIMIT 2", $uid, $key), ARRAY_A);
     if (!is_array($rows) || $wpdb->last_error !== '' || count($rows) > 1) throw new RuntimeException('account-unavailable');
     if (!$rows) return ['revision'=>0,'preferences'=>null];
     $state = maybe_unserialize($rows[0]['meta_value']);
@@ -48,18 +49,25 @@ function wzf_mascot_save_preferences($uid, $revision, $preferences) {
     if ($uid !== get_current_user_id() || $uid < 1) throw new RuntimeException('sign-in-required');
     if (!is_int($revision) || $revision < 0 || $revision > 2147483645) throw new RuntimeException('invalid-request');
     $preferences = wzf_mascot_preference_schema($preferences);
-    $guard = wzf_mascot_task_guard(true); // Shared permanent physical guard only; no administrator task option.
+    $key = wzf_mascot_preference_key();
+    try { $scope = wzf_mascot_guard_scope_begin('account', true, hash('sha256', $key . "\0" . (string)$uid) . '.guard'); }
+    catch (Throwable $e) { throw new RuntimeException($e->getMessage() === 'guard-busy' ? 'account-busy' : 'account-unavailable'); }
     try {
-        if (!flock($guard, LOCK_EX | LOCK_NB)) throw new RuntimeException('account-busy');
-        $current = wzf_mascot_preference_snapshot($uid);
+        if ($key !== wzf_mascot_preference_key()) throw new RuntimeException('account-unavailable');
+        $current = wzf_mascot_preference_snapshot($uid, $key);
         if ($current['revision'] !== $revision) return ['ok'=>false,'code'=>'conflict','state'=>$current];
         $next = ['revision'=>$revision + 1,'preferences'=>$preferences];
         wp_cache_delete($uid, 'user_meta');
-        if (!update_user_meta($uid, wzf_mascot_preference_key(), $next)) throw new RuntimeException('account-unavailable');
-        $saved = wzf_mascot_preference_snapshot($uid);
+        wzf_mascot_uploads();
+        if ($key !== wzf_mascot_preference_key()) throw new RuntimeException('account-unavailable');
+        if (!update_user_meta($uid, $key, $next)) throw new RuntimeException('account-unavailable');
+        $saved = wzf_mascot_preference_snapshot($uid, $key);
         if ($saved !== $next) throw new RuntimeException('account-unavailable');
         return ['ok'=>true,'state'=>$saved];
-    } finally { flock($guard, LOCK_UN); fclose($guard); }
+    } catch (Throwable $e) {
+        if (in_array($e->getMessage(), ['account-busy','account-unavailable'], true)) throw $e;
+        throw new RuntimeException('account-unavailable');
+    } finally { wzf_mascot_guard_scope_end($scope); }
 }
 function wzf_mascot_preferences_post() {
     nocache_headers(); header('Cache-Control: private, no-store, max-age=0', true); header('Vary: Cookie', false);

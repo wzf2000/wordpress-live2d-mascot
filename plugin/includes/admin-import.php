@@ -23,6 +23,7 @@ function wzf_mascot_uploads($create = false) {
     $u = wp_upload_dir(null, $create);
     if (!empty($u['error'])) throw new RuntimeException(__('The uploads directory is unavailable.', 'live2d-show'));
     $base = wzf_mascot_no_links(rtrim($u['basedir'], '/') . '/wzf-mascot');
+    wzf_mascot_guard_assert_root($base);
     if ($create) {
         if (!is_dir($base) && !wp_mkdir_p($base)) throw new RuntimeException(__('Cannot create the resource directory.', 'live2d-show'));
         $guards = ['index.html'=>'', '.htaccess'=>"Options -Indexes\n<FilesMatch \"\\.(php[0-9]*|phtml|phar|cgi|pl|py|sh|asp|aspx)(\\.|$)\">\nRequire all denied\n</FilesMatch>\n", 'web.config'=>'<configuration><system.webServer><directoryBrowse enabled="false"/><security><requestFiltering><fileExtensions><add fileExtension=".php" allowed="false"/><add fileExtension=".phtml" allowed="false"/><add fileExtension=".phar" allowed="false"/></fileExtensions></requestFiltering></security></system.webServer></configuration>'];
@@ -164,7 +165,7 @@ function wzf_mascot_save_resource($kind, $file, $fields = []) {
             if (isset($config['characters'][$id])) throw new RuntimeException(__('This character ID already exists. Use a new ID; the existing character will not be overwritten.', 'live2d-show'));
             $config['characters'][$id] = ['name'=>trim($name),'root'=>$dirname . '/', 'file'=>$model['file'],'idle'=>$model['idle'],'greetings'=>[], 'welcome'=>null,'size'=>180,'offset'=>0,'credit'=>$credit ?: ''];
         }
-        if (!update_option(WZF_MASCOT_OPTION,$config,false)) throw new RuntimeException(__('Cannot save configuration.', 'live2d-show'));
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save configuration.', 'live2d-show'));
         $saved = true;
     } finally {
         try {

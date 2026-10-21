@@ -545,7 +545,7 @@
 .wzf-haru-controls a, .wzf-haru-consent a { color: var(--wzf-mascot-accent); font-size: 12px; text-underline-offset: 3px; }
 .wzf-haru-state, .wzf-haru-search-results, .wzf-haru-favorites-state, .wzf-haru-mobile-size { color: var(--wzf-mascot-muted); font-size: 12px; }
 .wzf-haru-state:empty { display: none; }
-.wzf-haru-controls :focus-visible, .wzf-haru-consent :focus-visible, .wzf-haru-drag-handle:focus-visible, .wzf-haru-panel-toggle:focus-visible, .wzfl-mascot-toggle:focus-visible, .wzf-haru-diagnostics :focus-visible { outline: 2px solid var(--wzf-mascot-accent); outline-offset: 3px; }
+.wzf-haru-bubble:focus-visible, .wzf-haru-controls :focus-visible, .wzf-haru-consent :focus-visible, .wzf-haru-drag-handle:focus-visible, .wzf-haru-panel-toggle:focus-visible, .wzfl-mascot-toggle:focus-visible, .wzf-haru-diagnostics :focus-visible { outline: 2px solid var(--wzf-mascot-accent); outline-offset: 3px; }
 .wzf-haru-drag-handle { width: 44px; height: 44px; box-sizing: border-box; border-radius: 12px; font-size: 20px; }
 .wzf-haru-dock { gap: 8px; }
 .wzf-haru-panel-toggle, .wzfl-mascot-toggle, .wzf-haru-diagnostics > summary { min-height: 44px; box-sizing: border-box; padding: 10px 14px; border-radius: 12px; font: 13px/1.6 system-ui, sans-serif; cursor: pointer; }
