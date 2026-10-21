@@ -438,7 +438,7 @@
   --wzf-mascot-border: var(--pagenest-border, #dce3dc);
 }
 @media (prefers-color-scheme: dark) {
-  :root { --wzf-mascot-surface: var(--pagenest-surface, #202822); --wzf-mascot-text: var(--pagenest-text, #e1e8df); --wzf-mascot-border: var(--pagenest-border, #4c5b50); }
+  :root { --wzf-mascot-accent: var(--pagenest-accent, #9ac7ae); --wzf-mascot-surface: var(--pagenest-surface, #202822); --wzf-mascot-text: var(--pagenest-text, #e1e8df); --wzf-mascot-border: var(--pagenest-border, #4c5b50); }
 }
 .wzf-haru-controls, .wzf-haru-consent, .wzf-haru-bubble, .wzf-haru-diagnostic-body,
 .wzf-haru-diagnostics > summary, .wzf-haru-drag-handle, .wzf-haru-panel-toggle, .wzfl-mascot-toggle {
@@ -463,7 +463,7 @@
 .wzf-haru-controls :focus-visible, .wzf-haru-drag-handle:focus-visible, .wzf-haru-panel-toggle:focus-visible, .wzf-haru-diagnostics :focus-visible { outline-color: var(--wzf-mascot-accent); }
 .wzf-haru-drag-handle { width: 44px; height: 44px; box-sizing: border-box; border-radius: 10px; }
 
-:root[data-pagenest-color-scheme='light'] { --wzf-mascot-surface: var(--pagenest-surface, #fffefb); --wzf-mascot-text: var(--pagenest-text, #293630); --wzf-mascot-border: var(--pagenest-border, #dce3dc); }
-:root[data-pagenest-color-scheme='dark'] { --wzf-mascot-surface: var(--pagenest-surface, #202822); --wzf-mascot-text: var(--pagenest-text, #e1e8df); --wzf-mascot-border: var(--pagenest-border, #4c5b50); }
+:root[data-pagenest-color-scheme='light'] { --wzf-mascot-accent: var(--pagenest-accent, #426354); --wzf-mascot-surface: var(--pagenest-surface, #fffefb); --wzf-mascot-text: var(--pagenest-text, #293630); --wzf-mascot-border: var(--pagenest-border, #dce3dc); }
+:root[data-pagenest-color-scheme='dark'] { --wzf-mascot-accent: var(--pagenest-accent, #9ac7ae); --wzf-mascot-surface: var(--pagenest-surface, #202822); --wzf-mascot-text: var(--pagenest-text, #e1e8df); --wzf-mascot-border: var(--pagenest-border, #4c5b50); }
 
 .wzf-haru-controls > .wzf-haru-bubble { position: relative; grid-column: 1 / -1; width: 100%; max-width: 100%; bottom: auto; font-size: 13px; }
