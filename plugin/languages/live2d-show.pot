@@ -224,7 +224,7 @@ msgstr ""
 msgid "Allow transparent PNG download for this character"
 msgstr ""
 
-msgid "Also replace quick interactions"
+msgid "Also replace quick interactions and chatter motions"
 msgstr ""
 
 msgid "Alternative lines"
@@ -521,6 +521,12 @@ msgstr ""
 msgid "Chatter cooldown must be 90–1800 seconds."
 msgstr ""
 
+msgid "Chatter motions (up to 8)"
+msgstr ""
+
+msgid "Chatter motions will be replaced."
+msgstr ""
+
 msgid "Check installed resources"
 msgstr ""
 
@@ -563,6 +569,9 @@ msgstr ""
 msgid "Choose character"
 msgstr ""
 
+msgid "Choose existing motions for chatter and Chat once. Leave empty for text only. Expressions are not changed."
+msgstr ""
+
 msgid "Choose expression"
 msgstr ""
 
@@ -570,6 +579,9 @@ msgid "Choose motion"
 msgstr ""
 
 msgid "Choose something interesting. I will keep you company."
+msgstr ""
+
+msgid "Choose up to 8 chatter motions from this character."
 msgstr ""
 
 msgid "Clear"
@@ -657,6 +669,9 @@ msgid "Credit / source"
 msgstr ""
 
 msgid "Current / previous overlap"
+msgstr ""
+
+msgid "Current chatter motions are retained."
 msgstr ""
 
 msgid "Current model directory"
@@ -1196,6 +1211,9 @@ msgstr ""
 msgid "Motion"
 msgstr ""
 
+msgid "Motion choices are unavailable. Repair the character catalog before changing chatter motions."
+msgstr ""
+
 msgid "Motion file unavailable"
 msgstr ""
 
@@ -1257,6 +1275,9 @@ msgid "No characters match. Change the search or status filter."
 msgstr ""
 
 msgid "No characters yet. Import Core and one model, then configure the character."
+msgstr ""
+
+msgid "No chatter motions are available."
 msgstr ""
 
 msgid "No cleanup review rows were available within the inspection limits."
@@ -1343,7 +1364,7 @@ msgstr ""
 msgid "Open palms · head tilt"
 msgstr ""
 
-msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgid "Optional local dialogue. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 msgstr ""
 
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."

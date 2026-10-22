@@ -16,7 +16,7 @@ function wzf_mascot_character_catalog($character) {
     $u = wzf_mascot_uploads();
     $root = wzf_mascot_no_links($u['path'] . '/' . wzf_mascot_path(rtrim($character['root'] ?? '', '/')));
     $read = function($relative) use ($root) {
-        $path = wzf_mascot_no_links($root . '/' . wzf_mascot_path($relative));
+        $path = wzf_mascot_no_links($root . '/' . wzf_mascot_installed_reference($relative));
         if (!is_file($path) || !is_readable($path) || filesize($path) > 8 * 1024 * 1024) throw new RuntimeException(__('The character catalog or model file is unavailable.', 'live2d-show'));
         $raw = @file_get_contents($path);
         if ($raw === false) throw new RuntimeException(__('Cannot read the character catalog.', 'live2d-show'));
@@ -30,7 +30,7 @@ function wzf_mascot_character_catalog($character) {
     foreach ($motions as $item) {
         if (!is_array($item)) throw new RuntimeException(__('A motion catalog entry is invalid.', 'live2d-show'));
         $id = wzf_mascot_plain_text($item['id'] ?? null, 200, true);
-        $file = wzf_mascot_path($item['file'] ?? null);
+        $file = wzf_mascot_installed_reference($item['file'] ?? null);
         if (array_key_exists($id, $result) || !str_ends_with($file, '.motion3.json')) throw new RuntimeException(__('The motion catalog contains duplicate IDs or invalid file references.', 'live2d-show'));
         $motion = $read($file);
         if (($motion['Version'] ?? null) !== 3) throw new RuntimeException(__('Motion files must be Version 3 JSON.', 'live2d-show'));
@@ -47,7 +47,7 @@ function wzf_mascot_character_runtime_files($character) {
     $root = wzf_mascot_no_links($u['path'] . '/' . wzf_mascot_path(rtrim($character['root'] ?? '', '/')));
     $files = [];
     $take = function($name, $suffix, $limit = 8 * 1024 * 1024) use ($root, &$files) {
-        $name = wzf_mascot_path($name);
+        $name = wzf_mascot_installed_reference($name);
         $path = wzf_mascot_no_links($root . '/' . $name);
         if (!str_ends_with($name, $suffix) || !is_file($path) || !is_readable($path) || filesize($path) < 1 || filesize($path) > $limit) throw new RuntimeException(__('A model runtime reference is missing, outside the allowed directory or has an invalid size.', 'live2d-show'));
         $files[$name] = filesize($path);

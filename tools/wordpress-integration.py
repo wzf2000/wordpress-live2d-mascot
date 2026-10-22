@@ -445,6 +445,45 @@ echo 'released';
         wp('plugin', 'install', str(bundle), '--force', '--activate'); assert state()['config'] == dialogue_state
         assert front()['characters']['legacy_character']['dialogue']['idle'] == idle_rule
         record('real dialogue/idle save, stale version, invalid text/cooldown and upgrade preservation')
+        # Synthetic installed legacy catalogs retain exact bytes and internal ASCII spaces.
+        resource_root = site / 'wp-content/uploads/wzf-mascot'
+        legacy_config = state()['config']
+        legacy_root = resource_root / legacy_config['characters']['legacy_character']['root']
+        catalog_path = legacy_root / 'catalog.json'
+        original_catalog = catalog_path.read_bytes()
+        catalog = json.loads(original_catalog)
+        spaced_file = legacy_root / 'motion/14_ sigh.motion3.json'
+        spaced_file.write_bytes((legacy_root / 'motion/extra.motion3.json').read_bytes())
+        for item in catalog['motions']:
+            if item['id'] == '01_extra': item['file'] = 'motion/14_ sigh.motion3.json'
+        catalog_path.write_text(json.dumps(catalog))
+        before_files = {p.relative_to(resource_root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in resource_root.rglob('*') if p.is_file()}
+        pool_form = form('wzf_mascot_interaction'); pool_form.update(data)
+        pool_form['version'] = state()['version']; pool_form['dialogue[idle][motions][]'] = '01_extra'
+        post(pool_form)
+        pool_saved = state()['config']
+        assert pool_saved['characters']['legacy_character']['dialogue']['idle']['motions'] == ['01_extra']
+        assert front()['characters']['legacy_character']['dialogue']['idle']['motions'] == ['01_extra']
+        for invalid in ['missing', '../wave']:
+            bad_pool = dict(pool_form, version=state()['version']); bad_pool['dialogue[idle][motions][]'] = invalid
+            post(bad_pool); assert state()['config'] == pool_saved
+        post(pool_form); assert state()['config'] == pool_saved  # stale
+        bad_pool = dict(pool_form, version=state()['version']); bad_pool['_wpnonce'] = 'invalid'
+        post(bad_pool); assert state()['config'] == pool_saved
+        post(dict(pool_form, version=state()['version']), opener=reader); assert state()['config'] == pool_saved
+        presets_form = form('wzf_mascot_presets')
+        presets_form.update({'presets[0][id]':'legacy-sigh','presets[0][name]':'Legacy sigh','presets[0][motion]':'01_extra','presets[0][expression]':'','presets[0][line]':'Legacy local line'})
+        for index in range(1,8):
+            for key in ['name','motion','expression','line']: presets_form['presets['+str(index)+']['+key+']']=''
+        post(presets_form)
+        assert state()['config']['characters']['legacy_character']['presets'][0]['motion'] == '01_extra'
+        assert before_files == {p.relative_to(resource_root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in resource_root.rglob('*') if p.is_file()}
+        # Restore this test-only optional field before existing exact baseline comparisons.
+        clear_pool = dict(pool_form, version=state()['version']); clear_pool.pop('dialogue[idle][motions][]'); clear_pool['chatter_motions_present']='1'
+        post(clear_pool)
+        wp('eval', "$c=get_option(WZF_MASCOT_OPTION);unset($c['characters']['legacy_character']['dialogue']['idle']['motions']);update_option(WZF_MASCOT_OPTION,$c);")
+        catalog_path.write_bytes(original_catalog); spaced_file.unlink()
+        record('real installed spaced motion catalog and chatter pool save, stale/nonce/permission/invalid rejection without resource mutation')
         data = form('wzf_mascot_presets'); stale_presets = dict(data)
         data.update({'presets[0][id]':'hello','presets[0][name]':'Hello local','presets[0][motion]':'01_extra','presets[0][expression]':'','presets[0][line]':'Local greeting'})
         for index in range(1,8):
@@ -698,8 +737,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 28:
-            raise RuntimeError(f'Expected 28 completed integration groups, got {len(checks)}')
+        if len(checks) != 29:
+            raise RuntimeError(f'Expected 29 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

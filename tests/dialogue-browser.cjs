@@ -192,6 +192,47 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
     if(output)await page.screenshot({path:path.join(output,'mobile-chat-inline.png')});
     await page.getByLabel('Dialogue mode',{exact:true}).selectOption('silent');assert.equal(await page.getByRole('button',{name:'Chat once',exact:true}).isDisabled(),true);
     assert.equal((await idleState()).idleScheduled,false);checks++;
+    // Chatter uses guarded motion channels; text survives failures and manual work wins.
+    await page.setViewportSize({width:1440,height:900});
+    await page.addInitScript(()=>{Math.random=()=>0;});
+    const startChatter = async () => {
+      await page.evaluate(()=>{localStorage.setItem('wzf-mascot-dialogue-v1','auto');localStorage.setItem('wzf-mascot-idle-v1','enabled');});
+      await page.goto(fixture.origin+'/?idle=1&chatterMotions=1&noGreeting=1');await ready(page);
+      await page.evaluate(()=>{Math.random=()=>0;window.__mascotFixture.holdPlay=true;window.__mascotFixture.freezeDrawing=true;});
+      await page.clock.runFor(90100);
+      await page.waitForFunction(()=>window.__mascotFixture.pendingPlays.length===1);
+      assert.match(await bubble(page).textContent(),/^idle /);
+    };
+    const releaseChatter = async () => {
+      await page.evaluate(()=>window.__mascotFixture.pendingPlays.splice(0).forEach(fn=>fn()));
+      await page.clock.runFor(20);
+    };
+    const completed = () => page.evaluate(()=>window.__mascotFixture.events.filter(e=>e.type==='play-complete'));
+    for (const cancel of ['stop','expression','pause','hidden','disable','mode']) {
+      await startChatter();
+      if (cancel==='stop'||cancel==='expression') {
+        const result=await page.evaluate(action=>window.WZFMascot.command(action==='stop'?{action:'stop'}:{action:'expression',id:'smile'}),cancel);
+        assert.equal(result.ok,true);
+      } else if(cancel==='pause')await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'test',suspended:true}})));
+      else if(cancel==='hidden')await visibility(page,true);
+      else {
+        await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);
+        if(!await page.getByText('Dialogue preferences',{exact:true}).evaluate(el=>el.parentElement.open))await page.getByText('Dialogue preferences',{exact:true}).click();
+        if(cancel==='disable')await page.getByLabel('Occasional chatter',{exact:true}).uncheck();
+        else await page.getByLabel('Dialogue mode',{exact:true}).selectOption('active');
+      }
+      await releaseChatter();
+      assert.equal((await completed()).filter(e=>e.channel==='motion').length,0,cancel);
+    }checks++;
+    await startChatter();await releaseChatter();assert.equal((await completed()).filter(e=>e.channel==='motion').length,1);
+    // Still playing motion is never preempted by the next automatic line.
+    await page.clock.runFor(90100);assert.equal((await completed()).filter(e=>e.channel==='motion').length,1);checks++;
+    await page.route('**/motion/wave.json',route=>route.fulfill({status:503,body:'Synthetic failure'}));
+    await page.goto(fixture.origin+'/?idle=1&chatterMotions=1&noGreeting=1');await ready(page);
+    await page.evaluate(()=>{Math.random=()=>0;window.__mascotFixture.freezeDrawing=true;});await page.clock.runFor(90100);
+    await page.waitForFunction(()=>document.querySelector('.wzf-haru-state').textContent.includes('Some interactions'));
+    assert.match(await bubble(page).textContent(),/^idle /);assert.equal((await idleState()).ready,true);checks++;
+    await page.unroute('**/motion/wave.json');
     // Actual administrator DOM helper: suggestions edit only blank fields and never submit.
     const {execFileSync}=require('node:child_process');
     const phpModule=path.resolve(__dirname,'../plugin/includes/interaction-settings.php');
