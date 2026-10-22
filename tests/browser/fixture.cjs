@@ -30,6 +30,10 @@ async function startFixture() {
         {id:'text',name:'Text only',motion:'',expression:'',line:id+' text only'},
         {id:'invalid',name:'Invalid preset',motion:'missing',expression:'',line:'Never show'}];
       if (url.searchParams.get('idle') === '1') for (const c of Object.values(config.characters)) { c.dialogue={idle:{enabled:true,cooldown:90,lines:['idle one','idle two','idle three','idle four']}}; }
+      if (url.searchParams.get('explicitButtons') === '1') for (const [id, c] of Object.entries(config.characters)) {
+        c.dialogue={welcome:{enabled:true,cooldown:20,lines:[id+' welcome']},click:{enabled:true,cooldown:20,lines:[id+' hello one',id+' hello two']},idle:{enabled:true,cooldown:90,lines:['idle one','idle two','idle three'],motions:['wave']}};
+        c.welcome='intro';
+      }
       if (url.searchParams.get('chatterMotions') === '1') for (const c of Object.values(config.characters)) c.dialogue.idle.motions=['wave'];
       if (url.searchParams.get('noGreeting') === '1') for (const c of Object.values(config.characters)) c.greetings=[];
       if (url.searchParams.get('capture')==='1')config.characters.alpha.captureAllowed=true;
@@ -42,8 +46,8 @@ async function startFixture() {
     if (url.pathname === '/assets/' + manifest.css) return send('text/css', fs.readFileSync(path.join(root, 'plugin', manifest.css)));
     if (url.pathname === '/synthetic/core.js') return send('text/javascript', '/* Synthetic marker, not Cubism Core. */ window.Live2DCubismCore={syntheticOnly:true};');
     if (url.pathname === '/synthetic/engine.js') return send('text/javascript', fs.readFileSync(path.join(__dirname, 'synthetic-engine.js')));
-    if (/^\/synthetic\/resources\/(alpha|beta)\/catalog\.json$/.test(url.pathname)) return send('application/json', JSON.stringify({ motions: [{id:'idle',label:'Idle fixture'},{id:'wave',label:'Wave fixture'}], expressions: [{id:'smile',label:'Smile fixture'}] }));
-    if (/^\/synthetic\/resources\/(alpha|beta)\/(fixture\.model3|motion\/(idle|wave)|expression\/smile)\.json$/.test(url.pathname)) return send('application/json', '{"syntheticOnly":true}');
+    if (/^\/synthetic\/resources\/(alpha|beta)\/catalog\.json$/.test(url.pathname)) return send('application/json', JSON.stringify({ motions: [{id:'idle',label:'Idle fixture'},{id:'wave',label:'Wave fixture'},{id:'intro',label:'Welcome fixture'}], expressions: [{id:'smile',label:'Smile fixture'}] }));
+    if (/^\/synthetic\/resources\/(alpha|beta)\/(fixture\.model3|motion\/(idle|wave|intro)|expression\/smile)\.json$/.test(url.pathname)) return send('application/json', '{"syntheticOnly":true}');
     if (url.pathname === '/terms') return send('text/plain', 'Synthetic fixture terms only. No resource rights are granted.');
     response.statusCode = 404; response.end('Not found');
   });

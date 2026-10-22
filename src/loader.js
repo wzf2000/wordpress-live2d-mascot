@@ -98,7 +98,7 @@
       const saved = localStorage.getItem('wzf-mascot-dialogue-v1');
       if (['auto', 'active', 'silent'].includes(saved)) dialogueMode = saved;
     } catch {}
-    const dialogueShown = new Map();
+    const dialogueShown = new Map(), dialogueLast = new Map();
     let bubble = null, bubbleTimer = null, dialogueWelcomeConsumed = false,
       lastDialogue = -Infinity, awayAt = null, bubbleMoving = false, bubbleTouch = false;
     const dialogueDuration = () => Math.max(4500, Math.min(30000, 1500 + [...(bubble?.textContent || '')].reduce((time, char) => time + (/[\u2e80-\u9fff\uac00-\ud7af\uf900-\ufaff]/u.test(char) ? 180 : 45), 0)));
@@ -134,15 +134,17 @@
       syncIdle();
       return true;
     };
-    const speak = (event, proactive = false) => {
+    const speak = (event, proactive = false, explicit = false) => {
       const rule = characters[active].dialogue?.[event];
       if (!rule || rule.enabled !== true || !Array.isArray(rule.lines)) return false;
       const lines = rule.lines.filter((line) => typeof line === 'string' && line.trim() && new TextEncoder().encode(line).length <= 300);
       const cooldown = Number.isInteger(rule.cooldown) && rule.cooldown >= 15 && rule.cooldown <= 3600 ? rule.cooldown * 1000 : 60000;
       const now = performance.now(), key = active + ':' + event;
-      if (!lines.length || now - lastDialogue < 15000 || now - (dialogueShown.get(key) ?? -Infinity) < cooldown) return false;
-      if (!showLine(lines[Math.floor(Math.random() * lines.length)], proactive)) return false;
-      dialogueShown.set(key, now); lastDialogue = now;
+      if (!lines.length || (!explicit && (now - lastDialogue < 15000 || now - (dialogueShown.get(key) ?? -Infinity) < cooldown))) return false;
+      const choices = explicit && lines.length > 1 ? lines.filter(line => line !== dialogueLast.get(key)) : lines;
+      const line = choices[Math.floor(Math.random() * choices.length)] || lines[0];
+      if (!showLine(line, proactive)) return false;
+      dialogueLast.set(key, line); dialogueShown.set(key, now); lastDialogue = now;
       return true;
     };
     const welcomeDialogue = () => {
@@ -830,10 +832,10 @@
     const cancelIdle = () => { clearTimeout(idleTimer); idleTimer=null; idleTimerCharacter=null; };
     const idleEligible = () => idleEnabled && dialogueMode==='auto' && allowed() && engine && !loading && !preview && !panelOpen && !idleBusy() && idleLines().length;
     const idleSpeak = (automatic=false) => {
-      if (dialogueMode==='silent' || !allowed() || !engine || loading || preview || idleBusy()) return false;
+      if (dialogueMode==='silent' || !allowed() || !engine || loading || preview || (automatic && idleBusy())) return false;
       const lines=idleLines(), now=performance.now();
       while(idleHistory.length && now-idleHistory[0]>=600000)idleHistory.shift();
-      if(!lines.length || now-lastDialogue<15000 || (automatic && idleHistory.length>=3))return false;
+      if(!lines.length || (automatic && (now-lastDialogue<15000 || idleHistory.length>=3)))return false;
       let pool=idlePools.get(active);
       const key=JSON.stringify(lines);
       if(!pool || pool.key!==key) { pool={key,bag:[],last:null}; idlePools.set(active,pool); }
@@ -843,6 +845,7 @@
         if(pool.bag.length>1 && pool.bag.at(-1)===pool.last)[pool.bag[0],pool.bag[pool.bag.length-1]]=[pool.bag.at(-1),pool.bag[0]];
       }
       const line=pool.bag.at(-1);
+      if (!automatic) { welcomeConsumed = true; dialogueWelcomeConsumed = true; cancelWelcome(); }
       if(!showLine(line,automatic))return false;
       pool.bag.pop();pool.last=line;lastDialogue=now;
       if(automatic)idleHistory.push(now);
@@ -920,7 +923,8 @@
     moreSettings.append(advancedControls);
     const extraPresets = make('div', '', 'wzf-haru-presets');
     const greeting = make('button', t("Say hello"), 'wzf-haru-greeting');
-    greeting.onclick = () => host?.querySelector('button')?.click();
+    const greetingMotions = () => (characters[active].greetings || []).filter(id => engine?.catalog.motions.some(item => item.id === id));
+    greeting.onclick = () => greet(null, true);
     const chatButton = make('button', t("Chat once"), 'wzf-haru-chat');
     chatButton.onclick = () => idleSpeak(false);
     advancedControls.append(extraPresets, motion, play, stopMotion, expression, face, resetFace,
@@ -1426,7 +1430,7 @@
       accountSettings.hidden = !config.accountEndpoint;
       dialogueSettings.hidden = !Object.values(characters[active].dialogue || {}).some(rule => rule?.enabled === true) && !livePresets.size;
       greeting.hidden = !engine || failed || (!characters[active].greetings?.length && characters[active].dialogue?.click?.enabled !== true);
-      greeting.disabled = !run || !engine || loading;
+      greeting.disabled = !run || !engine || loading || (!greetingMotions().length && dialogueMode === 'silent');
       pointerStatus.textContent=supported.hitAreas.length?t("Model hit areas available: %1$s",supported.hitAreas.join(', ')):t("No model hit areas; normal greeting is used.");
       if (!run || loading || dragState || !gazeEnabled) engine?.resetGaze?.();
       if (host) {
@@ -2126,9 +2130,9 @@
     face.onclick = () => perform('expression', expression.value);
     stopMotion.onclick = () => restore('motion');
     resetFace.onclick = () => restore('expression');
-    const greet = async (event) => {
+    const greet = async (event, explicit = false) => {
       if (!allowed() || !engine || loading || dragState) return;
-      if (event?.detail > 0 && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+      if (!explicit && event?.detail > 0 && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
         const area=engine.hitAreaAt?.(event.clientX,event.clientY);
         const binding=Array.isArray(characters[active].hitBindings)?characters[active].hitBindings.find((item)=>item?.area===area&&capabilities().hitAreas.includes(area)):null;
         const preset=binding&&livePresets.get(binding.preset);
@@ -2138,26 +2142,34 @@
       dialogueWelcomeConsumed = true;
       cancelWelcome();
       cancelPreset();
-      speak('click');
-      if (!characters[active].greetings?.length) return;
+      if (explicit) cancelExternal();
+      speak('click', false, explicit);
+      const list = greetingMotions();
+      if (!list.length) return;
+      if (explicit) {
+        // A button request replaces older motion work, while retaining the current expression.
+        engine.cancelPending('motion');
+        interactions.motion++;
+        manualPending.delete('motion');
+        touchPending = false;
+        nextTouch = 0;
+      }
       if (
         !allowed() ||
         !engine ||
         loading ||
-        touchPending ||
-        manualPending.size ||
-        performance.now() < nextTouch ||
-        engine.state().activeMotion !== characters[active].idle
+        (!explicit && (touchPending || manualPending.size || performance.now() < nextTouch ||
+          engine.state().activeMotion !== characters[active].idle))
       )
         return;
       cancelIdle();
       touchPending = true;
       nextTouch = performance.now() + 8000;
+      if (explicit) state.textContent = t("Loading…");
       const n = ++operation,
         channel = ++interactions.motion,
         g = generation,
         target = engine,
-        list = characters[active].greetings,
         id = list[touchCount % list.length];
       try {
         const done = await target.play('motion', id);

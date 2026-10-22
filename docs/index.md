@@ -1,8 +1,8 @@
 # 使用文档
 
-适用于 WordPress Live2D Mascot **3.10.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
+适用于 WordPress Live2D Mascot **3.10.1**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
 
-本版新增[互动模板](INTERACTIONS.md#复用互动模板)和[闲聊动作池](INTERACTIONS.md#闲聊动作池)，改善[加载失败后的恢复](TROUBLESHOOTING.md#加载失败后继续使用)、跨标签页偏好提示与阅读操作，并提供[只读清理复核预览](TROUBLESHOOTING.md#清理复核预览)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.0)。
+本版修复“打招呼”“聊一句”在欢迎后或动作加载时可能没有反应的问题。操作方式见[互动与偏好指南](INTERACTIONS.md#配置台词)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.1)。
 
 | 你想做什么 | 阅读入口 |
 | --- | --- |
@@ -16,8 +16,8 @@
 
 ## English entry points
 
-The plugin interface supports **en_US / zh_CN**. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [physical-device sampling](DEVICE_SAMPLING.md). The remaining guides are maintained primarily in Chinese; code identifiers and API examples retain their original names.
+The plugin interface supports **en_US / zh_CN**. Version 3.10.1 makes “Say hello” and “Chat once” respond immediately after welcome dialogue or while an older motion is loading. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [physical-device sampling](DEVICE_SAMPLING.md). The remaining guides are maintained primarily in Chinese; code identifiers and API examples retain their original names.
 
 ## 项目入口
 
-[项目首页](../README.md) · [下载 3.10.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
+[项目首页](../README.md) · [下载 3.10.1](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.1) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
