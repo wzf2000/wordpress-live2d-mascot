@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-日常功能适用于 3.9.0；互动模板、失败恢复与本文标明的偏好／阅读改进属于 3.10.0-rc.2 开发候选。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.10.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -25,11 +25,11 @@
 - **仅主动互动**：仅点击、快捷互动及明确接入的站点操作通知。
 - **静默**：不显示台词；动作与表情仍可手动使用。
 
-“偶尔闲聊”默认关闭，仅保存在本机；管理员启用该角色的 idle 规则后，访客仍需自愿开启，并使用自动模式。就绪、可见且未预览、未打开面板、未拖动或处理其他互动时，以 1–2 倍闲聊间隔等待，每 10 分钟最多 3 条。句池抽完前不重复，跨轮避免紧邻重复。隐藏、后台、阅读暂停、切角色、静默或仅主动模式均取消等待；恢复后重新等完整间隔，不补播。到期遇到文本输入焦点、气泡焦点或忙碌时跳过并重等；不读取输入内容。“聊一句”可主动试用已保存的闲聊池，仅主动模式也可使用；静默模式禁用，仍遵守 15 秒防打扰间隔。闲聊只显示文本，不自动播放动作。
+“偶尔闲聊”默认关闭，仅保存在本机；管理员启用该角色的 idle 规则后，访客仍需自愿开启，并使用自动模式。就绪、可见且未预览、未打开面板、未拖动或处理其他互动时，以 1–2 倍闲聊间隔等待，每 10 分钟最多 3 条。句池抽完前不重复，跨轮避免紧邻重复。隐藏、后台、阅读暂停、切角色、静默或仅主动模式均取消等待；恢复后重新等完整间隔，不补播。到期遇到文本输入焦点、气泡焦点或忙碌时跳过并重等；不读取输入内容。“聊一句”可主动试用已保存的闲聊池，仅主动模式也可使用；静默模式禁用，仍遵守 15 秒防打扰间隔。管理员未配置闲聊动作池时只显示文本；配置后可配合[闲聊动作](#闲聊动作池)。
 
 后台“填入常用互动草稿”仅填空白预设，提供招呼、休息一下和继续阅读。仅招呼可引用管理员已配置且仍有效的招呼／欢迎动作，不猜测动作编号，不自动保存。
 
-3.9 的短台词约 4.5 秒后收起，长台词最多 12 秒。3.10 开发候选按文本长度估算阅读时间，范围为 4.5–30 秒；气泡聚焦、鼠标停留或触摸滚读时暂停计时，离开后重新留出完整阅读时间。气泡在窄屏面板与人物旁移动时保留焦点与可用滚动位置。打开阅读面板、隐藏角色、切换角色或页面进入后台会清除台词。
+气泡按文本长度估算阅读时间，范围为 4.5–30 秒；气泡聚焦、鼠标停留或触摸滚读时暂停计时，离开后重新留出完整阅读时间。气泡在窄屏面板与人物旁移动时保留焦点与可用滚动位置。打开阅读面板、隐藏角色、切换角色或页面进入后台会清除台词。
 
 ## 配置快捷互动
 
@@ -40,23 +40,23 @@
 更新模型时，动作和表情按相对文件路径映射，无法映射的整个预设会跳过并在后台提示。回退模型恢复对应资源版本的预设，保留当前台词与展示偏好。
 
 
-## 复用互动模板（3.10 开发候选）
+## 复用互动模板
 
-在角色编辑页展开 **互动模板 / Interaction templates**，可把已配置的台词和快捷互动保存为 JSON，在另一个角色或站点复用。
+在角色编辑页展开 **互动模板 / Interaction templates**，可把已配置的台词、快捷互动和可选闲聊动作池保存为 JSON，在另一个角色或站点复用。
 
-1. 在来源角色中选择 **下载互动 JSON**。文件只包含七类台词、冷却时间和快捷预设；动作与表情记录相对资源路径，不打包模型。
-2. 在目标角色中上传该 JSON，选择 **预览模板变化**。默认只替换台词；如需一起替换快捷预设，先勾选对应选项。
+1. 在来源角色中选择 **下载互动 JSON**。文件包含七类台词、启用状态、冷却时间、快捷预设和可选闲聊动作池；动作与表情记录相对资源路径，不打包模型。
+2. 在目标角色中上传该 JSON，选择 **预览模板变化**。默认只替换台词并保留目标角色的闲聊动作池；如需一起替换快捷预设和闲聊动作池，先勾选 **同时替换快捷互动和闲聊动作**。
 3. 检查前后内容、启用状态、冷却时间以及动作／表情映射，再勾选确认并应用。未出现在模板中的原有台词或预设会随对应分组被替换，预览会展示这些变化。
 
 上传预览不会保存设置。预览有效期为 15 分钟；期间角色或其他资源配置被修改时，需要重新预览。取消、返回或关闭页面不会应用模板。文件上限为 **64 KiB**，仅接受此插件导出的 schema 1 互动 JSON。
 
 偶尔闲聊保留目标角色当前的启用状态，导入不会把关闭的闲聊打开；导入空白闲聊句池会关闭该规则。读者本机的闲聊选择仍独立保存。
 
-快捷预设只匹配目标角色已经存在、路径完全一致且唯一的动作或表情；缺失或歧义时不会保存。可改用“仅台词”，或先修复目标目录。若目标角色已有模型点击区域绑定，必须先在原设置中解除绑定才能替换快捷预设；仅导入台词可以保留这些绑定。
+快捷预设只匹配目标角色已经存在、路径完全一致且唯一的动作或表情；缺失或歧义时不会保存。可取消勾选“同时替换快捷互动和闲聊动作”，或先修复目标目录。若目标角色已有模型点击区域绑定，必须先在原设置中解除绑定才能替换快捷预设；仅导入台词可以保留这些绑定。
 
 模板不包含 Core、模型、贴图、源角色目录、账号偏好、模型点击区域绑定或 PNG 下载许可，也不修改角色名称、署名、布局、资源历史和移动端设置。请检查台词内容是否适合目标角色；模板不会赋予素材或文字的额外使用权。
 
-Interaction templates are introduced in the 3.10 development candidate. Export a JSON file from one character, upload it to another and review the before/after changes before confirming. Dialogue-only import is the default; presets require a separate opt-in and exact, unique relative resource matches. Existing hit-area bindings block preset replacement. Chatter keeps the target enable setting, and an empty imported pool disables that rule. Previews write nothing, expire after 15 minutes and become stale after configuration changes. Templates contain no Core/model files, account data or PNG permission.
+Interaction templates are available in 3.10.0. Export dialogue, cooldowns, enable settings, presets and optional chatter motions as JSON, then upload it to another character and review the before/after changes before confirming. Dialogue-only import is the default and preserves the target chatter motion pool. Select “Also replace quick interactions and chatter motions” to replace these using exact, unique relative resource matches. Older templates without motionFiles preserve the target pool; an explicit empty list clears it when replacement is selected. Existing hit-area bindings block preset replacement. Chatter keeps the target enable setting, and an empty imported pool disables that rule. Previews write nothing, expire after 15 minutes and become stale after configuration changes. Templates contain no Core/model files, account data or PNG permission.
 
 ## 移动、停靠和复位
 
@@ -106,7 +106,7 @@ document.dispatchEvent(new CustomEvent('wzf-mascot-event', {
 
 账号在别处变更时，本次保存不会覆盖，会显示新版本供选择。再次按保存表示明确替换刚读取的账号版本。请求超时后不会自动重发：保存结果可能未知，请重新读取后决定。浏览器拒绝本机存储时会说明是否已恢复；若恢复也被拒绝，会明确提示本机保存可能不完整。
 
-3.10 开发候选会提示相关偏好在其他标签页发生变化，并使当前账号读取结果失效；重新读取后再决定使用或保存。另一页的变更不会自动切换本页角色、打开手机显示或改变条款同意。上传账号偏好使用当前页的一致快照；“使用账号偏好”加载角色期间若其他页改了本机数据，会取消应用并保留新数据。
+相关偏好在其他标签页发生变化时会提示，并使当前账号读取结果失效；重新读取后再决定使用或保存。另一页的变更不会自动切换本页角色、打开手机显示或改变条款同意。上传账号偏好使用当前页的一致快照；“使用账号偏好”加载角色期间若其他页改了本机数据，会取消应用并保留新数据。
 
 布局保存会尽量保留其他角色的新布局，但本地存储没有跨标签页原子合并保证。同一角色的同时修改仍应由使用者检查；保存被浏览器拒绝时会提示仅在本页生效。
 
@@ -130,7 +130,7 @@ document.dispatchEvent(new CustomEvent('wzf-mascot-event', {
 
 本地诊断仅向具备 WordPress `manage_options` 权限的管理员提供，访客与普通账号不创建入口或启动采集。该服务器 flag 仅控制本地工具，不承载私人数据或服务端权限；登录页面须遵守 WordPress 缓存绕过契约，不能把管理员 HTML 共享缓存给访客。没有访客诊断 bootstrap 请求。
 
-Occasional chatter is off by default and stays local to this browser. It needs a saved enabled idle rule, reader opt-in, automatic dialogue and an available character. A single cancellable timer waits 1–2 cooldowns (90–1800 seconds), with at most three automatic lines per ten minutes. Pauses cancel the wait; returning starts fresh. Inputs, focused bubbles and busy interactions skip a deadline without reading text. “Chat once” is an explicit text-only action, also available in active mode. Administrator drafts only fill blank fields; review and save remains explicit. Character examples are original editorial suggestions, never official quotations or automatic model bindings. Local diagnostics require the server-generated manage_options flag and expose no private server data.
+Occasional chatter is off by default and stays local to this browser. It needs a saved enabled idle rule, reader opt-in, automatic dialogue and an available character. A single cancellable timer waits 1–2 cooldowns (90–1800 seconds), with at most three automatic lines per ten minutes. Pauses cancel the wait; returning starts fresh. Inputs, focused bubbles and busy interactions skip a deadline without reading text. “Chat once” is also available in active mode. Both automatic chatter and “Chat once” can use up to eight existing motions selected by the administrator; an empty motion pool keeps them text-only. Chatter motions yield to manual actions and are cancelled on stop, pause, character changes or chatter preference changes. A motion failure leaves the dialogue visible. Administrator drafts only fill blank fields; review and save remains explicit. Character examples are original editorial suggestions, never official quotations or automatic model bindings. Local diagnostics require the server-generated manage_options flag and expose no private server data.
 
 
 ## 角色缩略图
@@ -145,7 +145,7 @@ Occasional chatter is off by default and stays local to this browser. It needs a
 
 手机采用紧凑尺寸并标明实际像素大小，保留桌面位置／大小偏好；面板可滚动、按钮至少 44 像素并避让安全区。默认在外部输入框聚焦时暂停，可由管理员关闭该规则；插件自身搜索与选择控件不触发此暂停。输入结束后只有其他暂停原因也解除才会恢复。
 
-## 闲聊动作池（3.10 开发候选）
+## 闲聊动作池
 
 管理员可在“角色台词 → 偶尔闲聊”中选择当前角色最多 8 个已有动作，保存后供偶尔闲聊和“聊一句”随机使用；多选时尽量避免连续重复。留空只显示文字，表情保持原样。偶尔闲聊仍需访客主动开启、使用自动台词模式，按原冷却、输入／阅读暂停和每十分钟三条上限运行。
 

@@ -1,8 +1,8 @@
 # 使用文档
 
-适用于 WordPress Live2D Mascot **3.9.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
+适用于 WordPress Live2D Mascot **3.10.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
 
-开发分支 **3.10.0-rc.2** 包含[互动模板](INTERACTIONS.md#复用互动模板310-开发候选)、[加载失败后的恢复](TROUBLESHOOTING.md#加载失败后继续使用310-开发候选)、跨标签页偏好提示、阅读操作改进与[清理复核预览](TROUBLESHOOTING.md#清理复核预览310-开发候选)；完整变化见[候选说明](https://github.com/wzf2000/wordpress-live2d-mascot/blob/main/.github/release-notes/3.10.0-rc.2.md)。安装与资源要求沿用正式版。
+本版新增[互动模板](INTERACTIONS.md#复用互动模板)和[闲聊动作池](INTERACTIONS.md#闲聊动作池)，改善[加载失败后的恢复](TROUBLESHOOTING.md#加载失败后继续使用)、跨标签页偏好提示与阅读操作，并提供[只读清理复核预览](TROUBLESHOOTING.md#清理复核预览)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.0)。
 
 | 你想做什么 | 阅读入口 |
 | --- | --- |
@@ -20,4 +20,4 @@ The plugin interface supports **en_US / zh_CN**. Administrators obtain Core and 
 
 ## 项目入口
 
-[项目首页](../README.md) · [下载 3.9.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.9.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
+[项目首页](../README.md) · [下载 3.10.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
