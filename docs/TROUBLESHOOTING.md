@@ -18,7 +18,7 @@
 
 首次导入与同 ID 更新均区分服务器上传大小限制、上传中断、未选文件和临时存储失败。请求超过 `post_max_size` 而丢失表单字段时会拒绝并说明限制；诊断不会跳过权限或 nonce 执行写入。
 
-## 加载失败后继续使用（3.10 开发候选）
+## 加载失败后继续使用
 
 首次加载失败后，可按原显示按钮重试，也可选择 **选择其他角色 / Choose another character**，
 在原换角区预览其他角色。预览成功后按 **使用这个角色** 才保存选择；取消不会保存候选。
@@ -32,7 +32,7 @@
 
 后台任务面板区分空闲、运行中、中断待核查和旧版／未知状态。所有资源与设置写入任务共用非阻塞的操作系统文件守卫，覆盖整个写入过程。资源目录中的永久小型守卫文件应保持原位，维护时不得替换或删除。任务记录包含守卫协议、inode、任务类型与开始时间；时间经过本身不允许接管任务。
 
-3.10 开发候选将管理员资源任务与单个用户的账号保存分开处理：不同用户、账号保存与管理员任务可以并行，同一用户仍按版本校验。账号保存不会显示为管理员资源任务运行。升级期间保留与旧版请求互斥的兼容守卫；有效的旧协议记录沿用原守卫检查，未知记录不自动迁移或清除。永久守卫包括兼容桥、资源任务守卫和账号守卫目录，维护时全部保留。
+3.10.0 将管理员资源任务与单个用户的账号保存分开处理：不同用户、账号保存与管理员任务可以并行，同一用户仍按版本校验。账号保存不会显示为管理员资源任务运行。升级期间保留与旧版请求互斥的兼容守卫；有效的旧协议记录沿用原守卫检查，未知记录不自动迁移或清除。永久守卫包括兼容桥、资源任务守卫和账号守卫目录，维护时全部保留。
 
 只有原始守卫安全且未锁定的新协议记录提供恢复入口。恢复要求 `manage_options` 权限、专用 nonce、明确确认、原记录指纹及未变化的配置版本，并在同一操作系统守卫内再次检查；仅删除该条任务记录。资源、配置、候选目录与用户偏好均保留，重试前应检查已安装资源。旧版、非法记录、守卫缺失或被替换时，需要管理员人工核查服务器。打开设置页不会创建守卫或迁移旧记录；超大 POST 导致 nonce 丢失时，错误诊断也不允许写入。
 
@@ -52,7 +52,7 @@
 
 Character capacity is aggregated during the same bounded metadata scan, independently of the displayed-path limit. Each version subtotal, character union and global character union counts a relative file path once; overlapping model/history/thumbnail references and shared paths are explicitly marked. Do not add character/version rows together. Incomplete scans or unknown references expose `observedBytes` while complete capacity `bytes` values are `null`. The separate administrator-only JSON download starts a fresh scan, returns an attachment directly and persists nothing on the server. This remains an inventory, with no cleanup or deletion feature.
 
-## 清理复核预览（3.10 开发候选）
+## 清理复核预览
 
 在磁盘盘点中主动选择清理复核，并填写等待天数，再提交盘点或下载新报告。默认 **30 天**，可填 1–3650 天；它只用于本次报告，不保存为站点策略，也不会安排清理。
 
