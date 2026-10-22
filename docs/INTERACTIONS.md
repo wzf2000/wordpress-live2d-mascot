@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-适用于 3.10.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.10.1。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -15,7 +15,7 @@
 
 管理员在“角色台词”中分别设置欢迎、点击、上午、下午、晚间、离开后返回和偶尔闲聊。每个事件可启用、设置 15–3600 秒冷却（闲聊为 90–1800 秒，默认 120 秒），并填写最多 8 条备选，每行一条，每条最多 300 字节。中文通常每字占 3 字节。留空不会影响角色显示。
 
-台词只使用本站已保存的纯文本。管理员可手动选择“台词草稿”，将通用语气或角色原创示例填入空白字段；已有非空文本保持原样，需检查并保存才生效。角色草稿不是官方台词，来源链接仅供背景参考，不会自动匹配安装角色。首次显示时，欢迎台词在同页最多出现一次；未设置欢迎时，按浏览器当地时间选择上午（0–11 时）、下午（12–17 时）或晚间（18–23 时）。返回台词要求页面离开至少 60 秒。所有规则还共用 15 秒防打扰间隔。
+台词只使用本站已保存的纯文本。管理员可手动选择“台词草稿”，将通用语气或角色原创示例填入空白字段；已有非空文本保持原样，需检查并保存才生效。角色草稿不是官方台词，来源链接仅供背景参考，不会自动匹配安装角色。首次显示时，欢迎台词在同页最多出现一次；未设置欢迎时，按浏览器当地时间选择上午（0–11 时）、下午（12–17 时）或晚间（18–23 时）。返回台词要求页面离开至少 60 秒。自动台词与模型触碰台词还共用 15 秒防打扰间隔。
 
 首次打开互动面板时仅显示当前角色、招呼、最多 3 个快捷预设，以及“换个角色”“更多互动与设置”。搜索、收藏、随机和最近角色在换角区；预览的确认与取消始终位于面板主层，折叠分组不会藏起它们。其余互动、布局、PNG 和账号偏好收在默认折叠的更多区；打开分组不会读取或保存账号。
 
@@ -25,7 +25,11 @@
 - **仅主动互动**：仅点击、快捷互动及明确接入的站点操作通知。
 - **静默**：不显示台词；动作与表情仍可手动使用。
 
-“偶尔闲聊”默认关闭，仅保存在本机；管理员启用该角色的 idle 规则后，访客仍需自愿开启，并使用自动模式。就绪、可见且未预览、未打开面板、未拖动或处理其他互动时，以 1–2 倍闲聊间隔等待，每 10 分钟最多 3 条。句池抽完前不重复，跨轮避免紧邻重复。隐藏、后台、阅读暂停、切角色、静默或仅主动模式均取消等待；恢复后重新等完整间隔，不补播。到期遇到文本输入焦点、气泡焦点或忙碌时跳过并重等；不读取输入内容。“聊一句”可主动试用已保存的闲聊池，仅主动模式也可使用；静默模式禁用，仍遵守 15 秒防打扰间隔。管理员未配置闲聊动作池时只显示文本；配置后可配合[闲聊动作](#闲聊动作池)。
+“偶尔闲聊”默认关闭，仅保存在本机；管理员启用该角色的 idle 规则后，访客仍需自愿开启，并使用自动模式。就绪、可见且未预览、未打开面板、未拖动或处理其他互动时，以 1–2 倍闲聊间隔等待，每 10 分钟最多 3 条。句池抽完前不重复，跨轮避免紧邻重复。隐藏、后台、阅读暂停、切角色、静默或仅主动模式均取消等待；恢复后重新等完整间隔，不补播。到期遇到文本输入焦点、气泡焦点或忙碌时跳过并重等；不读取输入内容。
+
+“聊一句”可主动试用已保存的闲聊池，仅主动模式也可使用；静默模式禁用。管理员未配置闲聊动作池时只显示文本；配置后可配合[闲聊动作](#闲聊动作池)。
+
+主动点击“打招呼”“聊一句”可立即显示新台词，不受自动台词冷却影响；有多条台词时连续点击会换一句。“聊一句”在动作播放或加载时仍可显示文字，配套动作让位于手动操作。“打招呼”会取消旧的欢迎、待加载互动与动作请求，播放有效的招呼动作，并保留当前表情；静默且没有招呼动作时禁用。直接点击模型仍保留区域绑定和 8 秒动作防连点。
 
 后台“填入常用互动草稿”仅填空白预设，提供招呼、休息一下和继续阅读。仅招呼可引用管理员已配置且仍有效的招呼／欢迎动作，不猜测动作编号，不自动保存。
 
@@ -130,7 +134,7 @@ document.dispatchEvent(new CustomEvent('wzf-mascot-event', {
 
 本地诊断仅向具备 WordPress `manage_options` 权限的管理员提供，访客与普通账号不创建入口或启动采集。该服务器 flag 仅控制本地工具，不承载私人数据或服务端权限；登录页面须遵守 WordPress 缓存绕过契约，不能把管理员 HTML 共享缓存给访客。没有访客诊断 bootstrap 请求。
 
-Occasional chatter is off by default and stays local to this browser. It needs a saved enabled idle rule, reader opt-in, automatic dialogue and an available character. A single cancellable timer waits 1–2 cooldowns (90–1800 seconds), with at most three automatic lines per ten minutes. Pauses cancel the wait; returning starts fresh. Inputs, focused bubbles and busy interactions skip a deadline without reading text. “Chat once” is also available in active mode. Both automatic chatter and “Chat once” can use up to eight existing motions selected by the administrator; an empty motion pool keeps them text-only. Chatter motions yield to manual actions and are cancelled on stop, pause, character changes or chatter preference changes. A motion failure leaves the dialogue visible. Administrator drafts only fill blank fields; review and save remains explicit. Character examples are original editorial suggestions, never official quotations or automatic model bindings. Local diagnostics require the server-generated manage_options flag and expose no private server data.
+Occasional chatter is off by default and stays local to this browser. It needs a saved enabled idle rule, reader opt-in, automatic dialogue and an available character. A single cancellable timer waits 1–2 cooldowns (90–1800 seconds), with at most three automatic lines per ten minutes. Pauses cancel the wait; returning starts fresh. Inputs, focused bubbles and busy interactions skip a deadline without reading text. “Chat once” is also available in active mode. Explicit “Say hello” and “Chat once” clicks bypass automatic dialogue cooldowns and can change the line on each click. Chat text remains available while a manual motion is playing or loading; its optional motion yields to manual work. “Say hello” replaces older welcome and pending interaction or motion requests without resetting the current expression. Silent mode disables chat and text-only greetings. Direct model touches retain hit-area bindings and the eight-second motion cooldown. Both automatic chatter and “Chat once” can use up to eight existing motions selected by the administrator; an empty motion pool keeps them text-only. Chatter motions yield to manual actions and are cancelled on stop, pause, character changes or chatter preference changes. A motion failure leaves the dialogue visible. Administrator drafts only fill blank fields; review and save remains explicit. Character examples are original editorial suggestions, never official quotations or automatic model bindings. Local diagnostics require the server-generated manage_options flag and expose no private server data.
 
 
 ## 角色缩略图
