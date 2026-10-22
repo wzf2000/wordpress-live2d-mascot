@@ -11,6 +11,14 @@ function wzf_mascot_path($name) {
     foreach (explode('/', $name) as $part) if ($part === '' || $part === '.' || $part === '..' || preg_match('/(?:^|\.)(?:php[0-9]*|phtml|phar|cgi|pl|py|sh|asp|aspx)(?:\.|$)/i', $part)) throw new RuntimeException(__('Resource path escapes the allowed directory.', 'live2d-show'));
     return $name;
 }
+// Installed runtime references only. ZIP entries, roots and Core remain strict.
+function wzf_mascot_installed_reference($name) {
+    if (!is_string($name) || strlen($name) > 1024 || !preg_match('~\A[A-Za-z0-9_. /-]+\z~D', $name)) throw new RuntimeException(__('Resource path is invalid.', 'live2d-show'));
+    foreach (explode('/', $name) as $part) if (trim($part) !== $part) throw new RuntimeException(__('Resource path is invalid.', 'live2d-show'));
+    // Reuse every traversal and executable-component check after replacing spaces.
+    wzf_mascot_path(str_replace(' ', '_', $name));
+    return $name;
+}
 function wzf_mascot_no_links($path) {
     $cursor = $path;
     while ($cursor !== dirname($cursor)) {

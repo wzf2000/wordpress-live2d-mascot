@@ -7,6 +7,61 @@ class InteractionTests(unittest.TestCase):
         self.helper = test_importer.ImporterTests(); self.helper.setUp()
     def tearDown(self): self.helper.tearDown()
     def php(self, body): return self.helper.php(body)
+    def test_bad_optional_motion_pool_keeps_valid_text(self):
+        r=self.php("echo json_encode(wzf_mascot_dialogue(['idle'=>['enabled'=>true,'cooldown'=>120,'lines'=>['Hi'],'motions'=>'invalid']]));")
+        self.assertEqual(r['idle'],{'enabled':True,'cooldown':120,'lines':['Hi']})
+
+    def test_chatter_update_maps_paths_and_rollback_restores_pool(self):
+        r=self.php(self.helper.settings_setup()+"""
+        $c['dialogue']=['idle'=>['enabled'=>true,'lines'=>['Current text'],'motions'=>['01','custom_idle']]];
+        $mapped=wzf_mascot_remap_presets($c,wzf_mascot_character_catalog($c),['motions'=>[['id'=>'different-id','file'=>'motion/greet.motion3.json']]]);
+        $previous=$c;$current=$c;$current['dialogue']['idle']['lines']=['New text'];$current['dialogue']['idle']['motions']=['custom_idle'];
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']=$current;$options[WZF_MASCOT_OPTION]['history']['legacy_character']=$previous;
+        wzf_mascot_manage_character('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),'rollback');
+        echo json_encode(['mapped'=>$mapped['dialogue']['idle'],'rolled'=>$options[WZF_MASCOT_OPTION]['characters']['legacy_character']['dialogue']['idle']]);""")
+        self.assertEqual(r['mapped']['motions'],['different-id'])
+        self.assertEqual(r['rolled']['motions'],['01','custom_idle']);self.assertEqual(r['rolled']['lines'],['New text'])
+
+    def test_chatter_pool_is_optional_bounded_and_checked_in_guard(self):
+        r=self.php("echo json_encode(wzf_mascot_dialogue([],true));")
+        self.assertNotIn('motions',r['idle'])
+        for value in ["array_fill(0,9,'01')", "['01','01']", "['<bad>']", "'01'"]:
+            self.assertFalse(self.php("wzf_mascot_dialogue(['idle'=>['motions'=>"+value+"]],true);")['ok'])
+        r=self.php(self.helper.settings_setup()+"""
+        $v=wzf_mascot_config_version($options[WZF_MASCOT_OPTION]);
+        wzf_mascot_save_interaction('legacy_character',$v,['idle'=>['enabled'=>true,'lines'=>['Hi'],'motions'=>['01']]]);
+        $saved=$options[WZF_MASCOT_OPTION];$bad=false;
+        try {wzf_mascot_save_interaction('legacy_character',wzf_mascot_config_version($saved),['idle'=>['motions'=>['missing']]]);}catch(Throwable $e){$bad=true;}
+        echo json_encode(['pool'=>$saved['characters']['legacy_character']['dialogue']['idle']['motions'],'bad'=>$bad,'same'=>$saved===$options[WZF_MASCOT_OPTION]]);""")
+        self.assertEqual(r['pool'],['01']);self.assertTrue(r['bad']);self.assertTrue(r['same'])
+
+    def test_installed_space_reference_and_strict_import_paths(self):
+        r=self.php(self.helper.settings_setup()+"""
+        $root=$u['path'].'/'.$c['root'];$cat=json_decode(file_get_contents($root.'catalog.json'),true);
+        rename($root.'motion/greet.motion3.json',$root.'motion/14_ sigh.motion3.json');
+        foreach($cat['motions'] as &$row) if($row['file']==='motion/greet.motion3.json')$row['file']='motion/14_ sigh.motion3.json';unset($row);
+        file_put_contents($root.'catalog.json',json_encode($cat));
+        $motions=wzf_mascot_character_catalog($c);$strict=false;
+        try{wzf_mascot_path('motion/14_ sigh.motion3.json');}catch(Throwable $e){$strict=true;}
+        $rejected=[];foreach(['/a','a//b','a/../b','a/./b','a%20b','a\\b',"a\tb",'a.php.json'] as $path){try{wzf_mascot_installed_reference($path);}catch(Throwable $e){$rejected[]=$path;}}
+        wzf_mascot_save_presets('legacy_character',wzf_mascot_config_version($options[WZF_MASCOT_OPTION]),[['id'=>'sigh','name'=>'Sigh','motion'=>'01','expression'=>'','line'=>'Hello']]);
+        echo json_encode(['file'=>$motions['01']['file'],'strict'=>$strict,'rejected'=>count($rejected)]);""")
+        self.assertEqual(r['file'],'motion/14_ sigh.motion3.json');self.assertTrue(r['strict']);self.assertEqual(r['rejected'],8)
+
+    def test_template_chatter_paths_opt_in_and_legacy_retention(self):
+        r=self.php(self.helper.settings_setup()+"""
+        $options[WZF_MASCOT_OPTION]['characters']['legacy_character']['dialogue']=['idle'=>['enabled'=>true,'lines'=>['Hi'],'motions'=>['01']]];
+        $config=$options[WZF_MASCOT_OPTION];$v=wzf_mascot_config_version($config);
+        $raw=wzf_mascot_template_export($config,'legacy_character',$v);$t=json_decode($raw,true);
+        $keep=wzf_mascot_template_plan($config,'legacy_character',$v,$raw,'dialogue');
+        $mapped=wzf_mascot_template_plan($config,'legacy_character',$v,$raw,'dialogue-presets');
+        unset($t['dialogue']['idle']['motionFiles']);$legacy=wzf_mascot_template_plan($config,'legacy_character',$v,json_encode($t),'dialogue-presets');
+        $t['dialogue']['idle']['motionFiles']=[];$empty=wzf_mascot_template_plan($config,'legacy_character',$v,json_encode($t),'dialogue-presets');
+        echo json_encode(['export'=>json_decode($raw,true),'keep'=>$keep['after']['dialogue']['idle']['motions'],'mapped'=>$mapped['after']['dialogue']['idle']['motions'],'legacy'=>$legacy['after']['dialogue']['idle']['motions'],'empty'=>$empty['after']['dialogue']['idle']['motions']]);""")
+        self.assertEqual(r['export']['dialogue']['idle']['motionFiles'],['motion/greet.motion3.json'])
+        for key in ['keep','mapped','legacy']:self.assertEqual(r[key],['01'])
+        self.assertEqual(r['empty'],[])
+
     def test_optional_bad_rules_are_local(self):
         result = self.php("echo json_encode(wzf_mascot_dialogue(['welcome'=>['enabled'=>true,'cooldown'=>15,'lines'=>['Hello','Hello','  ']],'click'=>['enabled'=>true,'lines'=>['<script>bad</script>']]]));")
         self.assertEqual(result['welcome']['lines'], ['Hello']); self.assertNotIn('click', result)

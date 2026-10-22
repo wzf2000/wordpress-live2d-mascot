@@ -224,8 +224,8 @@ msgstr "Allow the mascot on the frontend"
 msgid "Allow transparent PNG download for this character"
 msgstr "Allow transparent PNG download for this character"
 
-msgid "Also replace quick interactions"
-msgstr "Also replace quick interactions"
+msgid "Also replace quick interactions and chatter motions"
+msgstr "Also replace quick interactions and chatter motions"
 
 msgid "Alternative lines"
 msgstr "Alternative lines"
@@ -521,6 +521,12 @@ msgstr "Chat once"
 msgid "Chatter cooldown must be 90–1800 seconds."
 msgstr "Chatter cooldown must be 90–1800 seconds."
 
+msgid "Chatter motions (up to 8)"
+msgstr "Chatter motions (up to 8)"
+
+msgid "Chatter motions will be replaced."
+msgstr "Chatter motions will be replaced."
+
 msgid "Check installed resources"
 msgstr "Check installed resources"
 
@@ -563,6 +569,9 @@ msgstr "Choose another character"
 msgid "Choose character"
 msgstr "Choose character"
 
+msgid "Choose existing motions for chatter and Chat once. Leave empty for text only. Expressions are not changed."
+msgstr "Choose existing motions for chatter and Chat once. Leave empty for text only. Expressions are not changed."
+
 msgid "Choose expression"
 msgstr "Choose expression"
 
@@ -571,6 +580,9 @@ msgstr "Choose motion"
 
 msgid "Choose something interesting. I will keep you company."
 msgstr "Choose something interesting. I will keep you company."
+
+msgid "Choose up to 8 chatter motions from this character."
+msgstr "Choose up to 8 chatter motions from this character."
 
 msgid "Clear"
 msgstr "Clear"
@@ -658,6 +670,9 @@ msgstr "Credit / source"
 
 msgid "Current / previous overlap"
 msgstr "Current / previous overlap"
+
+msgid "Current chatter motions are retained."
+msgstr "Current chatter motions are retained."
 
 msgid "Current model directory"
 msgstr "Current model directory"
@@ -1196,6 +1211,9 @@ msgstr "Morning"
 msgid "Motion"
 msgstr "Motion"
 
+msgid "Motion choices are unavailable. Repair the character catalog before changing chatter motions."
+msgstr "Motion choices are unavailable. Repair the character catalog before changing chatter motions."
+
 msgid "Motion file unavailable"
 msgstr "Motion file unavailable"
 
@@ -1258,6 +1276,9 @@ msgstr "No characters match. Change the search or status filter."
 
 msgid "No characters yet. Import Core and one model, then configure the character."
 msgstr "No characters yet. Import Core and one model, then configure the character."
+
+msgid "No chatter motions are available."
+msgstr "No chatter motions are available."
 
 msgid "No cleanup review rows were available within the inspection limits."
 msgstr "No cleanup review rows were available within the inspection limits."
@@ -1343,8 +1364,8 @@ msgstr "Open mouth · frown"
 msgid "Open palms · head tilt"
 msgstr "Open palms · head tilt"
 
-msgid "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
-msgstr "Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgid "Optional local dialogue. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
+msgstr "Optional local dialogue. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent."
 
 msgid "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."
 msgstr "Optional: synchronize only character, favorites and layout. Visibility, terms and mobile consent stay in this browser. Nothing is read or saved until you choose an action."

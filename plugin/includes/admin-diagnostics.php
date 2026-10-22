@@ -85,7 +85,7 @@ function wzf_mascot_diagnose_resources($config) {
                     $seen = [];
                     foreach ($expressions as $expression) {
                         $eid = wzf_mascot_plain_text($expression['id'] ?? null, 200, true);
-                        $file = wzf_mascot_path($expression['file'] ?? null);
+                        $file = wzf_mascot_installed_reference($expression['file'] ?? null);
                         $epath = wzf_mascot_no_links($root . '/' . $file);
                         if (isset($seen[$eid]) || !str_ends_with($file, '.exp3.json') || !is_file($epath) || !is_readable($epath) || filesize($epath) > 8 * 1024 * 1024) throw new RuntimeException(__('The expression catalog contains duplicate, missing or invalid references.', 'live2d-show'));
                         wzf_mascot_json(@file_get_contents($epath)); $seen[$eid] = true;

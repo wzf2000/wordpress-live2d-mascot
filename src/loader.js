@@ -808,6 +808,7 @@
     }
     dialogueChoice.value = dialogueMode;
     dialogueChoice.onchange = () => {
+      if (pendingPreset?.chatter) cancelPreset();
       dialogueMode = dialogueChoice.value;
       clearDialogue();
       dialogueWelcomeConsumed = true;
@@ -816,7 +817,7 @@
     };
     let idleEnabled = false, idleTimer = null, idleTimerCharacter = null;
     try { idleEnabled = localStorage.getItem('wzf-mascot-idle-v1') === 'enabled'; } catch {}
-    const idleHistory = [], idlePools = new Map();
+    const idleHistory = [], idlePools = new Map(), idleMotionLast = new Map();
     const idleChoice = make('input'), idleLabel = make('label', '', 'wzf-haru-favorites-filter');
     idleChoice.type='checkbox'; idleChoice.checked=idleEnabled;
     idleLabel.append(idleChoice, document.createTextNode(t("Occasional chatter")));
@@ -845,9 +846,41 @@
       if(!showLine(line,automatic))return false;
       pool.bag.pop();pool.last=line;lastDialogue=now;
       if(automatic)idleHistory.push(now);
+      playChatterMotion(automatic);
       return true;
     };
+    // Share preset channels and cancellation; timer maintenance must not cancel itself.
+    const playChatterMotion = (automatic) => {
+      const target = engine;
+      if (!target || idleBusy() || target.state().paused || target.state().activeMotion !== characters[active].idle) return;
+      const configured = characters[active].dialogue?.idle?.motions;
+      if (!Array.isArray(configured) || configured.length > 8) return;
+      let pool = [...new Set(configured.filter(id => typeof id === 'string' && target.catalog.motions.some(item => item.id === id)))];
+      if (pool.length > 1) pool = pool.filter(id => id !== idleMotionLast.get(active));
+      if (!pool.length) return;
+      const id = pool[Math.floor(Math.random() * pool.length)], character = active;
+      const g = generation, channel = ++interactions.motion;
+      const pending = {target, g, chatter:true, automatic, channels:new Map([['motion', channel]])};
+      pendingPreset = pending; cancelIdle();
+      // Engine play checks its channel after loading. cancelPreset advances that channel.
+      void (async () => {
+        try {
+          const done = await target.play('motion', id);
+          if (done && pendingPreset === pending && g === generation && target === engine) idleMotionLast.set(character, id);
+        } catch (error) {
+          if (pendingPreset === pending && g === generation && error?.name !== 'AbortError') {
+            diagnosticError(error, 'motion');
+            state.textContent = t("Some interactions could not load. Try again.");
+          }
+        } finally {
+          if (pendingPreset === pending) pendingPreset = null;
+          pending.channels.clear();
+          syncIdle();
+        }
+      })().catch(() => {});
+    };
     const syncIdle = () => {
+      if (pendingPreset?.chatter && (!allowed() || loading || preview || (pendingPreset.automatic && (!idleEnabled || dialogueMode !== 'auto' || panelOpen)))) cancelPreset();
       if(!idleEligible()){cancelIdle();return;}
       if(idleTimer && idleTimerCharacter===active)return;
       cancelIdle();
@@ -862,7 +895,7 @@
         syncIdle();
       },delay*(1+Math.random())*1000);
     };
-    idleChoice.onchange=()=>{idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
+    idleChoice.onchange=()=>{if(pendingPreset?.chatter)cancelPreset();idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -2256,6 +2289,7 @@
         )
       )
         return { ok: false, code: 'unknown-id' };
+      if (pendingPreset?.chatter) cancelPreset();
       if (externalPending || manualPending.size || touchPending) return { ok: false, code: 'busy' };
       if (performance.now() < externalNext) return { ok: false, code: 'rate-limited' };
       externalNext = performance.now() + 500;
@@ -2342,6 +2376,7 @@
       const characterId=active;
       const line=caption??(event==='help'?t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."):event==='tool-complete'?t("Tool completed"):t("Action completed"));
       if(preset){const ok=await performPreset({...preset,line:caption??preset.line});return {ok,code:ok?'played':'cancelled',characterId};}
+      if(pendingPreset?.chatter)cancelPreset();
       welcomeConsumed=true;dialogueWelcomeConsumed=true;cancelWelcome();clearDialogue();
       return {ok:showLine(line),code:'shown',characterId};
     };
@@ -2442,7 +2477,10 @@
           !own,
       );
     };
-    document.addEventListener('focusin', syncMobileInput);
+    document.addEventListener('focusin', () => {
+      if (pendingPreset?.chatter && pendingPreset.automatic && document.activeElement?.matches('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) cancelPreset();
+      syncMobileInput();
+    });
     document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
     window.visualViewport?.addEventListener('resize', () => { syncMobileInput(); layout(); layoutDock(); });
     window.visualViewport?.addEventListener('scroll', () => { layout(); layoutDock(); });

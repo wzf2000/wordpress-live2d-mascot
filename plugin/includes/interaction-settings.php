@@ -27,8 +27,24 @@ function wzf_mascot_dialogue($value, $strict = false) {
                 $line = trim(wzf_mascot_interaction_text($line, 300, __('Dialogue lines must be plain text without markup or control characters, within 300 bytes.', 'live2d-show')));
                 if ($line !== '') $valid[] = $line;
             }
+            $motions = null;
+            if ($event === 'idle' && array_key_exists('motions', $rule)) {
+                try { $motions = wzf_mascot_chatter_motions($rule['motions']); } catch (Throwable $e) { if ($strict) throw $e; }
+            }
             $result[$event] = ['enabled'=>$enabled && !!$valid, 'cooldown'=>$cooldown, 'lines'=>array_values(array_unique($valid))];
+            if ($motions !== null) $result[$event]['motions'] = $motions;
         } catch (Throwable $e) { if ($strict) throw $e; }
+    }
+    return $result;
+}
+function wzf_mascot_chatter_motions($value, $catalog = null) {
+    $items = wzf_mascot_list($value, 'Chatter motions');
+    if (count($items) > 8) throw new RuntimeException(__('Choose up to 8 chatter motions from this character.', 'live2d-show'));
+    $result = [];
+    foreach ($items as $id) {
+        $id = wzf_mascot_plain_text($id, 200, true);
+        if (in_array($id, $result, true) || ($catalog !== null && !array_key_exists($id, $catalog))) throw new RuntimeException(__('Choose up to 8 chatter motions from this character.', 'live2d-show'));
+        $result[] = $id;
     }
     return $result;
 }
@@ -41,6 +57,9 @@ function wzf_mascot_save_interaction($id, $version, $dialogue) {
         $config = $task['config'];
         if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before editing again.', 'live2d-show'));
         if (!is_array($config['characters'][$id] ?? null)) throw new RuntimeException(__('The character does not exist or its configuration is invalid.', 'live2d-show'));
+        if (!array_key_exists('motions', $dialogue['idle']) && array_key_exists('motions', $config['characters'][$id]['dialogue']['idle'] ?? [])) $dialogue['idle']['motions'] = $config['characters'][$id]['dialogue']['idle']['motions'];
+        if (($dialogue['idle']['motions'] ?? null) === [] && !array_key_exists('motions', $config['characters'][$id]['dialogue']['idle'] ?? [])) unset($dialogue['idle']['motions']);
+        if (!empty($dialogue['idle']['motions'])) wzf_mascot_chatter_motions($dialogue['idle']['motions'], wzf_mascot_character_catalog($config['characters'][$id]));
         if (($config['characters'][$id]['dialogue'] ?? null) === $dialogue) return;
         $config['characters'][$id]['dialogue'] = $dialogue;
         if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
@@ -57,6 +76,8 @@ function wzf_mascot_interaction_post() {
             if (!is_array($row) || !is_string($row['lines'] ?? null) || strlen($row['lines']) > 2408 || !is_string($row['cooldown'] ?? null) || !preg_match('/\A[0-9]{1,4}\z/D', $row['cooldown']) || (isset($row['enabled']) && $row['enabled'] !== '1')) throw new RuntimeException(__('Dialogue settings are invalid.', 'live2d-show'));
             $rules[$event] = ['enabled'=>isset($row['enabled']), 'cooldown'=>(int)$row['cooldown'], 'lines'=>preg_split('/\r\n|\r|\n/', wp_unslash($row['lines']))];
         }
+        if (isset($_POST['dialogue']['idle']['motions'])) $rules['idle']['motions'] = wp_unslash($_POST['dialogue']['idle']['motions']);
+        elseif (isset($_POST['chatter_motions_present'])) $rules['idle']['motions'] = [];
         wzf_mascot_save_interaction($id, is_string($_POST['version'] ?? null) ? wp_unslash($_POST['version']) : '', $rules);
         $notice = __('Dialogue settings saved.', 'live2d-show');
     } catch (Throwable $e) { $notice = wzf_mascot_error_message($e); }
@@ -196,14 +217,24 @@ function wzf_mascot_dialogue_draft_controls() {
 }
 function wzf_mascot_interaction_panel($config, $id) {
     $rules = wzf_mascot_dialogue($config['characters'][$id]['dialogue'] ?? []);
-    echo '<section class="wzf-mascot-card"><h2>' . esc_html__('Character dialogue', 'live2d-show') . '</h2><p class="description">' . esc_html__('Optional local text only. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent.', 'live2d-show') . '</p><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+    echo '<section class="wzf-mascot-card"><h2>' . esc_html__('Character dialogue', 'live2d-show') . '</h2><p class="description">' . esc_html__('Optional local dialogue. One alternative per line; up to 8 lines per event and 300 bytes per line. Occasional chatter also requires a reader opt-in and waits 1–2 cooldown periods (90–1800 seconds). Return requires at least 60 seconds away. Readers can choose automatic, active only or silent.', 'live2d-show') . '</p><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
     wp_nonce_field('wzf_mascot_interaction');
     wzf_mascot_dialogue_draft_controls();
     echo '<input type="hidden" name="action" value="wzf_mascot_interaction"><input type="hidden" name="character" value="' . esc_attr($id) . '"><input type="hidden" name="version" value="' . esc_attr(wzf_mascot_config_version($config)) . '"><div class="wzf-mascot-fields">';
     foreach (wzf_mascot_line_events() as $event=>$label) {
         $rule = $rules[$event] ?? ['enabled'=>false,'cooldown'=>$event === 'idle' ? 120 : 60,'lines'=>[]];
         $prefix = 'dialogue[' . $event . ']';
-        echo '<fieldset class="wzf-mascot-field"><legend>' . esc_html($label) . '</legend><label><input type="checkbox" name="' . esc_attr($prefix . '[enabled]') . '" value="1" ' . checked($rule['enabled'], true, false) . '> ' . esc_html__('Enable dialogue', 'live2d-show') . '</label><label>' . esc_html__('Cooldown (seconds)', 'live2d-show') . '<input type="number" min="' . ($event === 'idle' ? '90' : '15') . '" max="' . ($event === 'idle' ? '1800' : '3600') . '" required name="' . esc_attr($prefix . '[cooldown]') . '" value="' . esc_attr($rule['cooldown']) . '"></label><label>' . esc_html__('Alternative lines', 'live2d-show') . '<textarea rows="3" name="' . esc_attr($prefix . '[lines]') . '">' . esc_textarea(implode("\n", $rule['lines'])) . '</textarea></label></fieldset>';
+        echo '<fieldset class="wzf-mascot-field"><legend>' . esc_html($label) . '</legend><label><input type="checkbox" name="' . esc_attr($prefix . '[enabled]') . '" value="1" ' . checked($rule['enabled'], true, false) . '> ' . esc_html__('Enable dialogue', 'live2d-show') . '</label><label>' . esc_html__('Cooldown (seconds)', 'live2d-show') . '<input type="number" min="' . ($event === 'idle' ? '90' : '15') . '" max="' . ($event === 'idle' ? '1800' : '3600') . '" required name="' . esc_attr($prefix . '[cooldown]') . '" value="' . esc_attr($rule['cooldown']) . '"></label><label>' . esc_html__('Alternative lines', 'live2d-show') . '<textarea rows="3" name="' . esc_attr($prefix . '[lines]') . '">' . esc_textarea(implode("\n", $rule['lines'])) . '</textarea></label>';
+        if ($event === 'idle') {
+            try { $motions = wzf_mascot_character_motions($config['characters'][$id]); } catch (Throwable $e) { $motions = null; }
+            if ($motions !== null) {
+                echo '<input type="hidden" name="chatter_motions_present" value="1"><label>' . esc_html__('Chatter motions (up to 8)', 'live2d-show') . '<select multiple size="5" name="dialogue[idle][motions][]">';
+                foreach ($motions as $motion_id=>$name) echo '<option value="' . esc_attr($motion_id) . '" ' . selected(in_array((string)$motion_id, $rule['motions'] ?? [], true), true, false) . '>' . esc_html($name . ' · ' . $motion_id) . '</option>';
+                echo '</select></label><p class="description">' . esc_html__('Choose existing motions for chatter and Chat once. Leave empty for text only. Expressions are not changed.', 'live2d-show') . '</p>';
+                if (!$motions) echo '<p>' . esc_html__('No chatter motions are available.', 'live2d-show') . '</p>';
+            } else echo '<p>' . esc_html__('Motion choices are unavailable. Repair the character catalog before changing chatter motions.', 'live2d-show') . '</p>';
+        }
+        echo '</fieldset>';
     }
     echo '</div>'; submit_button(__('Save dialogue settings', 'live2d-show')); echo '</form></section>';
 }
@@ -219,7 +250,7 @@ function wzf_mascot_character_expressions($character) {
     $result = [];
     foreach ($items as $item) {
         $id = wzf_mascot_plain_text($item['id'] ?? null, 200, true);
-        $file = wzf_mascot_path($item['file'] ?? null);
+        $file = wzf_mascot_installed_reference($item['file'] ?? null);
         $path = wzf_mascot_no_links($root . '/' . $file);
         if (isset($result[$id]) || !str_ends_with($file, '.exp3.json') || !is_file($path) || !is_readable($path) || filesize($path) > 8 * 1024 * 1024) throw new RuntimeException(__('Expression catalog is invalid.', 'live2d-show'));
         $result[$id] = ['file'=>$file, 'label'=>is_string($item['label'] ?? null) ? $item['label'] : $id];
@@ -326,5 +357,16 @@ function wzf_mascot_remap_presets($character, $old_motions, $new_catalog) {
         $result[] = $preset;
     }
     $raw_count = is_array($character['presets'] ?? null) ? count($character['presets']) : 0;
-    return ['presets'=>$result, 'presetWarnings'=>max(0, $raw_count - count($result))];
+    $mapped = ['presets'=>$result, 'presetWarnings'=>max(0, $raw_count - count($result))];
+    if (array_key_exists('motions', $character['dialogue']['idle'] ?? [])) {
+        $dialogue = $character['dialogue']; $pool = [];
+        foreach (wzf_mascot_chatter_motions($dialogue['idle']['motions']) as $id) {
+            $file = $old_motions[$id]['file'] ?? null;
+            $matches = array_values(array_filter($new_catalog['motions'] ?? [], function($item) use ($file) { return $file !== null && $item['file'] === $file; }));
+            if (count($matches) === 1) $pool[] = (string)$matches[0]['id'];
+        }
+        $dialogue['idle']['motions'] = array_values(array_unique($pool));
+        $mapped['dialogue'] = $dialogue;
+    }
+    return $mapped;
 }

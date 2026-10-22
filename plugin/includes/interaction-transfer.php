@@ -8,7 +8,7 @@ function wzf_mascot_template_fields($object, $keys) {
 }
 function wzf_mascot_template_path($value, $suffix) {
     if ($value === '') return '';
-    $path = wzf_mascot_path($value);
+    $path = wzf_mascot_installed_reference($value);
     if (strlen($path) > 1024 || !str_ends_with($path, $suffix)) throw new RuntimeException(__('Template resource paths must be relative motion or expression files.', 'live2d-show'));
     return $path;
 }
@@ -37,12 +37,19 @@ function wzf_mascot_template_decode($raw) {
     if ($value['type'] !== 'wzf-mascot-interactions' || $value['schema'] !== 1) throw new RuntimeException(__('This interaction template type or version is not supported.', 'live2d-show'));
     $rules = wzf_mascot_template_fields($value['dialogue'], array_keys(wzf_mascot_line_events()));
     foreach ($rules as $event=>$object_rule) {
-        $rule = wzf_mascot_template_fields($object_rule, ['enabled','cooldown','lines']);
+        $has_motions = $event === 'idle' && $object_rule instanceof stdClass && property_exists($object_rule, 'motionFiles');
+        $rule = wzf_mascot_template_fields($object_rule, $has_motions ? ['enabled','cooldown','lines','motionFiles'] : ['enabled','cooldown','lines']);
+        if ($has_motions) {
+            $files = wzf_mascot_list($rule['motionFiles'], 'Chatter motion files');
+            if (count($files) > 8 || count(array_unique($files, SORT_REGULAR)) !== count($files)) throw new RuntimeException(__('Choose up to 8 chatter motions from this character.', 'live2d-show'));
+            $rule['motionFiles'] = array_map(function($file) { if ($file === '') throw new RuntimeException(__('Template resource paths must be relative motion or expression files.', 'live2d-show')); return wzf_mascot_template_path($file, '.motion3.json'); }, $files);
+        }
         if (!is_bool($rule['enabled']) || !is_int($rule['cooldown'])) throw new RuntimeException(__('Dialogue settings are invalid.', 'live2d-show'));
         if (!is_array($rule['lines']) || count($rule['lines']) > 8) throw new RuntimeException(__('Use up to 8 plain-text lines per event, each at most 300 bytes.', 'live2d-show'));
         $rules[$event] = $rule;
     }
     $dialogue = wzf_mascot_dialogue($rules, true);
+    if (array_key_exists('motionFiles', $rules['idle'])) $dialogue['idle']['motionFiles'] = $rules['idle']['motionFiles'];
     if (!is_array($value['presets']) || count($value['presets']) > 8) throw new RuntimeException(__('Use up to 8 interaction presets.', 'live2d-show'));
     $presets = []; $seen = [];
     foreach ($value['presets'] as $object_preset) {
@@ -85,7 +92,18 @@ function wzf_mascot_template_export($config, $id, $version) {
         }
         $presets[] = $next;
     }
-    return wzf_mascot_template_json(['type'=>'wzf-mascot-interactions','schema'=>1,'dialogue'=>wzf_mascot_dialogue($c['dialogue'] ?? [], true),'presets'=>$presets]);
+    $dialogue = wzf_mascot_dialogue($c['dialogue'] ?? [], true);
+    if (array_key_exists('motions', $dialogue['idle'])) {
+        if (!empty($dialogue['idle']['motions']) && $motions === null) $motions = wzf_mascot_character_catalog($c);
+        $files = [];
+        foreach (wzf_mascot_chatter_motions($dialogue['idle']['motions'], $motions) as $id) {
+            $file = $motions[$id]['file'];
+            if (count(array_filter($motions, function($item) use ($file) { return $item['file'] === $file; })) !== 1) throw new RuntimeException(__('A preset resource cannot be mapped. Repair the preset before exporting.', 'live2d-show'));
+            $files[] = $file;
+        }
+        unset($dialogue['idle']['motions']); $dialogue['idle']['motionFiles'] = $files;
+    }
+    return wzf_mascot_template_json(['type'=>'wzf-mascot-interactions','schema'=>1,'dialogue'=>$dialogue,'presets'=>$presets]);
 }
 function wzf_mascot_template_plan($config, $id, $version, $raw, $scope) {
     $c = wzf_mascot_template_character($config, $id, $version);
@@ -95,7 +113,19 @@ function wzf_mascot_template_plan($config, $id, $version, $raw, $scope) {
     $dialogue = $template['dialogue'];
     // Import never turns chatter on. Empty imported lines still turn it off.
     $dialogue['idle']['enabled'] = ($before['idle']['enabled'] ?? false) && !!$dialogue['idle']['lines'];
-    $next = $c; $next['dialogue'] = $dialogue; $mapping = [];
+    $files = $dialogue['idle']['motionFiles'] ?? null; unset($dialogue['idle']['motionFiles']);
+    if (array_key_exists('motions', $before['idle'])) $dialogue['idle']['motions'] = $before['idle']['motions'];
+    $mapping = []; $replace_pool = $scope === 'dialogue-presets' && $files !== null;
+    if ($replace_pool) {
+        $motions = $files ? wzf_mascot_character_catalog($c) : []; $pool = [];
+        foreach ($files as $file) {
+            $matches = []; foreach ($motions as $resource_id=>$item) if ($item['file'] === $file) $matches[] = (string)$resource_id;
+            if (count($matches) !== 1) throw new RuntimeException(__('A template resource is missing or ambiguous in this character. Import dialogue only, or fix the matching catalog.', 'live2d-show'));
+            $pool[] = $matches[0]; $mapping[] = ['preset'=>__('Occasional chatter', 'live2d-show'),'channel'=>'motion','file'=>$file,'id'=>$matches[0]];
+        }
+        $dialogue['idle']['motions'] = $pool;
+    }
+    $next = $c; $next['dialogue'] = $dialogue;
     if ($scope === 'dialogue-presets') {
         if (!empty($c['hitBindings'])) throw new RuntimeException(__('This character has hit-area bindings. Import dialogue only, or remove the bindings in their existing panel before importing presets.', 'live2d-show'));
         $motions = $expressions = null; $presets = [];
@@ -115,7 +145,7 @@ function wzf_mascot_template_plan($config, $id, $version, $raw, $scope) {
         }
         $next['presets'] = $presets;
     }
-    return ['before'=>$c,'after'=>$next,'dialogueBefore'=>$before,'mapping'=>$mapping];
+    return ['before'=>$c,'after'=>$next,'dialogueBefore'=>$before,'mapping'=>$mapping,'replaceChatterMotions'=>$replace_pool];
 }
 function wzf_mascot_template_signature($id, $version, $raw, $scope, $issued) {
     return hash_hmac('sha256', serialize([get_current_blog_id(), get_current_user_id(), $id, $version, $raw, $scope, $issued]), wp_salt('nonce'));
@@ -199,6 +229,7 @@ function wzf_mascot_template_literal($value) {
 function wzf_mascot_template_rule_summary($rule) {
     $label = !empty($rule['enabled']) ? __('Enabled', 'live2d-show') : __('Disabled', 'live2d-show');
     echo '<p><strong>' . esc_html($label) . '</strong> · ' . esc_html(sprintf(__('Cooldown: %s seconds', 'live2d-show'), (string)($rule['cooldown'] ?? 60))) . '</p>';
+    if (array_key_exists('motions', $rule)) echo '<p>' . esc_html__('Chatter motions (up to 8)', 'live2d-show') . ': ' . esc_html(implode(', ', $rule['motions']) ?: __('None', 'live2d-show')) . '</p>';
     echo '<pre>' . ($rule['lines'] ? wzf_mascot_template_literal(implode("\n", $rule['lines'])) : esc_html__('None', 'live2d-show')) . '</pre>';
 }
 function wzf_mascot_template_preset_summary($row) {
@@ -220,6 +251,7 @@ function wzf_mascot_template_diff($review) {
         echo '<details class="wzf-mascot-replace wzf-mascot-template-change"' . ($same ? '' : ' open') . '><summary>' . esc_html($label . ' · ' . $change) . '</summary><div class="wzf-mascot-template-columns"><div><h5>' . esc_html__('Before', 'live2d-show') . '</h5>';
         wzf_mascot_template_rule_summary($before); echo '</div><div><h5>' . esc_html__('After', 'live2d-show') . '</h5>'; wzf_mascot_template_rule_summary($after); echo '</div></div></details>';
     }
+    echo '<p>' . esc_html($plan['replaceChatterMotions'] ? __('Chatter motions will be replaced.', 'live2d-show') : __('Current chatter motions are retained.', 'live2d-show')) . '</p>';
     if ($review['scope'] === 'dialogue-presets') {
         echo '<h4>' . esc_html__('Quick interactions', 'live2d-show') . '</h4>';
         $old = wzf_mascot_presets($plan['before']['presets'] ?? [], null, null); $new = $plan['after']['presets'];
@@ -255,7 +287,7 @@ function wzf_mascot_template_panel($config, $id) {
     echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">'; wp_nonce_field('wzf_mascot_template_export'); wzf_mascot_template_hidden(['action'=>'wzf_mascot_template_export'] + $values); submit_button(__('Download interaction JSON', 'live2d-show'), 'secondary'); echo '</form>';
     echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(add_query_arg(['page'=>'wzf-mascot','character'=>$id,'mascot_template_preview'=>'1'], admin_url('options-general.php'))) . '">';
     wp_nonce_field('wzf_mascot_template_preview'); wzf_mascot_template_hidden($values);
-    echo '<div class="wzf-mascot-field"><label>' . esc_html__('Interaction JSON (up to 64 KiB)', 'live2d-show') . '<input type="file" name="template" accept=".json,application/json" required></label></div><p><label><input type="checkbox" name="include_presets" value="1"> ' . esc_html__('Also replace quick interactions', 'live2d-show') . '</label></p>';
+    echo '<div class="wzf-mascot-field"><label>' . esc_html__('Interaction JSON (up to 64 KiB)', 'live2d-show') . '<input type="file" name="template" accept=".json,application/json" required></label></div><p><label><input type="checkbox" name="include_presets" value="1"> ' . esc_html__('Also replace quick interactions and chatter motions', 'live2d-show') . '</label></p>';
     submit_button(__('Preview template changes', 'live2d-show'), 'secondary'); echo '</form>';
     if (isset($review['error'])) echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html($review['error']) . '</p></div>';
     elseif ($review) {
