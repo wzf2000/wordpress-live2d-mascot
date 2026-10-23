@@ -9,6 +9,7 @@
       const id = ++sequence;
       (fixture.resourceObservers ||= []).push(character.onDiagnosticResource);
       record({ type: 'create-start', id, root });
+      (fixture.stageCallbacks ||= []).push(character.onDiagnosticStage);
       character.onDiagnosticStage?.('model');
       const catalog = await fetch(root + 'catalog.json', { signal }).then((response) => response.json());
       await fetch(root + character.file, { signal }).then((response) => response.json());

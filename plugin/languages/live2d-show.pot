@@ -329,6 +329,9 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Cancel loading"
+msgstr ""
+
 msgid "Cancel preview"
 msgstr ""
 
@@ -1556,7 +1559,13 @@ msgstr ""
 msgid "Preparing PNG…"
 msgstr ""
 
+msgid "Preparing display…"
+msgstr ""
+
 msgid "Preparing preview…"
+msgstr ""
+
+msgid "Preparing runtime…"
 msgstr ""
 
 msgid "Preset expression"
@@ -1650,6 +1659,9 @@ msgid "Readers opt in"
 msgstr ""
 
 msgid "Reading account preferences…"
+msgstr ""
+
+msgid "Reading character…"
 msgstr ""
 
 msgid "Reading companion"
@@ -1805,6 +1817,9 @@ msgstr ""
 msgid "Restore interrupted; review to finish"
 msgstr ""
 
+msgid "Restore natural state"
+msgstr ""
+
 msgid "Restore the character to a valid status before updating resources."
 msgstr ""
 
@@ -1827,6 +1842,9 @@ msgid "Retry loading"
 msgstr ""
 
 msgid "Return after absence"
+msgstr ""
+
+msgid "Returned to idle and default expression"
 msgstr ""
 
 msgid "Returned to the original character"
@@ -2364,6 +2382,9 @@ msgid "This model declares no hit areas. Normal greeting remains available."
 msgstr ""
 
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
+msgstr ""
+
+msgid "This preference applies only to this page; after refreshing, you may need to choose again."
 msgstr ""
 
 msgid "This preference applies only to this page; the browser did not allow saving."

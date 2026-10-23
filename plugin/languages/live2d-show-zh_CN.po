@@ -2626,3 +2626,24 @@ msgstr "· 预览中"
 
 msgid "· Sources and terms"
 msgstr "· 来源与条款"
+
+msgid "Preparing runtime…"
+msgstr "正在准备运行库…"
+
+msgid "Reading character…"
+msgstr "正在读取角色…"
+
+msgid "Preparing display…"
+msgstr "正在准备画面…"
+
+msgid "Cancel loading"
+msgstr "取消加载"
+
+msgid "Restore natural state"
+msgstr "恢复自然状态"
+
+msgid "Returned to idle and default expression"
+msgstr "已恢复待机和默认表情"
+
+msgid "This preference applies only to this page; after refreshing, you may need to choose again."
+msgstr "本次选择仅在当前页面生效；刷新后可能需要重新选择。"

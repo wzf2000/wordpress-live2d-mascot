@@ -423,6 +423,19 @@
       )
         return;
       loadStage = phase;
+      if (loading) {
+        const message = ['core', 'engine'].includes(phase)
+          ? t("Preparing runtime…")
+          : ['model', 'catalog', 'moc', 'physics', 'pose'].includes(phase)
+            ? t("Reading character…")
+            : ['webgl', 'texture', 'shader', 'motion', 'ready'].includes(phase)
+              ? t("Preparing display…") : null;
+        if (message) {
+          loadingStatus.textContent = message;
+          state.textContent = message;
+          layoutDock();
+        }
+      }
       if (diagnosticsEnabled) diagnosticReport.phase = phase;
       if (diagnosticsEnabled && currentLoad && currentLoad.stages.length < 30)
         currentLoad.stages.push({ phase, elapsedMs: performance.now() - currentLoad.started });
@@ -835,6 +848,21 @@
       resetFace = make('button', t("Reset expression"), 'wzf-haru-reset'),
       state = make('span', '', 'wzf-haru-state');
     state.setAttribute('role', 'status');
+    const loadingStatus = make('span', '', 'wzf-haru-dock-status');
+    loadingStatus.setAttribute('role', 'status');
+    loadingStatus.classList.add('wzf-haru-loading-status');
+    const preferenceStatus = make('span', '', 'wzf-haru-dock-status');
+    preferenceStatus.setAttribute('role', 'status');
+    preferenceStatus.classList.add('wzf-haru-preference-status');
+    controlsDock.append(loadingStatus, preferenceStatus);
+    const unsavedPreferences = new Set();
+    const savePersistentPreference = (key, value) => {
+      try { localStorage.setItem(key, value); unsavedPreferences.delete(key); }
+      catch { unsavedPreferences.add(key); }
+      preferenceStatus.textContent = unsavedPreferences.size
+        ? t("This preference applies only to this page; after refreshing, you may need to choose again.") : '';
+      layoutDock();
+    };
     const saveLocalPreference = (key, value) => {
       const notice = t("This preference applies only to this page; the browser did not allow saving.");
       try { localStorage.setItem(key, value); if (state.textContent === notice) state.textContent = ''; }
@@ -974,12 +1002,13 @@
     const advancedControls = make('div', '', 'wzf-haru-advanced-controls');
     moreSettings.append(advancedControls);
     const extraPresets = make('div', '', 'wzf-haru-presets');
+    const restoreNatural = make('button', t("Restore natural state"), 'wzf-haru-reset wzf-haru-restore-natural');
     const greeting = make('button', t("Say hello"), 'wzf-haru-greeting');
     const greetingMotions = () => (characters[active].greetings || []).filter(id => engine?.catalog.motions.some(item => item.id === id));
     greeting.onclick = () => greet(null, true);
     const chatButton = make('button', t("Chat once"), 'wzf-haru-chat');
     chatButton.onclick = () => idleSpeak(false);
-    advancedControls.append(extraPresets, motion, play, stopMotion, expression, face, resetFace,
+    advancedControls.append(extraPresets, restoreNatural, motion, play, stopMotion, expression, face, resetFace,
       dialogueSettings, pointerSettings, helpButton, credit);
     const previewActions = make('div', '', 'wzf-haru-preview-actions');
     previewActions.append(commitButton, cancelPreview);
@@ -1477,6 +1506,8 @@
       if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
         interruptDiagnostics('hidden-suspended-or-loading', run && loading);
       controlsDock.hidden = suspensions.size > 0;
+      loadingStatus.hidden = !loading || panelOpen || reduce.matches;
+      preferenceStatus.hidden = reduce.matches;
       if (diagnosticsAllowed) diagnostics.hidden = panelOpen;
       diagnosticUpdate();
       button.hidden = suspensions.size > 0;
@@ -1484,7 +1515,7 @@
       button.textContent = reduce.matches
         ? t("Reduced motion enabled")
         : loading
-          ? t("Loading mascot…")
+          ? t("Cancel loading")
           : failed
             ? loadError + t("(click to retry)")
             : displayWanted() && accepted
@@ -1566,6 +1597,7 @@
         if (run && !loading) engine.resume();
         else engine.pause();
       }
+      restoreNatural.disabled = !(run && engine && !loading) || !!engine?.state().paused;
       layout();
       const focused = document.activeElement;
       if (recovery && (panel.contains(focusedBefore) || host?.contains(focusedBefore)) && !focusedBefore.getClientRects().length && (focused === focusedBefore || focused === document.body))
@@ -1578,10 +1610,15 @@
         paint();
       }
     });
+    const focusPanelControl = () => {
+      const target = [panelToggle, button].find(element => !element.hidden && !element.disabled && element.getClientRects().length);
+      target?.focus({ preventScroll: true });
+    };
     panelToggle.onclick = () => {
       diagnostics.open = false;
       panelOpen = !panelOpen;
       paint();
+      if (!panelOpen) focusPanelControl();
       if (panelOpen && !panel.hidden) {
         if (failed) {
           characterSettings.open = true;
@@ -1662,7 +1699,7 @@
         if (expanded) { expanded.open = false; expanded.querySelector('summary').focus(); return; }
         panelOpen = false;
         paint();
-        panelToggle.focus();
+        focusPanelControl();
       }
     });
     const cancelled = () => new DOMException(t("Loading cancelled"), 'AbortError');
@@ -1834,6 +1871,7 @@
       loadController.abort();
       loadController = null;
       loading = false;
+      loadingStatus.textContent = '';
       generation++;
       operation++;
       manualPending.clear();
@@ -1862,6 +1900,7 @@
       loadController = controller;
       recoveryLoad = recoveryError === null ? null : { attempt, error: recoveryError };
       loading = true;
+      loadingStatus.textContent = t("Preparing runtime…");
       loadError = '';
       state.textContent = t("Loading character…");
       paint();
@@ -1872,6 +1911,7 @@
       loadController = null;
       recoveryLoad = null;
       loading = false;
+      loadingStatus.textContent = '';
       paint();
     };
     const destroy = (preserveResourceOwner = false) => {
@@ -1978,12 +2018,12 @@
         .querySelector('button')
         .setAttribute('aria-label', t("Tap %1$s to greet", characters[id].name));
       layout();
-      const owner = diagnosticsEnabled ? resourceOwner : null, attempt = loadAttempt;
+      const owner = diagnosticsEnabled ? resourceOwner : null, attempt = loadAttempt, loadGeneration = generation;
       const candidate = await window.WZFHaruEngine.create(
         canvas,
         characters[id].root,
         config.shaders,
-        { ...characters[id], onDiagnosticStage: phase => { if (!signal.aborted && attempt === loadAttempt) diagnosticPhase(phase); },
+        { ...characters[id], onDiagnosticStage: phase => { if (!signal.aborted && attempt === loadAttempt && loadGeneration === generation) diagnosticPhase(phase); },
           ...(owner ? {onDiagnosticResource: owner.start} : {}) },
         signal,
       );
@@ -2104,16 +2144,12 @@
       previewReturnFocus();
     };
     const save = () => {
-      try {
-        if (desktop.matches) localStorage.setItem('wzfl-mascot', wanted ? 'shown' : 'hidden');
-        else localStorage.setItem('wzf-mascot-mobile-v1', mobileOptIn ? 'enabled' : 'disabled');
-      } catch {}
+      savePersistentPreference(desktop.matches ? 'wzfl-mascot' : 'wzf-mascot-mobile-v1',
+        desktop.matches ? (wanted ? 'shown' : 'hidden') : (mobileOptIn ? 'enabled' : 'disabled'));
     };
     agree.onclick = () => {
       accepted = true;
-      try {
-        localStorage.setItem('wzf-haru-terms', config.termsVersion);
-      } catch {}
+      savePersistentPreference('wzf-haru-terms', config.termsVersion);
       if (desktop.matches) wanted = true;
       else mobileOptIn = true;
       save();
@@ -2234,6 +2270,25 @@
         engine.resetExpression();
         state.textContent = t("Expression reset");
       }
+    };
+    restoreNatural.onclick = () => {
+      if (!allowed() || !engine || loading || engine.state().paused) return;
+      cancelPreset();
+      cancelExternal();
+      welcomeConsumed = true;
+      dialogueWelcomeConsumed = true;
+      cancelWelcome();
+      cancelIdle();
+      operation++;
+      for (const type of ['motion', 'expression']) interactions[type]++;
+      manualPending.clear();
+      touchPending = false;
+      nextTouch = 0;
+      clearDialogue();
+      engine.idleNow();
+      engine.resetExpression();
+      state.textContent = t("Returned to idle and default expression");
+      syncIdle();
     };
     play.onclick = () => perform('motion', motion.value);
     face.onclick = () => perform('expression', expression.value);
