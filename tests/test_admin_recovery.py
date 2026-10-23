@@ -99,7 +99,10 @@ class RecoveryTests(unittest.TestCase):
 
     def test_cross_filesystem_rejected_without_creating_anything(self):
         import os
-        self.assertNotEqual(os.stat('/dev/shm').st_dev,os.stat(self.helper.root).st_dev)
+        if not os.path.isdir('/dev/shm'):
+            self.skipTest('Cross-filesystem fixture /dev/shm is unavailable')
+        if os.stat('/dev/shm').st_dev == os.stat(self.helper.root).st_dev:
+            self.skipTest('/dev/shm and the temporary fixture share a filesystem')
         r=self.php(self.setup(False)+"define('WZF_MASCOT_RECOVERY_DIR','/dev/shm');wzf_mascot_recovery_base();echo json_encode(['ok'=>true]);")
         self.assertFalse(r['ok']);self.assertIn('same filesystem',r['error'])
     def test_interruption_keeps_prepared_source_and_partial_purge(self):
