@@ -923,16 +923,25 @@ echo 'released';
         if exit_before_cleanup is None:
             server.terminate()
         server.wait(timeout=10); logfile.close()
+        http_diagnostics = server_diagnostics(lab / 'http.log', site)
+        php_log_failure = {level:count for level,count in http_diagnostics['counts'].items()
+                           if level in ('Warning', 'Fatal error', 'Parse error') and count > 0}
+        if php_log_failure:
+            completed = False
+            if failure is None:
+                failure = {'type':'PHPServerDiagnostics', 'severities':php_log_failure}
         report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': completed, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         report['http_server'] = {'exit_before_cleanup': exit_before_cleanup,
                                  'exit_after_cleanup': server.returncode,
                                  'runtime': http_runtime,
                                  'configuration_restarts': http_restarts,
                                  'private_payload_probe': private_payload_probe,
-                                 'log': server_diagnostics(lab / 'http.log', site)}
+                                 'log': http_diagnostics}
         if failure is not None:
             report['failure'] = failure
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
+    if php_log_failure:
+        raise RuntimeError('PHP HTTP server emitted Warning/Fatal/Parse diagnostics; see results.json')
     print(json.dumps(report, indent=2))
 
 

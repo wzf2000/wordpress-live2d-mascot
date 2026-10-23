@@ -70,7 +70,7 @@ class AdminInteractionTests(unittest.TestCase):
     def test_batch_panel_does_not_read_single_target_character(self):
         r=self.php('''function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}function esc_attr($s){return esc_html($s);}function esc_url($s){return esc_html($s);}
         function admin_url($s){return '/'.$s;}function add_query_arg($a,$b){return $b;}function wp_nonce_field($s){}function submit_button(...$a){}function checked(...$a){return '';}
-        $wzf_mascot_template_review=['batch'=>true,'blocked'=>true,'rows'=>[],'scope'=>'dialogue'];ob_start();wzf_mascot_template_panel(['characters'=>[]],'x');$html=ob_get_clean();echo json_encode(['blocked'=>str_contains($html,'One or more targets are blocked')]);''')
-        self.assertTrue(r['blocked'])
+        $wzf_mascot_template_review=['batch'=>true,'blocked'=>true,'rows'=>['bad-name'=>['error'=>'Invalid name']],'scope'=>'dialogue'];ob_start();wzf_mascot_template_panel(['characters'=>['bad-name'=>['name'=>['invalid']]]],'x');$html=ob_get_clean();echo json_encode(['blocked'=>str_contains($html,'One or more targets are blocked'),'targetFallback'=>str_contains($html,'bad-name · bad-name</label>'),'reviewFallback'=>str_contains($html,'bad-name · bad-name · Blocked'),'noArray'=>!str_contains($html,'Array')]);''')
+        self.assertTrue(r['blocked']);self.assertTrue(r['targetFallback']);self.assertTrue(r['reviewFallback']);self.assertTrue(r['noArray'])
 
 if __name__=='__main__':unittest.main()

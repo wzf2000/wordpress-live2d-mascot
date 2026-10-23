@@ -351,14 +351,14 @@ function wzf_mascot_template_panel($config, $id) {
     wp_nonce_field('wzf_mascot_template_preview'); wzf_mascot_template_hidden($values);
     echo '<div class="wzf-mascot-field"><label>' . esc_html__('Interaction JSON (up to 64 KiB)', 'live2d-show') . '<input type="file" name="template" accept=".json,application/json" required></label></div><p><label><input type="checkbox" name="include_presets" value="1"> ' . esc_html__('Also replace quick interactions and chatter motions', 'live2d-show') . '</label></p>';
     echo '<fieldset><legend>' . esc_html__('Target characters (up to 50)', 'live2d-show') . '</legend><div class="wzf-mascot-checks">';
-    foreach ($config['characters'] as $target_id=>$target) if (is_array($target) && wzf_mascot_character_status($target) !== 'trash') echo '<label><input type="checkbox" name="targets[]" value="' . esc_attr($target_id) . '" ' . checked((string)$target_id, (string)$id, false) . '> ' . esc_html(($target['name'] ?? $target_id) . ' · ' . $target_id) . '</label>';
+    foreach ($config['characters'] as $target_id=>$target) if (is_array($target) && wzf_mascot_character_status($target) !== 'trash') echo '<label><input type="checkbox" name="targets[]" value="' . esc_attr($target_id) . '" ' . checked((string)$target_id, (string)$id, false) . '> ' . esc_html((is_string($target['name'] ?? null) ? $target['name'] : (string)$target_id) . ' · ' . $target_id) . '</label>';
     echo '</div><p class="description">' . esc_html__('Select every character you want to update. Review all targets before applying.', 'live2d-show') . '</p></fieldset>';
     submit_button(__('Preview template changes', 'live2d-show'), 'secondary'); echo '</form>';
     if (isset($review['error'])) echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html($review['error']) . '</p></div>';
     elseif ($review) {
         if (!empty($review['batch'])) {
             foreach ($review['rows'] as $target_id=>$row) {
-                echo '<details class="wzf-mascot-replace"><summary>' . esc_html(($config['characters'][$target_id]['name'] ?? $target_id) . ' · ' . $target_id . ' · ' . (isset($row['error']) ? __('Blocked', 'live2d-show') : ($row['plan']['before'] === $row['plan']['after'] ? __('Unchanged', 'live2d-show') : __('Changed', 'live2d-show')))) . '</summary>';
+                echo '<details class="wzf-mascot-replace"><summary>' . esc_html((is_string($config['characters'][$target_id]['name'] ?? null) ? $config['characters'][$target_id]['name'] : (string)$target_id) . ' · ' . $target_id . ' · ' . (isset($row['error']) ? __('Blocked', 'live2d-show') : ($row['plan']['before'] === $row['plan']['after'] ? __('Unchanged', 'live2d-show') : __('Changed', 'live2d-show')))) . '</summary>';
                 if (isset($row['error'])) echo '<p>' . esc_html($row['error']) . '</p>'; else wzf_mascot_template_diff(['plan'=>$row['plan'],'scope'=>$review['scope']]);
                 echo '</details>';
             }
