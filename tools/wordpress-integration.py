@@ -87,6 +87,47 @@ def server_diagnostics(path, site):
     return {'counts': counts, 'locations': locations}
 
 
+def private_payload_http_probe(origin, path, payload):
+    """Stream an anonymous same-origin response; retain metadata, never its body."""
+    if not payload:
+        raise ValueError('Private payload fixture must not be empty')
+    allowed = urllib.parse.urlsplit(origin)
+    def same_origin(url):
+        parsed = urllib.parse.urlsplit(url)
+        return (parsed.scheme, parsed.netloc) == (allowed.scheme, allowed.netloc)
+    class LocalRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            if not same_origin(newurl):
+                raise RuntimeError('Private payload probe refused a redirect outside the lab origin')
+            return super().redirect_request(req, fp, code, msg, headers, newurl)
+    url = origin + path
+    if not same_origin(url):
+        raise ValueError('Private payload probe requires the lab origin')
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), LocalRedirect())
+    try:
+        response = opener.open(url, timeout=15)
+    except urllib.error.HTTPError as error:
+        response = error
+    with response:
+        if not same_origin(response.geturl()):
+            raise RuntimeError('Private payload response left the lab origin')
+        summary = {'status':response.status, 'contentType':response.headers.get('Content-Type', ''),
+                   'redirected':response.geturl() != url, 'privateBytesReturned':False, 'pngSignatureReturned':False}
+        tail = b''; total = 0; overlap = max(len(payload), 8) - 1
+        while True:
+            chunk = response.read(4096)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > 2 * 1024 * 1024:
+                raise RuntimeError('Private payload probe response exceeds its byte limit')
+            window = tail + chunk
+            summary['privateBytesReturned'] |= payload in window
+            summary['pngSignatureReturned'] |= b'\x89PNG\r\n\x1a\n' in window
+            tail = window[-overlap:]
+        return summary
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--lab', type=Path, required=True, help='New direct /tmp/mascot-ci-* directory')
@@ -192,6 +233,7 @@ def main():
     last_request = None
     http_runtime = None
     http_restarts = []
+    private_payload_probe = None
 
     def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     anonymous, admin, reader = client(), client(), client()
@@ -815,7 +857,11 @@ echo 'released';
         records=list((private/'blog-1').glob('*/manifest.json')); assert len(records)==1
         rid=records[0].parent.name; payload=records[0].parent/'payload/image.png'
         assert payload.is_file()
-        assert request(anonymous,'/recovery/blog-1/'+rid+'/payload/image.png')[0] == 404
+        private_payload_probe = private_payload_http_probe(origin, '/recovery/blog-1/'+rid+'/payload/image.png', payload.read_bytes())
+        print('Private payload HTTP probe: ' + json.dumps(private_payload_probe), flush=True)
+        assert private_payload_probe['status'] in (200, 404)
+        assert not private_payload_probe['contentType'].split(';', 1)[0].strip().lower().startswith('image/')
+        assert not private_payload_probe['privateBytesReturned'] and not private_payload_probe['pngSignatureReturned']
         _, restore=recovery_review('restore',rid); assert restore
         post(dict(restore,confirm='1')); assert thumb_file.is_file() and not payload.exists()
         assert json.loads(records[0].read_text())['state']=='restored' and state()==recovery_before
@@ -882,6 +928,7 @@ echo 'released';
                                  'exit_after_cleanup': server.returncode,
                                  'runtime': http_runtime,
                                  'configuration_restarts': http_restarts,
+                                 'private_payload_probe': private_payload_probe,
                                  'log': server_diagnostics(lab / 'http.log', site)}
         if failure is not None:
             report['failure'] = failure
