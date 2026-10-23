@@ -7,6 +7,7 @@
   window.WZFHaruEngine = {
     async create(canvas, root, shaders, character, signal) {
       const id = ++sequence;
+      (fixture.resourceObservers ||= []).push(character.onDiagnosticResource);
       record({ type: 'create-start', id, root });
       character.onDiagnosticStage?.('model');
       const catalog = await fetch(root + 'catalog.json', { signal }).then((response) => response.json());

@@ -355,6 +355,68 @@ if (output) fs.mkdirSync(output, { recursive: true });
       const [download] = await Promise.all([target.waitForEvent('download'), target.getByRole('button', { name, exact: true }).click()]);
       return JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
     };
+    await run('resource traces follow load ownership, caps, recording stops and first frame', async () => {
+      const p = await context.newPage();
+      await p.goto(fixture.origin + '/?role=administrator');
+      if (!(await status(p)).wanted) { await p.locator('.wzfl-mascot-toggle').click(); await wait(p,{ready:true,loading:false}); }
+      else await wait(p,{ready:true,loading:false});
+      assert.equal(await p.evaluate(()=>typeof window.__mascotFixture.resourceObservers[0]),'undefined');
+      await p.locator('.wzfl-mascot-toggle').click();
+      await p.reload(); await wait(p,{loading:false});
+      await openDiagnostics(p); await p.getByRole('button',{name:'Enable local diagnostics',exact:true}).click();
+      await p.evaluate(()=>{window.__mascotFixture.noFrames=true;});
+      await p.locator('.wzfl-mascot-toggle').click(); await wait(p,{ready:true,loading:false});
+      await p.evaluate(()=>{
+        const fixture=window.__mascotFixture;
+        fixture.oldObserver=fixture.resourceObservers.at(-1);
+        const first=fixture.oldObserver('texture','download'), second=fixture.oldObserver('texture','download');
+        fixture.textureOrdinal=first.ordinal;
+        second.finish(undefined,12); first.finish(undefined,24);
+        fixture.oldObserver('texture','decode',first.ordinal).finish();
+        fixture.pendingSpan=fixture.oldObserver('motion','download');
+      });
+      let report=await diagnosticDownload(p,'Download diagnostic JSON');
+      assert.equal(report.load.resources.endedBy,null,'normal load/destroy must retain trace owner');
+      const textures=report.load.resources.events.filter(row=>row.category==='texture');
+      assert.deepEqual(textures.map(row=>row.bodyBytes),[12,24,null]);
+      assert.equal(textures[1].ordinal,textures[2].ordinal);
+      const before=report.load.resources.events.length+1;
+      await p.evaluate(()=>{for(let i=0;i<140;i++)window.__mascotFixture.oldObserver('shader','download')?.finish(undefined,1);});
+      report=await diagnosticDownload(p,'Download diagnostic JSON');
+      assert.equal(report.load.resources.events.length,127);assert.equal(report.load.resources.dropped,before+140-128);
+      await p.getByRole('button',{name:'Stop recording',exact:true}).click();
+      const stopped=await diagnosticDownload(p,'Download diagnostic JSON');
+      assert.equal(stopped.load.resources.events.length,128);assert.equal(stopped.load.resources.endedBy,'stopped');
+      await p.evaluate(()=>{window.__mascotFixture.pendingSpan.finish(undefined,900);window.__mascotFixture.oldObserver('model','download')?.finish(undefined,900);});
+      assert.deepEqual(await diagnosticDownload(p,'Download diagnostic JSON'),stopped);
+      await p.getByRole('button',{name:'Enable local diagnostics',exact:true}).click();
+      await interact(p);await p.getByLabel('Choose character',{exact:true}).selectOption('beta');
+      await p.getByRole('button',{name:'Preview character',exact:true}).click();await wait(p,{ready:true,loading:false,character:'beta'});
+      await p.getByRole('button',{name:'Close interaction',exact:true}).click();await openDiagnostics(p);
+      await p.evaluate(()=>{window.__mascotFixture.oldObserver('model','download')?.finish(undefined,900);window.__mascotFixture.resourceObservers.at(-1)('catalog','download')?.finish(undefined,7);});
+      report=await diagnosticDownload(p,'Download diagnostic JSON');
+      assert.equal(report.load.resources.events.length,1);assert.equal(report.load.resources.events[0].bodyBytes,7);
+      await p.evaluate(()=>{window.__mascotFixture.noFrames=false;});await p.waitForTimeout(100);
+      const finished=await diagnosticDownload(p,'Download diagnostic JSON');assert.equal(finished.load.resources.endedBy,'first-frame');
+      await p.evaluate(()=>window.__mascotFixture.resourceObservers.at(-1)('moc','download')?.finish(undefined,900));
+      assert.deepEqual(await diagnosticDownload(p,'Download diagnostic JSON'),finished);
+      await p.close();
+    });
+    await run('runtime resource failures use the same fixed code as loading errors', async () => {
+      for (const code of ['network','http']) {
+        const p=await context.newPage();
+        await p.addInitScript(()=>localStorage.setItem('wzfl-mascot','hidden'));
+        await loadPage(p,'?role=administrator');await openDiagnostics(p);
+        await p.getByRole('button',{name:'Enable local diagnostics',exact:true}).click();
+        await p.route('**/synthetic/core.js',route=>code==='network'?route.abort('failed'):route.fulfill({status:503,body:'unavailable'}));
+        await p.locator('.wzfl-mascot-toggle').click();await wait(p,{failed:true,loading:false});
+        const report=await diagnosticDownload(p,'Download diagnostic JSON');
+        assert.equal(report.error.code,code);
+        const event=report.load.resources.events.find(row=>row.category==='core'&&row.operation==='download');
+        assert.equal(event.errorCode,code);assert.equal(event.status,'failed');assert.equal(event.bodyBytes,null);
+        await p.close();
+      }
+    });
     let diagnosticPage, initialBatch;
     await run('diagnostic opt-in, 3-window sequence, immutable snapshots and pause/switch/user-stop cancellation', async () => {
       await page.evaluate(() => localStorage.setItem('wzfl-mascot', 'hidden'));
@@ -490,7 +552,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await shot(target,'dialogue-mobile'); assert.equal(await target.evaluate(() => document.documentElement.scrollWidth > innerWidth),false);
       await target.close();
     });
-    await context.close(); report.complete = checks.length === 18;
+    await context.close(); report.complete = checks.length === 20;
     assert.equal(report.complete, true);
   } catch (error) {
     report.failure = String(error.message); throw error;

@@ -249,6 +249,7 @@
       windowSequence = 0,
       sampleSeries = null,
       seriesMessage = '';
+    let resourceOwner = null;
     const diagnosticsAllowed = config.diagnosticsAllowed === true;
     const diagnostics = diagnosticsAllowed ? make('details', '', 'wzf-haru-diagnostics') : document.createDocumentFragment();
     diagnostics.append(make('summary', t("Local diagnostics")));
@@ -342,8 +343,46 @@
       for (const load of copy.loadAttempts || []) delete load.started;
       return copy;
     };
+    // Resource ownership is a load attempt, not the engine generation: load()
+    // deliberately destroys the previous engine after this attempt has started.
+    const resourceCodes = new Set(['timeout', 'http', 'network', 'invalid', 'cancelled']);
+    const createResourceOwner = (loadRecord) => {
+      const epoch = diagnosticGeneration, attempt = loadAttempt, pending = new Set();
+      let closed = false, slots = 0, ordinal = 0;
+      const valid = () => !closed && diagnosticsEnabled && diagnosticGeneration === epoch &&
+        loadAttempt === attempt && currentLoad === loadRecord &&
+        diagnosticReport?.loadSessionId === loadRecord.sessionId;
+      const start = (category, operation, sharedOrdinal) => {
+        if (!valid() || !['core','engine','model','catalog','moc','physics','pose','texture','shader','motion'].includes(category) ||
+            !['download','decode','runtime-wait','reuse'].includes(operation)) return;
+        if (slots >= 128) { loadRecord.resources.dropped++; return; }
+        slots++;
+        const number = sharedOrdinal ?? ++ordinal, started = performance.now();
+        let done = false;
+        const finish = (error, bodyBytes = null) => {
+          if (done) return;
+          done = true; pending.delete(finish);
+          if (!valid()) return;
+          const code = error ? error.name === 'AbortError' ? 'cancelled' : resourceCodes.has(error.code) ? error.code : 'invalid' : null;
+          loadRecord.resources.events.push({category, operation, ordinal: number,
+            startMs: Math.max(0, started - loadRecord.started), durationMs: Math.max(0, performance.now() - started),
+            bodyBytes: operation === 'download' && !code ? bodyBytes : null, status: code === 'cancelled' ? 'cancelled' : code ? 'failed' : 'ok', errorCode: code});
+        };
+        pending.add(finish);
+        return {ordinal: number, finish};
+      };
+      const close = (reason) => {
+        if (!valid()) { closed = true; return; }
+        // End in-flight observations once. This does not change network policy.
+        for (const finish of [...pending]) finish({name:'AbortError'});
+        loadRecord.resources.endedBy = reason;
+        closed = true;
+      };
+      return {start, close};
+    };
     const diagnosticBegin = (id, fallback = false) => {
       if (!diagnosticsEnabled) return;
+      resourceOwner?.close('replaced');
       if (!fallback) diagnosticReport.requestedCharacterId = id;
       diagnosticReport.loadSessionId = diagnosticId();
       currentLoad = {
@@ -356,7 +395,9 @@
         readyMs: null,
         firstFrameMs: null,
         firstFrameStatus: 'not-observed',
+        resources: {events: [], dropped: 0, endedBy: null},
       };
+      resourceOwner = createResourceOwner(currentLoad);
       diagnosticReport.load = currentLoad;
       diagnosticReport.renderedCharacterId = null;
       diagnosticReport.loadAttempts.push(currentLoad);
@@ -479,7 +520,9 @@
       }
       diagnosticUpdate();
     };
-    const interruptDiagnostics = (reason) => {
+    const interruptDiagnostics = (reason, preserveResourceOwner = false) => {
+      if (!preserveResourceOwner) resourceOwner?.close(
+        currentLoad?.status === 'failed' ? 'failed' : reason === 'user-stopped' ? 'stopped' : 'cancelled');
       finishDiagnosticSample(true, reason);
       if (firstFrameWatch) {
         clearTimeout(firstFrameWatch.timer);
@@ -507,9 +550,11 @@
         if (target.state().frames > 0) {
           loadRecord.firstFrameMs = performance.now() - started;
           loadRecord.firstFrameStatus = 'observed';
+          resourceOwner?.close('first-frame');
           firstFrameWatch = null;
         } else if (performance.now() - started > 75000) {
           loadRecord.firstFrameStatus = 'not-observed';
+          resourceOwner?.close('not-observed');
           firstFrameWatch = null;
         } else firstFrameWatch.timer = setTimeout(observe, 30);
       };
@@ -1411,7 +1456,7 @@
       captureButton.disabled=!!pendingCapture||!run||!engine||loading||characters[active].captureAllowed!==true||typeof engine?.captureFrame!=='function';
       if(characters[active].captureAllowed!==true)captureStatus.textContent=t("PNG download is not enabled for this character.");
       if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
-        interruptDiagnostics('hidden-suspended-or-loading');
+        interruptDiagnostics('hidden-suspended-or-loading', run && loading);
       controlsDock.hidden = suspensions.size > 0;
       if (diagnosticsAllowed) diagnostics.hidden = panelOpen;
       diagnosticUpdate();
@@ -1628,9 +1673,13 @@
     // Download first: an aborted/timed-out request never leaves executable script
     // behind. Once a Blob script is appended its execution is shared across callers.
     const scriptExecutions = new Map();
-    const waitForScript = (request, signal) =>
+    const waitForScript = (request, signal, span) =>
       new Promise((resolve, reject) => {
+        let settled = false;
         const finish = (error) => {
+          if (settled) return;
+          settled = true;
+          span?.finish(error);
           clearTimeout(timer);
           signal.removeEventListener('abort', abort);
           if (error) reject(error);
@@ -1657,11 +1706,13 @@
           }
         }, finish);
       });
-    const script = async (src, exists, signal) => {
+    const script = async (src, exists, signal, category, observe) => {
       checkSignal(signal);
-      if (exists()) return;
+      if (exists()) { observe?.(category, 'reuse')?.finish(); return; }
       const executing = scriptExecutions.get(src);
-      if (executing) return waitForScript(executing, signal);
+      if (executing) return waitForScript(executing, signal, observe?.(category, 'runtime-wait'));
+      const span = observe?.(category, 'download');
+      let bodyBytes = 0;
       const controller = new AbortController();
       const abort = () => controller.abort(cancelled());
       signal.addEventListener('abort', abort, { once: true });
@@ -1694,20 +1745,23 @@
                 ),
                 { name: 'ResourceError', code: 'http' },
               );
-            return response.text();
+            if (!span) return response.text();
+            const raw = await response.arrayBuffer();
+            bodyBytes = raw.byteLength;
+            return new TextDecoder().decode(raw);
           })()
             .then(resolve, reject)
             .finally(() => controller.signal.removeEventListener('abort', aborted));
         });
         checkSignal(signal);
+        span?.finish(undefined, bodyBytes);
       } catch (error) {
-        if (signal.aborted) throw cancelled();
-        if (controller.signal.aborted) throw controller.signal.reason;
-        if (error?.name === 'ResourceError') throw error;
-        throw Object.assign(new Error(t("Runtime download failed. Check your connection and retry.")), {
-          name: 'ResourceError',
-          code: 'network',
-        });
+        const normalized = signal.aborted ? cancelled() : controller.signal.aborted ? controller.signal.reason :
+          error?.name === 'ResourceError' ? error : Object.assign(new Error(t("Runtime download failed. Check your connection and retry.")), {
+            name: 'ResourceError', code: 'network',
+          });
+        span?.finish(normalized);
+        throw normalized;
       } finally {
         clearTimeout(timer);
         signal.removeEventListener('abort', abort);
@@ -1748,7 +1802,7 @@
         });
         scriptExecutions.set(src, request);
       }
-      return waitForScript(request, signal);
+      return waitForScript(request, signal, observe?.(category, 'runtime-wait', span?.ordinal));
     };
     const cancelLoad = () => {
       if (!loadController) return;
@@ -1779,6 +1833,7 @@
       cancelPNG();captureStatus.textContent='';
       clearDialogue();
       interruptDiagnostics('load-started');
+      const attempt = ++loadAttempt;
       if (diagnosticsEnabled) {
         diagnosticReport.characterId = id;
         diagnosticBegin(id);
@@ -1786,7 +1841,6 @@
       }
       const controller = new AbortController();
       loadController = controller;
-      const attempt = ++loadAttempt;
       recoveryLoad = recoveryError === null ? null : { attempt, error: recoveryError };
       loading = true;
       loadError = '';
@@ -1801,14 +1855,14 @@
       loading = false;
       paint();
     };
-    const destroy = () => {
+    const destroy = (preserveResourceOwner = false) => {
       cancelPNG();
       endDrag();
       cancelPreset();
       clearDialogue();
       cancelWelcome();
       cancelExternal();
-      interruptDiagnostics('engine-replaced');
+      interruptDiagnostics('engine-replaced', preserveResourceOwner);
       generation++;
       operation++;
       manualPending.clear();
@@ -1854,7 +1908,7 @@
     };
     const load = async (id, signal) => {
       checkSignal(signal);
-      destroy();
+      destroy(true);
       active = id;
       if (diagnosticsEnabled && currentLoad?.status === 'failed') diagnosticBegin(id, true);
       diagnosticPhase('webgl');
@@ -1905,11 +1959,13 @@
         .querySelector('button')
         .setAttribute('aria-label', t("Tap %1$s to greet", characters[id].name));
       layout();
+      const owner = diagnosticsEnabled ? resourceOwner : null, attempt = loadAttempt;
       const candidate = await window.WZFHaruEngine.create(
         canvas,
         characters[id].root,
         config.shaders,
-        { ...characters[id], onDiagnosticStage: diagnosticPhase },
+        { ...characters[id], onDiagnosticStage: phase => { if (!signal.aborted && attempt === loadAttempt) diagnosticPhase(phase); },
+          ...(owner ? {onDiagnosticResource: owner.start} : {}) },
         signal,
       );
       if (signal.aborted) {
@@ -1928,10 +1984,11 @@
       failed = false;
     };
     const loadRuntime = async (signal) => {
+      const observe = diagnosticsEnabled ? resourceOwner?.start : undefined;
       diagnosticPhase('core');
-      await script(config.core, () => !!window.Live2DCubismCore, signal);
+      await script(config.core, () => !!window.Live2DCubismCore, signal, 'core', observe);
       diagnosticPhase('engine');
-      await script(config.engine, () => !!window.WZFHaruEngine, signal);
+      await script(config.engine, () => !!window.WZFHaruEngine, signal, 'engine', observe);
       checkSignal(signal);
     };
     const apply = async () => {
