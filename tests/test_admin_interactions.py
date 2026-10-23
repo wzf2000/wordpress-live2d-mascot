@@ -67,4 +67,10 @@ class AdminInteractionTests(unittest.TestCase):
             self.assertFalse(self.php('wzf_mascot_template_targets('+targets+");echo json_encode(['ok'=>true]);")['ok'])
         self.assertFalse(self.php(self.setup()+"$allowed=false;wzf_mascot_template_batch_preview(['second'],$version,$raw,'dialogue');echo json_encode(['ok'=>true]);")['ok'])
 
+    def test_batch_panel_does_not_read_single_target_character(self):
+        r=self.php('''function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES);}function esc_attr($s){return esc_html($s);}function esc_url($s){return esc_html($s);}
+        function admin_url($s){return '/'.$s;}function add_query_arg($a,$b){return $b;}function wp_nonce_field($s){}function submit_button(...$a){}function checked(...$a){return '';}
+        $wzf_mascot_template_review=['batch'=>true,'blocked'=>true,'rows'=>[],'scope'=>'dialogue'];ob_start();wzf_mascot_template_panel(['characters'=>[]],'x');$html=ob_get_clean();echo json_encode(['blocked'=>str_contains($html,'One or more targets are blocked')]);''')
+        self.assertTrue(r['blocked'])
+
 if __name__=='__main__':unittest.main()

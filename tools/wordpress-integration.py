@@ -753,6 +753,55 @@ echo 'released';
         data = form('wzf_mascot_mobile'); data.update(mobile_enabled='1', pause_input='1'); post(data)
         assert front()['mobileEnabled'] is True and front()['mobilePauseOnInput'] is True
         record('real thumbnail upload/reencode/clear and explicit mobile settings')
+
+        # Operate only on the real re-encoded synthetic thumbnail just detached
+        # above. The private directory is outside this disposable HTTP document root.
+        recovery_before = state()
+        private = lab / 'recovery'; private.mkdir(mode=0o700)
+        assert 'WZF_MASCOT_RECOVERY_DIR' in request(admin, inventory_url)[1]
+        default_error = wp('eval', "wp_set_current_user(" + str(uid) + ");try{wzf_mascot_recovery_preview('quarantine'," + json.dumps(Path(thumb).parent.name) + ");echo 'unsafe';}catch(Throwable $e){echo 'disabled';}")
+        assert default_error == 'disabled' and state() == recovery_before
+        record('resource recovery is read-only without an explicit private server directory')
+        wp('config','set','WZF_MASCOT_RECOVERY_DIR',str(private))
+        old_root = thumb_file.parent.name
+        for path in [thumb_file, thumb_file.parent]: os.utime(path,(time.time()-40*86400,)*2)
+        def recovery_review(operation, target):
+            page = request(admin, inventory_url)[1]
+            nonce = next(f['_wpnonce'] for f in Forms(page).forms if f.get('recovery_review') == '1')
+            fields = {'recovery_review':'1','operation':operation,'path':target,'days':'30','version':state()['version'],'_wpnonce':nonce}
+            code, page = request(admin, inventory_url, fields)
+            assert code == 200
+            return fields, next((f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_recovery'), None)
+        fields, move = recovery_review('quarantine',old_root)
+        assert move and state() == recovery_before
+        assert request(reader, inventory_url,fields)[0] == 403
+        assert request(admin,inventory_url,dict(fields,_wpnonce='invalid'))[0] == 403
+        assert post(dict(move,confirm='1'),opener=reader)[0] == 403
+        assert post(dict(move,_wpnonce='invalid',confirm='1'))[0] == 403
+        post(move); assert thumb_file.exists()  # Separate confirmation.
+        post(dict(move,confirm='1',signature='0'*64)); assert thumb_file.exists()
+        post(dict(move,confirm='1')); assert not thumb_file.exists() and state() == recovery_before
+        records=list((private/'blog-1').glob('*/manifest.json')); assert len(records)==1
+        rid=records[0].parent.name; payload=records[0].parent/'payload/image.png'
+        assert payload.is_file()
+        assert request(anonymous,'/recovery/blog-1/'+rid+'/payload/image.png')[0] == 404
+        _, restore=recovery_review('restore',rid); assert restore
+        post(dict(restore,confirm='1')); assert thumb_file.is_file() and not payload.exists()
+        assert json.loads(records[0].read_text())['state']=='restored' and state()==recovery_before
+        record('real signed quarantine and restore require permission, nonce and separate confirmation; private payload has no HTTP route and config is unchanged')
+        _, move=recovery_review('quarantine',old_root); post(dict(move,confirm='1'))
+        records=[p for p in (private/'blog-1').glob('*/manifest.json') if json.loads(p.read_text())['state']=='quarantined']; assert len(records)==1
+        rid=records[0].parent.name
+        _, purge=recovery_review('purge',rid); assert purge is None
+        wp('config','set','WZF_MASCOT_ALLOW_PERMANENT_DELETE','true','--raw')
+        _, purge=recovery_review('purge',rid); assert purge is None  # No shortened 30-day hold.
+        wp('eval', "$r=wzf_mascot_recovery_record("+json.dumps(rid)+");$r['quarantined']=time()-31*86400;wzf_mascot_recovery_write(wzf_mascot_recovery_record_dir($r['id']),$r);")
+        _, purge=recovery_review('purge',rid); assert purge
+        post(dict(purge,confirm='1',typed='wrong')); assert (records[0].parent/'payload').exists()
+        post(dict(purge,confirm='1',typed=old_root)); assert not (records[0].parent/'payload').exists()
+        assert json.loads(records[0].read_text())['state']=='purged' and state()==recovery_before
+        wp('config','set','WZF_MASCOT_ALLOW_PERMANENT_DELETE','false','--raw')
+        record('real permanent deletion requires server opt-in, 30 days in quarantine, signed review and exact-name confirmation; tombstone and configuration remain')
         fixture('restore'); fixture('fault'); faulty = state(); assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and 'Isolated' in html
         assert str(site) not in request(anonymous, '/')[1] and state() == faulty
@@ -786,8 +835,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 29:
-            raise RuntimeError(f'Expected 29 completed integration groups, got {len(checks)}')
+        if len(checks) != 34:
+            raise RuntimeError(f'Expected 34 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

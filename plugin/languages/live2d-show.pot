@@ -128,6 +128,9 @@ msgstr ""
 msgid "A preset resource cannot be mapped. Repair the preset before exporting."
 msgstr ""
 
+msgid "A recovery record is unreadable or invalid. Preserve it for server inspection."
+msgstr ""
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr ""
 
@@ -240,6 +243,9 @@ msgid "Another request changed the resource configuration. Refresh before retryi
 msgstr ""
 
 msgid "Another request changed the resource configuration. Refresh before trying again."
+msgstr ""
+
+msgid "Apply reviewed operation"
 msgstr ""
 
 msgid "Apply reviewed template"
@@ -641,6 +647,9 @@ msgstr ""
 msgid "Confirm recovery of the interrupted task record."
 msgstr ""
 
+msgid "Confirm reviewed operation"
+msgstr ""
+
 msgid "Confirm the displayed interaction changes before applying."
 msgstr ""
 
@@ -695,6 +704,9 @@ msgstr ""
 msgid "Current chatter motions are retained."
 msgstr ""
 
+msgid "Current free space:"
+msgstr ""
+
 msgid "Current model directory"
 msgstr ""
 
@@ -705,6 +717,9 @@ msgid "Current thumbnail"
 msgstr ""
 
 msgid "Current, previous and shared references"
+msgstr ""
+
+msgid "Current, previous, disabled or trashed resources and intersecting references are protected."
 msgstr ""
 
 msgid "Default layout configuration is invalid."
@@ -834,6 +849,9 @@ msgid "Even when reading gets absorbing, give your eyes a rest."
 msgstr ""
 
 msgid "Evening"
+msgstr ""
+
+msgid "Exact resource directory name"
 msgstr ""
 
 msgid "Existing resource configuration is invalid."
@@ -1022,6 +1040,9 @@ msgstr ""
 msgid "I am ready! How about your curiosity?"
 msgstr ""
 
+msgid "I confirm this reviewed move without changing configuration."
+msgstr ""
+
 msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
 msgstr ""
 
@@ -1038,6 +1059,9 @@ msgid "I reviewed these changes and want to replace the selected interaction set
 msgstr ""
 
 msgid "I understand that recovery only removes the interrupted task record."
+msgstr ""
+
+msgid "I understand this deletion is irreversible."
 msgstr ""
 
 msgid "Idle"
@@ -1068,6 +1092,9 @@ msgid "Import the verified Core before previewing."
 msgstr ""
 
 msgid "Import type is invalid."
+msgstr ""
+
+msgid "In recovery storage"
 msgstr ""
 
 msgid "Include read-only cleanup review"
@@ -1116,6 +1143,9 @@ msgid "Invalid configuration"
 msgstr ""
 
 msgid "Invalid configuration structure · Isolated"
+msgstr ""
+
+msgid "Invalid recovery operation."
 msgstr ""
 
 msgid "Invalid status"
@@ -1184,6 +1214,9 @@ msgstr ""
 msgid "Logical bytes / files"
 msgstr ""
 
+msgid "Logical size:"
+msgstr ""
+
 msgid "Lowered brows"
 msgstr ""
 
@@ -1206,6 +1239,9 @@ msgid "Meow? Found something new?"
 msgstr ""
 
 msgid "Minimum review waiting period (days)"
+msgstr ""
+
+msgid "Minimum waiting period (days)"
 msgstr ""
 
 msgid "Minimum waiting period reached; review references and recovery needs before any cleanup."
@@ -1278,6 +1314,12 @@ msgid "Move mascot"
 msgstr ""
 
 msgid "Move mascot: drag, use arrow keys, or Escape to reset"
+msgstr ""
+
+msgid "Move one unreferenced resource root"
+msgstr ""
+
+msgid "Move to recovery storage"
 msgstr ""
 
 msgid "Move to trash"
@@ -1406,10 +1448,16 @@ msgstr ""
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr ""
 
+msgid "Only complete model or thumbnail roots are eligible. Current, previous, disabled, trashed, Core and unknown resources are protected. All files must have reached the waiting period."
+msgstr ""
+
 msgid "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
 msgstr ""
 
 msgid "Only on interaction"
+msgstr ""
+
+msgid "Only the first 100 records are shown. Ask the server administrator to inspect the remaining records."
 msgstr ""
 
 msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
@@ -1457,6 +1505,9 @@ msgstr ""
 msgid "Partial: %s observed bytes"
 msgstr ""
 
+msgid "Partially deleted; new confirmation required"
+msgstr ""
+
 msgid "Pause"
 msgstr ""
 
@@ -1467,6 +1518,18 @@ msgid "Pause for a breath when you need one."
 msgstr ""
 
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
+msgstr ""
+
+msgid "Permanent deletion"
+msgstr ""
+
+msgid "Permanent deletion requires the server opt-in and at least 30 days in recovery storage."
+msgstr ""
+
+msgid "Permanently delete"
+msgstr ""
+
+msgid "Permanently deleted"
 msgstr ""
 
 msgid "Physics"
@@ -1482,6 +1545,12 @@ msgid "Pose"
 msgstr ""
 
 msgid "Position and size"
+msgstr ""
+
+msgid "Prepared records retain the original directory or a complete recovery payload. Interrupted deletion remains partial; it cannot be restored. Review again before continuing deletion. Keep recovery manifests with their payloads."
+msgstr ""
+
+msgid "Prepared; inspect original and recovery storage"
 msgstr ""
 
 msgid "Preparing PNG…"
@@ -1613,6 +1682,15 @@ msgstr ""
 msgid "Recover interrupted task"
 msgstr ""
 
+msgid "Recovery is read-only until the server administrator configures WZF_MASCOT_RECOVERY_DIR as a persistent private directory outside the web root."
+msgstr ""
+
+msgid "Recovery records"
+msgstr ""
+
+msgid "Recovery storage must be on the same filesystem as the resource directory."
+msgstr ""
+
 msgid "Reduced motion enabled"
 msgstr ""
 
@@ -1635,6 +1713,9 @@ msgid "Rendering failed. Try again."
 msgstr ""
 
 msgid "Replaced"
+msgstr ""
+
+msgid "Requires WZF_MASCOT_ALLOW_PERMANENT_DELETE and at least 30 days in recovery storage. Actual space released may differ from logical size."
 msgstr ""
 
 msgid "Reset defaults"
@@ -1670,6 +1751,9 @@ msgstr ""
 msgid "Resource file"
 msgstr ""
 
+msgid "Resource history and recovery"
+msgstr ""
+
 msgid "Resource loading timed out. Try again."
 msgstr ""
 
@@ -1688,6 +1772,12 @@ msgstr ""
 msgid "Resource preparation"
 msgstr ""
 
+msgid "Resource recovery checks failed. Refresh the review; retain both storage locations for inspection."
+msgstr ""
+
+msgid "Resource recovery operation completed. Review the record below."
+msgstr ""
+
 msgid "Resource write verification failed."
 msgstr ""
 
@@ -1703,16 +1793,25 @@ msgstr ""
 msgid "Rest your eyes for a moment."
 msgstr ""
 
+msgid "Restore"
+msgstr ""
+
 msgid "Restore a configuration backup before retrying."
 msgstr ""
 
 msgid "Restore from trash"
 msgstr ""
 
+msgid "Restore interrupted; review to finish"
+msgstr ""
+
 msgid "Restore the character to a valid status before updating resources."
 msgstr ""
 
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
+msgstr ""
+
+msgid "Restored"
 msgstr ""
 
 msgid "Resume"
@@ -1739,7 +1838,19 @@ msgstr ""
 msgid "Review interaction changes"
 msgstr ""
 
+msgid "Review move to recovery storage"
+msgstr ""
+
+msgid "Review permanent deletion"
+msgstr ""
+
+msgid "Review restore"
+msgstr ""
+
 msgid "Review status"
+msgstr ""
+
+msgid "Review storage usage above first. Moving to recovery storage and restoring do not free space on this filesystem. Logical file size and current free space are separate measurements."
 msgstr ""
 
 msgid "Reviewed template applied to all selected characters."
@@ -2138,13 +2249,22 @@ msgstr ""
 msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 msgstr ""
 
+msgid "The newest item has not reached the selected waiting period."
+msgstr ""
+
 msgid "The newest item in this subtree is still within the minimum waiting period."
+msgstr ""
+
+msgid "The original resource path is occupied. Nothing will be overwritten."
 msgstr ""
 
 msgid "The path display is truncated; metadata counts cover the bounded scan."
 msgstr ""
 
 msgid "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
+msgstr ""
+
+msgid "The recovery directory must be private to its server owner (0700)."
 msgstr ""
 
 msgid "The rendering program is invalid; this character cannot be displayed."
@@ -2231,6 +2351,9 @@ msgstr ""
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr ""
 
+msgid "This directory contains files outside the model runtime references. Preserve it for manual review."
+msgstr ""
+
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr ""
 
@@ -2247,6 +2370,9 @@ msgid "This preference applies only to this page; the browser did not allow savi
 msgstr ""
 
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
+msgstr ""
+
+msgid "This review expires after 15 minutes. Changes to references, files or storage invalidate it."
 msgstr ""
 
 msgid "This rule has no lines."
@@ -2304,6 +2430,9 @@ msgid "Try unsaved changes"
 msgstr ""
 
 msgid "Turn with hands behind"
+msgstr ""
+
+msgid "Type the exact directory name to permanently delete it"
 msgstr ""
 
 msgid "Unchanged"

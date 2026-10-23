@@ -78,6 +78,7 @@ require_once __DIR__ . '/capture-settings.php';
 require_once __DIR__ . '/interaction-transfer.php';
 require_once __DIR__ . '/interaction-preview.php';
 require_once __DIR__ . '/admin-inventory.php';
+require_once __DIR__ . '/admin-recovery.php';
 require_once __DIR__ . '/admin-listing.php';
 require_once __DIR__ . '/admin-readiness.php';
 function wzf_mascot_save_character($id, $version, $fields) {
@@ -230,6 +231,7 @@ function wzf_mascot_admin_page() {
     wzf_mascot_mobile_panel($config);
     wzf_mascot_admin_diagnostics($config, $display_rows);
     wzf_mascot_inventory_panel($raw);
+    wzf_mascot_recovery_panel($raw);
     echo '</div>';
 }
 add_action('admin_post_wzf_mascot_settings', 'wzf_mascot_settings_post');

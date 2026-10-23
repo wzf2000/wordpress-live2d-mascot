@@ -343,7 +343,7 @@ function wzf_mascot_template_diff($review) {
 function wzf_mascot_template_panel($config, $id) {
     global $wzf_mascot_template_review;
     $review = $wzf_mascot_template_review ?? null;
-    if (is_array($review) && !isset($review['error']) && $review['character'] !== (string)$id) $review = null;
+    if (is_array($review) && !isset($review['error']) && empty($review['batch']) && ($review['character'] ?? null) !== (string)$id) $review = null;
     echo '<section class="wzf-mascot-card"><details class="wzf-mascot-template"' . ($review ? ' open' : '') . '><summary>' . esc_html__('Interaction templates', 'live2d-show') . '</summary><p>' . esc_html__('Reuse your dialogue and quick interactions with a JSON file. Model files, account preferences, PNG permission and hit-area bindings are excluded. Uploading only previews changes; applying needs a separate confirmation.', 'live2d-show') . '</p>';
     $values = ['character'=>(string)$id,'version'=>wzf_mascot_config_version($config)];
     echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">'; wp_nonce_field('wzf_mascot_template_export'); wzf_mascot_template_hidden(['action'=>'wzf_mascot_template_export'] + $values); submit_button(__('Download interaction JSON', 'live2d-show'), 'secondary'); echo '</form>';

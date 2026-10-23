@@ -150,26 +150,12 @@ function wzf_mascot_inventory_add_file(&$report, $relative, $bytes) {
         unset($row);
     }
 }
-function wzf_mascot_disk_inventory($config, $limits = [], $retention_days = null) {
-    if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
-    $report = ['schema'=>2, 'complete'=>true, 'referencesComplete'=>true, 'bytes'=>null, 'observedBytes'=>0, 'files'=>0, 'hardlinkedFiles'=>0, 'entries'=>0, 'references'=>[], 'displayTruncated'=>false, 'paths'=>[], 'issues'=>[]];
-    $max_entries = max(1, min(20000, (int)($limits['entries'] ?? 20000)));
-    $max_rows = max(1, min(500, (int)($limits['rows'] ?? 500)));
-    $seconds = max(0.001, min(3.0, (float)($limits['seconds'] ?? 3.0)));
-    $report['limits'] = ['entries'=>$max_entries, 'seconds'=>$seconds, 'displayedPaths'=>$max_rows, 'references'=>1000];
-    $report['characterSummary'] = ['complete'=>false, 'total'=>wzf_mascot_inventory_metric(), 'shared'=>wzf_mascot_inventory_metric(), 'characters'=>[]];
-    $started = microtime(true);
-    $scan_time = time(); $metadata = [];
-    if ($retention_days !== null) $retention_days = wzf_mascot_inventory_retention_days($retention_days);
-    $max_review_rows = max(1, min(500, (int)($limits['reviewRows'] ?? 500)));
-    $version = wzf_mascot_config_version($config);
-    $references_seen = 0;
-    $initial_state = wzf_mascot_inventory_state();
-    if ($initial_state === null || $initial_state['locked'] || !hash_equals($version, wzf_mascot_config_version($initial_state['config']))) { $report['complete'] = false; $report['referencesComplete'] = false; }
-    if ($retention_days !== null && wzf_mascot_task_status()['status'] !== 'idle') $report['complete'] = false;
+// Pure read-only reference collection. Callers supply a fresh configuration and root;
+// this does not inspect task state or mutate configuration.
+function wzf_mascot_inventory_references($config, $root, $seconds = 3.0, $started = null) {
+    $started = $started ?? microtime(true); $seconds = max(0.001, min(3.0, $seconds)); $references_seen = 0;
+    $report = ['references'=>[], 'referencesComplete'=>true, 'issues'=>[], 'characterSummary'=>['characters'=>[]]];
     $unknown = function($message) use (&$report) { $report['referencesComplete'] = false; if (count($report['issues']) < 20) $report['issues'][] = $message; };
-    try { $root = wzf_mascot_uploads()['path']; }
-    catch (Throwable $e) { $report['complete'] = false; $unknown(__('The resource root is unavailable or unsafe.', 'live2d-show')); return wzf_mascot_inventory_finish_review($report, $version, $metadata, $retention_days, $scan_time, $max_review_rows); }
     $protect = function($path, $kind, $directory = false, $character_id = '') use (&$report, $root, $unknown) {
         try {
             $relative = wzf_mascot_path($directory && is_string($path) ? rtrim($path, '/') : $path);
@@ -201,11 +187,13 @@ function wzf_mascot_disk_inventory($config, $limits = [], $retention_days = null
         }
     }
     foreach ($report['references'] as $reference) if ($reference['shared'] && isset($report['characterSummary']['characters'][$reference['characterId']])) $report['characterSummary']['characters'][$reference['characterId']]['sharedPaths'] = true;
+    return $report;
+}
     // Ancestors and descendants both intersect a protected directory. This also
     // handles migrated/nested roots instead of assuming importer directory names.
-    $classify = function($relative) use (&$report) {
+function wzf_mascot_inventory_classify($relative, $references) {
         $kinds = [];
-        foreach ($report['references'] as $reference) {
+        foreach ($references as $reference) {
             $path = $reference['path'];
             if ($relative === $path || str_starts_with($path, $relative . '/') || ($reference['directory'] && str_starts_with($relative, $path . '/'))) $kinds[] = $reference['kind'];
         }
@@ -215,7 +203,33 @@ function wzf_mascot_disk_inventory($config, $limits = [], $retention_days = null
         if (preg_match('~(?:^|/)stage-[^/]+(?:/|$)~', $relative)) $kinds[] = 'staging';
         if ($kinds) return implode(', ', array_unique($kinds));
         return 'unreferenced';
-    };
+}
+
+function wzf_mascot_disk_inventory($config, $limits = [], $retention_days = null) {
+    if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
+    $report = ['schema'=>2, 'complete'=>true, 'referencesComplete'=>true, 'bytes'=>null, 'observedBytes'=>0, 'files'=>0, 'hardlinkedFiles'=>0, 'entries'=>0, 'references'=>[], 'displayTruncated'=>false, 'paths'=>[], 'issues'=>[]];
+    $max_entries = max(1, min(20000, (int)($limits['entries'] ?? 20000)));
+    $max_rows = max(1, min(500, (int)($limits['rows'] ?? 500)));
+    $seconds = max(0.001, min(3.0, (float)($limits['seconds'] ?? 3.0)));
+    $report['limits'] = ['entries'=>$max_entries, 'seconds'=>$seconds, 'displayedPaths'=>$max_rows, 'references'=>1000];
+    $report['characterSummary'] = ['complete'=>false, 'total'=>wzf_mascot_inventory_metric(), 'shared'=>wzf_mascot_inventory_metric(), 'characters'=>[]];
+    $started = microtime(true);
+    $scan_time = time(); $metadata = [];
+    if ($retention_days !== null) $retention_days = wzf_mascot_inventory_retention_days($retention_days);
+    $max_review_rows = max(1, min(500, (int)($limits['reviewRows'] ?? 500)));
+    $version = wzf_mascot_config_version($config);
+    $references_seen = 0;
+    $initial_state = wzf_mascot_inventory_state();
+    if ($initial_state === null || $initial_state['locked'] || !hash_equals($version, wzf_mascot_config_version($initial_state['config']))) { $report['complete'] = false; $report['referencesComplete'] = false; }
+    if ($retention_days !== null && wzf_mascot_task_status()['status'] !== 'idle') $report['complete'] = false;
+    $unknown = function($message) use (&$report) { $report['referencesComplete'] = false; if (count($report['issues']) < 20) $report['issues'][] = $message; };
+    try { $root = wzf_mascot_uploads()['path']; }
+    catch (Throwable $e) { $report['complete'] = false; $unknown(__('The resource root is unavailable or unsafe.', 'live2d-show')); return wzf_mascot_inventory_finish_review($report, $version, $metadata, $retention_days, $scan_time, $max_review_rows); }
+    $collected = wzf_mascot_inventory_references($config, $root, $seconds, $started);
+    $report['references'] = $collected['references'];
+    $report['referencesComplete'] = $report['referencesComplete'] && $collected['referencesComplete'];
+    $report['issues'] = array_merge($report['issues'], $collected['issues']);
+    $report['characterSummary']['characters'] = $collected['characterSummary']['characters'];
     if (!is_dir($root)) {
         if (file_exists($root)) { $report['complete'] = false; $unknown(__('The resource root exists but is not a directory.', 'live2d-show')); }
         return wzf_mascot_inventory_finish_review($report, $version, $metadata, $retention_days, $scan_time, $max_review_rows);
@@ -236,7 +250,7 @@ function wzf_mascot_disk_inventory($config, $limits = [], $retention_days = null
                 wzf_mascot_no_links(dirname($item->getPathname()));
                 $stat = @lstat($item->getPathname());
                 $type = $stat === false ? 0 : ($stat['mode'] & 0170000);
-                $state = $classify($relative);
+                $state = wzf_mascot_inventory_classify($relative, $report['references']);
                 if ($type === 0040000) $pending[] = $relative;
                 elseif ($type === 0100000) {
                     $report['files']++; $report['observedBytes'] += $stat['size'];

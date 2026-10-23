@@ -28,7 +28,7 @@ function wzf_mascot_task_identity_valid($identity) {
 function wzf_mascot_task_record_valid($lock) {
     if (!is_array($lock) || !in_array($lock['guard'] ?? null, [1,2], true) || count($lock) !== ($lock['guard'] === 1 ? 5 : 6)) return false;
     if ($lock['guard'] === 2 && !wzf_mascot_task_identity_valid($lock['bridgeIdentity'] ?? null)) return false;
-    return is_string($lock['token'] ?? null) && preg_match('/\A[0-9a-f]{32}\z/D', $lock['token']) && wzf_mascot_task_identity_valid($lock['identity'] ?? null) && is_int($lock['started'] ?? null) && $lock['started'] > 0 && in_array($lock['kind'] ?? null, ['import-core','import-model','settings','lifecycle','replace','thumbnail','mobile'], true);
+    return is_string($lock['token'] ?? null) && preg_match('/\A[0-9a-f]{32}\z/D', $lock['token']) && wzf_mascot_task_identity_valid($lock['identity'] ?? null) && is_int($lock['started'] ?? null) && $lock['started'] > 0 && in_array($lock['kind'] ?? null, ['import-core','import-model','settings','lifecycle','replace','thumbnail','mobile','resource-quarantine','resource-restore','resource-purge'], true);
 }
 function wzf_mascot_task_identity($handle) {
     $stat = fstat($handle);

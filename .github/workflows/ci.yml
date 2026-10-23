@@ -137,7 +137,7 @@ jobs:
         run: |
           trap 'status=$?; echo "elapsed_seconds=$SECONDS" >> "$GITHUB_OUTPUT"; exit "$status"' EXIT
           npm run test:browser -- --out build/browser
-          for suite in dialogue movement account selection capture admin-preview; do
+          for suite in dialogue movement account selection capture admin-preview admin-recovery; do
             mkdir -p "build/browser/$suite"
             node "tests/$suite-browser.cjs" "build/browser/$suite" > "build/browser/$suite/summary.tmp"
             python3 -m json.tool "build/browser/$suite/summary.tmp" > /dev/null
@@ -180,5 +180,7 @@ jobs:
             build/browser/capture/*.png
             build/browser/admin-preview/results.json
             build/browser/admin-preview/*.png
+            build/browser/admin-recovery/results.json
+            build/browser/admin-recovery/*.png
           if-no-files-found: ignore
           retention-days: 14

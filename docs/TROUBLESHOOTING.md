@@ -110,3 +110,18 @@ JSON 只在点击下载时保存在本机，无自动采集、自动上传或远
 可直接保留批次 JSON 交给维护者离线整理，无需先手写 manifest。自行处理时运行 `python3 tools/diagnostic_samples.py --unpack-batch batch.json --out new-directory`，先校验再生成固定文件名的 schema 1 窗口和 `runs.json`。模板默认 `physicalDevice=false`、`visualCheck=not-run`，设备、系统／浏览器版本、平台、缓存、场景与视觉结果须实际观察后填写；解包成功不代表验收。安全解包需 Linux/macOS，输入最多 2 MiB／20 窗口，拒绝软链接和已有输出目录；Windows 浏览器可正常采样并交回 JSON。原 manifest 汇总命令继续可用。详见设备文档。
 
 For physical sampling, sign in as an administrator with `manage_options` (guests and ordinary accounts have no diagnostic entry), then enable diagnostics explicitly before showing a character, then choose **Sample 3 windows** and download all saved windows after the sequence completes. Stop sampling, hiding, switching, reading suspension or backgrounding interrupts the active window and stops the sequence; returning never resumes it automatically. The page retains the latest 20 frozen windows and shows replacement counts. **Stop recording** preserves downloads; enabling again starts a new random batch and clears saved windows. Single-report JSON stays schema 1 and downloads the last saved snapshot, or current state before any window exists. Batch files can be handed directly to a maintainer, or unpacked locally with `--unpack-batch ... --out NEW_DIRECTORY`. Fill real device/OS/browser versions and conditions manually; defaults declare no physical-device or visual pass. Check both orientations, keyboards, background/resume and at least 15 minutes of residence. CPU timings and synthetic browser tests establish no GPU improvement or physical-device acceptance.
+
+
+## 资源历史与私有恢复区
+
+先用“磁盘占用”核对引用和逻辑大小，再在“资源历史与恢复”中输入一个完整的 `model-32位十六进制` 或 `thumbnail-32位十六进制` 目录名。默认等待期为 30 天，按目录中最新修改时间计算；可为本次复核选择 1–3650 天，不保存为站点偏好。当前、上一版、停用、回收站及交叉引用均受保护；Core、候选、旧版迁移目录、未知或多余文件、链接、不完整模型不能移动。目录名本身不证明它来自导入。
+
+服务器管理员须在 `wp-config.php` 显式配置 `WZF_MASCOT_RECOVERY_DIR`，指向已存在、权限为 `0700`、没有符号链接的持久私有目录。它必须在 WordPress/Web 根和 uploads 之外，且与资源根在同一文件系统；插件只在其中按站点 ID 建立隔离目录，不会自动选择 `/tmp` 或 uploads。未配置时只有只读说明。备份时保留完整目录、清单及站点密钥；清单签名与该站点绑定，丢失密钥后不能通过界面恢复。
+
+预览有效期为 15 分钟，每次执行都要求专用 nonce、明确确认，并在现有资源任务守卫内重新检查配置、目录身份、引用和完整 SHA-256 清单。隔离先持久写入 prepared 清单，再原子移动目录；还原只回到原目录，原路径已占用时停止，不覆盖配置。隔离与还原不释放同一磁盘的空间。
+
+若执行中断，保留原处和恢复区，不手工删除清单。prepared 表示原目录仍在或完整内容已移入恢复区；后者可重新预览还原。restoring 表示还原尚未记完，可重新预览并确认来校验、完成记录。先按“资源和设置任务”说明处理已确认结束的中断任务记录，再复核文件状态。
+
+永久删除另需服务器明确设定 `WZF_MASCOT_ALLOW_PERMANENT_DELETE` 为布尔值 `true`；默认关闭。只可处理签名有效、隔离至少 30 天的清单，表单等待期不能缩短此限制。危险入口默认折叠，再次预览后须勾选不可恢复确认并输入原目录名。显示的逻辑大小不是精确可释放空间。删除只逐项处理清单文件及空目录，保留 purged 墓碑；purging 表示可能部分删除，不能再还原，须重新预览和确认才能继续，不会自动续删。
+
+单根复核限 4,000 项、64 MiB、3 秒；清单连同最坏情况的删除进度限 2 MiB。删除每次工作窗口限 10 秒，达到边界会保留可核查状态。更大的目录或异常状态交由服务器管理员保留并核查，不放宽校验以继续。

@@ -328,3 +328,8 @@
 .wzf-mascot-preview-controls .button:disabled { opacity:.5; cursor:default; }
 .wzf-mascot-preview-controls :focus-visible { outline:2px solid var(--wzf-admin-accent); outline-offset:2px; }
 .wzf-mascot-preview-initial[hidden] { display:none; }
+
+.wzf-mascot-recovery input:not([type='checkbox']) { box-sizing:border-box; max-width:100%; min-height:36px; border:1px solid var(--wzf-admin-border); border-radius:6px; padding:6px 10px; }
+.wzf-mascot-recovery .wzf-mascot-recovery-confirm { margin-top:16px; padding:16px; border:1px solid var(--wzf-admin-border); border-radius:8px; }
+.wzf-mascot-recovery code { overflow-wrap:anywhere; }
+@media(max-width:782px){.wzf-mascot-recovery input:not([type='checkbox']){min-height:44px;}.wzf-mascot-recovery .button{min-height:44px;}}
