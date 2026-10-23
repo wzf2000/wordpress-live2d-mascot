@@ -29,8 +29,8 @@ PINS = {
 PHP_RUNTIME = """echo json_encode([
     'sapi' => PHP_SAPI, 'zts' => PHP_ZTS,
     'ini' => array_map('ini_get', array_combine(
-        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'],
-        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'])),
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size', 'opcache.validate_timestamps', 'opcache.revalidate_freq', 'opcache.file_update_protection'],
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size', 'opcache.validate_timestamps', 'opcache.revalidate_freq', 'opcache.file_update_protection'])),
     'jit' => function_exists('opcache_get_status') ? (opcache_get_status(false)['jit'] ?? null) : null
 ]);"""
 def png_chunk(kind, data):
@@ -184,17 +184,19 @@ def main():
     router = lab / 'router.php'
     router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if ($p === '/__mascot-ci-runtime') { header('Content-Type: application/json'); " + PHP_RUNTIME + " return; } if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; if (is_dir($_SERVER['DOCUMENT_ROOT'].$p) && is_file(rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php')) { require rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php'; return; } require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
     logfile = (lab / 'http.log').open('w')
-    server = subprocess.Popen(['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)], env=env, stdout=logfile, stderr=logfile)
+    server_command = ['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)]
+    server = subprocess.Popen(server_command, env=env, stdout=logfile, stderr=logfile)
     checks = []
     completed = False
     failure = None
     last_request = None
     http_runtime = None
+    http_restarts = []
 
     def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     anonymous, admin, reader = client(), client(), client()
 
-    def request(opener, path, data=None, files=None, with_headers=False):
+    def request(opener, path, data=None, files=None, with_headers=False, timeout=15):
         nonlocal last_request
         last_request = {'method': 'GET' if data is None and files is None else 'POST',
                         'path': urllib.parse.urlsplit(path).path}
@@ -210,12 +212,46 @@ def main():
             payload = b''.join(parts) + f'--{boundary}--\r\n'.encode(); headers['Content-Type'] = 'multipart/form-data; boundary=' + boundary
         else: payload = urllib.parse.urlencode(data, doseq=True).encode() if data is not None else None
         try:
-            with opener.open(urllib.request.Request(url, payload, headers), timeout=15) as response:
+            with opener.open(urllib.request.Request(url, payload, headers), timeout=timeout) as response:
                 result = (response.status, response.read().decode())
                 return (*result, dict(response.headers.items())) if with_headers else result
         except urllib.error.HTTPError as error:
             result = (error.code, error.read().decode())
             return (*result, dict(error.headers.items())) if with_headers else result
+
+    def runtime_ready():
+        deadline = time.monotonic() + 10
+        while True:
+            if server.poll() is not None:
+                raise RuntimeError('Owned PHP HTTP server exited before readiness')
+            try:
+                status, body = request(anonymous, '/__mascot-ci-runtime', timeout=.5)
+                if status != 200:
+                    raise RuntimeError('Owned PHP HTTP runtime probe failed')
+                runtime = json.loads(body)
+                if runtime.get('sapi') != 'cli-server':
+                    raise RuntimeError('Unexpected PHP HTTP runtime')
+                return runtime
+            except (urllib.error.URLError, ConnectionError):
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('Owned PHP HTTP server readiness deadline exceeded')
+                time.sleep(.05)  # Poll startup readiness; never wait for cache expiry.
+
+    def set_http_config(name, value, raw=False):
+        nonlocal server
+        wp('config', 'set', name, value, *(['--raw'] if raw else []))
+        # A persistent cli-server may keep old wp-config.php bytecode.
+        # Restart only this lab's process; keep its exact PHP
+        # command/environment, cookies, first runtime and append-only HTTP log.
+        if server.poll() is not None:
+            raise RuntimeError('Owned PHP HTTP server exited before config reload')
+        server.terminate()
+        previous_exit = server.wait(timeout=10)
+        logfile.flush()
+        server = subprocess.Popen(server_command, env=env, stdout=logfile, stderr=logfile)
+        runtime = runtime_ready()
+        http_restarts.append({'configuration':name, 'previous_exit':previous_exit, 'runtime':runtime})
+        print('RESTART owned PHP HTTP server after ' + name, flush=True)
 
     def state(): return json.loads(wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode='state'))
     def fixture(mode): return wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode=mode)
@@ -278,12 +314,7 @@ echo 'released';
                 raise RuntimeError('Synthetic lock holder did not finish cleanly')
 
     try:
-        for _ in range(50):
-            try: request(anonymous, '/wp-login.php'); break
-            except (urllib.error.URLError, ConnectionError): time.sleep(.1)
-        status, runtime_body = request(anonymous, '/__mascot-ci-runtime')
-        assert status == 200
-        http_runtime = json.loads(runtime_body)
+        http_runtime = runtime_ready()
         assert front() is None; record('real install/upgrade preserves existing option; empty resources emit nothing')
         for opener, user in [(admin, 'mascot-admin'), (reader, 'mascot-reader')]:
             request(opener, '/wp-login.php')
@@ -762,7 +793,7 @@ echo 'released';
         default_error = wp('eval', "wp_set_current_user(" + str(uid) + ");try{wzf_mascot_recovery_preview('quarantine'," + json.dumps(Path(thumb).parent.name) + ");echo 'unsafe';}catch(Throwable $e){echo 'disabled';}")
         assert default_error == 'disabled' and state() == recovery_before
         record('resource recovery is read-only without an explicit private server directory')
-        wp('config','set','WZF_MASCOT_RECOVERY_DIR',str(private))
+        set_http_config('WZF_MASCOT_RECOVERY_DIR', str(private))
         old_root = thumb_file.parent.name
         for path in [thumb_file, thumb_file.parent]: os.utime(path,(time.time()-40*86400,)*2)
         def recovery_review(operation, target):
@@ -793,14 +824,14 @@ echo 'released';
         records=[p for p in (private/'blog-1').glob('*/manifest.json') if json.loads(p.read_text())['state']=='quarantined']; assert len(records)==1
         rid=records[0].parent.name
         _, purge=recovery_review('purge',rid); assert purge is None
-        wp('config','set','WZF_MASCOT_ALLOW_PERMANENT_DELETE','true','--raw')
+        set_http_config('WZF_MASCOT_ALLOW_PERMANENT_DELETE', 'true', raw=True)
         _, purge=recovery_review('purge',rid); assert purge is None  # No shortened 30-day hold.
         wp('eval', "$r=wzf_mascot_recovery_record("+json.dumps(rid)+");$r['quarantined']=time()-31*86400;wzf_mascot_recovery_write(wzf_mascot_recovery_record_dir($r['id']),$r);")
         _, purge=recovery_review('purge',rid); assert purge
         post(dict(purge,confirm='1',typed='wrong')); assert (records[0].parent/'payload').exists()
         post(dict(purge,confirm='1',typed=old_root)); assert not (records[0].parent/'payload').exists()
         assert json.loads(records[0].read_text())['state']=='purged' and state()==recovery_before
-        wp('config','set','WZF_MASCOT_ALLOW_PERMANENT_DELETE','false','--raw')
+        set_http_config('WZF_MASCOT_ALLOW_PERMANENT_DELETE', 'false', raw=True)
         record('real permanent deletion requires server opt-in, 30 days in quarantine, signed review and exact-name confirmation; tombstone and configuration remain')
         fixture('restore'); fixture('fault'); faulty = state(); assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and 'Isolated' in html
@@ -850,6 +881,7 @@ echo 'released';
         report['http_server'] = {'exit_before_cleanup': exit_before_cleanup,
                                  'exit_after_cleanup': server.returncode,
                                  'runtime': http_runtime,
+                                 'configuration_restarts': http_restarts,
                                  'log': server_diagnostics(lab / 'http.log', site)}
         if failure is not None:
             report['failure'] = failure
