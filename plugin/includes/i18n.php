@@ -193,6 +193,8 @@ function wzf_mascot_frontend_translations() {
         'Loading cancelled'=>__('Loading cancelled', 'live2d-show'),
         'Loading character…'=>__('Loading character…', 'live2d-show'),
         'Loading mascot…'=>__('Loading mascot…', 'live2d-show'),
+        'Text-only interactions are unavailable in silent mode.'=>__('Text-only interactions are unavailable in silent mode.', 'live2d-show'),
+        'Switch to automatic dialogue to use occasional chatter.'=>__('Switch to automatic dialogue to use occasional chatter.', 'live2d-show'),
         'Loading…'=>__('Loading…', 'live2d-show'),
         'Local diagnostics'=>__('Local diagnostics', 'live2d-show'),
         'Local state recorded. Sample now, or show the mascot again to record loading time. You choose whether to share downloaded reports.'=>__('Local state recorded. Sample now, or show the mascot again to record loading time. You choose whether to share downloaded reports.', 'live2d-show'),

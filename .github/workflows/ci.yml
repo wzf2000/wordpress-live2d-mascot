@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '24.15.0'
+          node-version: '24.22.1'
           cache: npm
       - uses: actions/setup-python@v5
         with:
@@ -103,9 +103,9 @@ jobs:
           retention-days: 14
 
   browser:
-    # Playwright 1.55.1 supports Ubuntu 24.04; ubuntu-latest also selects 26.04.
+    # Match the Ubuntu release supported by the pinned Playwright browser.
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -113,21 +113,54 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '24.15.0'
+          node-version: '24.22.1'
           cache: npm
       - name: Install pinned development dependencies
+        timeout-minutes: 3
         run: npm ci --ignore-scripts
-      - name: Install the Chromium revision matched to Playwright 1.55.1
-        run: npx --no-install playwright install --with-deps chromium
-      - name: Whole-page browser controller regression (synthetic engine, loopback only)
+      - name: Install Chromium system dependencies from the Ubuntu archive
+        id: system_dependencies
+        timeout-minutes: 8
         run: |
+          trap 'status=$?; echo "elapsed_seconds=$SECONDS" >> "$GITHUB_OUTPUT"; exit "$status"' EXIT
+          sudo --preserve-env=GITHUB_ACTIONS,RUNNER_OS,RUNNER_ENVIRONMENT,ImageOS python3 tools/ci_browser_sources.py
+          npx --no-install playwright install-deps chromium
+      - name: Download the Chromium revision matched to Playwright 1.55.1
+        id: chromium_download
+        timeout-minutes: 4
+        run: |
+          trap 'status=$?; echo "elapsed_seconds=$SECONDS" >> "$GITHUB_OUTPUT"; exit "$status"' EXIT
+          npx --no-install playwright install chromium
+      - name: Whole-page and specialized browser regressions (synthetic engine, loopback only)
+        id: browser_tests
+        timeout-minutes: 10
+        run: |
+          trap 'status=$?; echo "elapsed_seconds=$SECONDS" >> "$GITHUB_OUTPUT"; exit "$status"' EXIT
           npm run test:browser -- --out build/browser
-          node tests/dialogue-browser.cjs build/browser/dialogue
-          node tests/movement-browser.cjs build/browser/movement
-          node tests/account-browser.cjs build/browser/account
-          node tests/selection-browser.cjs build/browser/selection
-          node tests/capture-browser.cjs build/browser/capture
-      - name: Preserve synthetic browser summary and selected screenshots only
+          for suite in dialogue movement account selection capture admin-preview admin-recovery; do
+            mkdir -p "build/browser/$suite"
+            node "tests/$suite-browser.cjs" "build/browser/$suite" > "build/browser/$suite/summary.tmp"
+            python3 -m json.tool "build/browser/$suite/summary.tmp" > /dev/null
+            mv "build/browser/$suite/summary.tmp" "build/browser/$suite/results.json"
+          done
+      - name: Report browser stage outcomes and elapsed time
+        if: always()
+        env:
+          SYSTEM_OUTCOME: ${{ steps.system_dependencies.outcome }}
+          SYSTEM_SECONDS: ${{ steps.system_dependencies.outputs.elapsed_seconds }}
+          DOWNLOAD_OUTCOME: ${{ steps.chromium_download.outcome }}
+          DOWNLOAD_SECONDS: ${{ steps.chromium_download.outputs.elapsed_seconds }}
+          TEST_OUTCOME: ${{ steps.browser_tests.outcome }}
+          TEST_SECONDS: ${{ steps.browser_tests.outputs.elapsed_seconds }}
+        run: |
+          {
+            echo '| Browser stage | Outcome | Elapsed seconds |'
+            echo '| --- | --- | --- |'
+            echo "| Ubuntu system dependencies | $SYSTEM_OUTCOME | ${SYSTEM_SECONDS:-not recorded} |"
+            echo "| Chromium download | $DOWNLOAD_OUTCOME | ${DOWNLOAD_SECONDS:-not recorded} |"
+            echo "| Browser regressions | $TEST_OUTCOME | ${TEST_SECONDS:-not recorded} |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Preserve synthetic browser summaries and selected screenshots only
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -135,5 +168,19 @@ jobs:
           path: |
             build/browser/results.json
             build/browser/*.png
+            build/browser/dialogue/results.json
+            build/browser/dialogue/*.png
+            build/browser/movement/results.json
+            build/browser/movement/*.png
+            build/browser/account/results.json
+            build/browser/account/*.png
+            build/browser/selection/results.json
+            build/browser/selection/*.png
+            build/browser/capture/results.json
+            build/browser/capture/*.png
+            build/browser/admin-preview/results.json
+            build/browser/admin-preview/*.png
+            build/browser/admin-recovery/results.json
+            build/browser/admin-recovery/*.png
           if-no-files-found: ignore
           retention-days: 14

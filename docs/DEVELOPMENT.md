@@ -32,7 +32,7 @@ Python 单元回归使用合成模型 ZIP 和 WordPress PHP stubs，零资源 sm
 
 ## GitHub Actions
 
-[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.15.0、Python 3.12、PHP 8.2、esbuild 0.25.12 与 Playwright 1.55.1；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
+[CI](https://github.com/wzf2000/wordpress-live2d-mascot/actions/workflows/ci.yml) 在 PR、main push 或手动运行时执行，也可由发布工作流复用。固定 Node.js 24.22.1、Python 3.12、PHP 8.2、esbuild 0.25.12 与 Playwright 1.55.1；`package-lock.json` 是构建依赖的唯一锁文件，使用官方 npm registry。
 
 检查覆盖合成导入回归、PHP/JS 语法、零资源 smoke、已提交的三项哈希资源与重新构建结果逐字节一致，以及无 Core/模型的安装与源码包白名单、摘要和源码自包含复打包。发布新增的失败测试检查版本、提交、附件篡改及未知源文件。真实 WordPress integration job 必须通过，发布所复用的 CI 完成前会等待该 job 的 PHP 8.2／8.5 两项。隔离 MySQL 服务、新建 WordPress 7.1.3 和 WP-CLI 2.12.0 下载均固定版本，下载核对 SHA256；测试禁用邮件与 cron。升级测试以合成旧插件入口起步，再将完整合成资源、配置和账号显示偏好经真实 WordPress 覆写升级，逐项核对 option、user meta 和资源文件摘要；它不是历史真实素材或旧版渲染验收。以 Python 标准库 cookiejar 完成真实 HTTP 登录、nonce／权限失败、设置保存与过期版本冲突、multipart 导入／更新／缩略图，以及回退、停用恢复、移动设置和角色隔离。测试用独立 option 配置合成非执行 Core 占位文件及固定哈希元数据，仅验证服务端输出；生产常量和 Core 上传校验保持完整，占位文件也无法通过完整哈希诊断。只上传不含凭据的测试摘要，合成素材不作为 artifact 或发行附件。**不代替真实 SDK、模型画面、GPU、手机或许可验收。**
 
@@ -68,11 +68,13 @@ npm run test:capture-browser
 npm run test:browser -- --out /tmp/mascot-browser-review
 ```
 
-独立 `browser` CI job 固定 **Ubuntu 24.04**，使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
+独立 `browser` CI job 固定 **Ubuntu 24.04**，总上限 25 分钟。系统依赖安装、Chromium 下载和浏览器回归分为独立步骤，分别限时 8、4、10 分钟；步骤结果和耗时写入运行摘要，任一阶段失败仍阻断门禁。系统依赖步骤仅在 GitHub 托管的 Ubuntu 24.04 runner 上，将 Ubuntu 官方 APT 镜像配置中的 `azure.archive.ubuntu.com` 替换为 `archive.ubuntu.com`；保留其余源和第三方源，不修改开发者本机配置。
+
+浏览器 CI 使用锁定 Playwright 1.55.1 与它匹配的 Chromium，和 WordPress 集成一起作为 PR／发布复用 CI 的门禁。测试只启动随机回环端口的本地 HTTP fixture，浏览器加载安装包中实际哈希 loader／CSS；测试源码和依赖锁包含在源 ZIP，Playwright、浏览器和合成 fixture 不进入 WordPress 安装包。结束或失败时关闭浏览器及服务，不访问生产站点或外部服务。
 
 整页测试通过实际 DOM、事件、请求与本地存储覆盖：同意前零运行资源请求；预览／取消／确认与刷新偏好；初始化／预览取消和迟到候选丢弃；多来源阅读暂停、可见性与页面生命周期；默认关闭的移动显示、独立同意及外部输入暂停；动作／表情独立恢复、API 校验／限流／取消；context-lost 错误与手动重试；首次加载失败后的换角预览、暂停取消与迟到候选销毁；跨标签页偏好失效及异步应用前的三键基线复核；键盘 Escape 和 IME 边界。引擎／Core 只是自包含契约合成物，图形错误与可见性为 DOM 事件模拟，手机为视口模拟。**不验证 Cubism SDK、模型解析或画面、真实 GPU、实体手机或许可。**
 
-Local whole-page browser tests use only shipped loader/CSS and public synthetic contract fixtures. Run `npm run test:browser` after installing the pinned development dependencies and matching Chromium. Optional `MASCOT_PLAYWRIGHT` (module directory) and `MASCOT_CHROMIUM` (browser executable) reuse local tools; neither is a required installation path or bundled dependency. An explicitly overridden browser version is recorded in the result and is distinct from CI's Playwright-matched revision. Output contains only a synthetic summary and selected screenshots; no trace, cookies, storage state or automatic upload is produced locally.
+Local whole-page browser tests use only shipped loader/CSS and public synthetic contract fixtures. Run `npm run test:browser` after installing the pinned development dependencies and matching Chromium. Optional `MASCOT_PLAYWRIGHT` (module directory) and `MASCOT_CHROMIUM` (browser executable) reuse local tools; neither is a required installation path or bundled dependency. An explicitly overridden browser version is recorded in the result and is distinct from CI's Playwright-matched revision. CI artifacts also retain each specialized suite’s synthetic results.json and selected PNG screenshots; raw logs, traces, cookies and storage state are excluded. Output contains only a synthetic summary and selected screenshots; no trace, cookies, storage state or automatic upload is produced locally.
 
 ## 本地运行真实 WordPress 集成
 

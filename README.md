@@ -5,7 +5,7 @@
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
 <p align="center">Character previews · Local favorites · Reading-aware interaction</p>
 <p align="center">
-  <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.1">下载 3.10.1</a> ·
+  <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.0">下载 3.11.0</a> ·
   <a href="#开始使用">开始使用</a> ·
   <a href="docs/index.md">使用文档</a> ·
   <a href="docs/TROUBLESHOOTING.md">常见问题</a> ·
@@ -16,7 +16,7 @@
 
 插件支持独立安装及 PageNest 明暗主题，后台、个人资料和前台控件提供中文与英文。**安装包不含 Cubism Core 或模型**；管理员需从官方或其他有权来源自行取得并导入资源。
 
-当前正式版为 **3.10.1**，修复欢迎台词后“打招呼”“聊一句”可能没有反应的问题，主动点击可立即回应。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.10.1)。
+当前正式版为 **3.11.0**，后台可在保存前试播互动、批量应用模板，并按需隔离和还原未引用资源；前台完善互动反馈，本地诊断补充首帧资源耗时。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.0)。
 
 ## 你能用它做什么
 
@@ -27,7 +27,7 @@
 - **阅读时留出空间。** 支持的对话框／评论面板打开或页面进入后台时暂停；恢复后沿用原显示偏好。
 - **按模型已有能力互动。** 可选轻柔视线跟随、已有命中区域绑定；站点工具可主动接入操作完成通知。
 - **偏好由读者选择。** 默认保存在本机；登录后可主动读取或保存账号的角色、收藏和布局，遇到冲突明确选择。
-- **资源由管理员管理。** 支持角色配置、同 ID 更新、上一版回退、停用与回收站、可选缩略图，以及只读容量报告和本地诊断。
+- **资源由管理员管理。** 支持角色配置、同 ID 更新、上一版回退、停用与回收站、可选缩略图，以及容量报告和本地诊断；配置私有恢复目录后，还可隔离和还原未引用的旧资源。
 - **按需开启更多体验。** 手机显示需管理员允许与读者单独开启；偶尔闲聊默认关闭；透明 PNG 需管理员逐角色核对许可后开启。
 
 <p align="center"><picture><source media="(max-width: 600px)" srcset="docs/assets/reading-flow-small.svg"><img src="docs/assets/reading-flow.svg" alt="流程示意：管理员导入合法资源，读者同意后显示，预览确认角色，阅读时暂停" width="100%"></picture></p>
@@ -35,7 +35,7 @@
 
 ## 开始使用
 
-**[下载安装包：wordpress-live2d-mascot-3.10.1.zip](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.10.1/wordpress-live2d-mascot-3.10.1.zip)**
+**[下载安装包：wordpress-live2d-mascot-3.11.0.zip](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.11.0/wordpress-live2d-mascot-3.11.0.zip)**
 
 1. 在 WordPress 后台 **插件 → 安装插件 → 上传插件**，安装并启用上面的 ZIP。
 2. 打开 **设置 → Live2D Mascot**，从 [Live2D 官方 SDK 下载页](https://www.live2d.com/en/sdk/download/web/)自行取得 **Web 5 R5 Core**，上传 `live2dcubismcore.min.js` 并确认使用权。当前仅接受固定版本的已核验文件。
@@ -44,7 +44,7 @@
 
 首次导入默认不设置欢迎或招呼动作，可在 **角色管理 → 编辑** 中选择。完整步骤、资源限制和升级方法见[安装与资源准备](docs/INSTALL.md)。
 
-后台安装请使用完整插件 ZIP；`-source.zip` 与 GitHub 自动生成的 **Source code** 用于开发。可用发行附件 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.10.1/SHA256SUMS) 核对下载。
+后台安装请使用完整插件 ZIP；`-source.zip` 与 GitHub 自动生成的 **Source code** 用于开发。可用发行附件 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.11.0/SHA256SUMS) 核对下载。
 
 ## 使用条件
 

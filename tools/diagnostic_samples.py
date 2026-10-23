@@ -99,10 +99,68 @@ def environment(value):
             "webgl": webgl, "reducedMotion": value["reducedMotion"]}
 
 
+RESOURCE_OPERATIONS = {
+    "core": ("download", "runtime-wait", "reuse"), "engine": ("download", "runtime-wait", "reuse"),
+    "model": ("download",), "catalog": ("download",), "moc": ("download",),
+    "physics": ("download",), "pose": ("download",), "texture": ("download", "decode"),
+    "shader": ("download", "runtime-wait"), "motion": ("download", "reuse"),
+}
+
+
+def resource_summary(load):
+    if not isinstance(load, dict) or "resources" not in load:
+        return {"available": False}
+    trace = object_keys(load["resources"], ["events", "dropped", "endedBy"])
+    if set(trace) != {"events", "dropped", "endedBy"}: fail("Incomplete resource trace")
+    dropped = trace["dropped"]
+    if type(dropped) is not int or not 0 <= dropped <= 1000000000: fail("Invalid dropped resource count")
+    if trace["endedBy"] not in (None, "first-frame", "not-observed", "failed", "cancelled", "stopped", "replaced"):
+        fail("Invalid resource trace end")
+    rows = trace["events"]
+    if not isinstance(rows, list) or len(rows) > 128: fail("Invalid resource trace length")
+    seen, identities, groups = set(), {}, {}
+    for event in rows:
+        fields = {"category", "operation", "ordinal", "startMs", "durationMs", "bodyBytes", "status", "errorCode"}
+        object_keys(event, fields)
+        if set(event) != fields: fail("Incomplete resource event")
+        category, operation = event["category"], event["operation"]
+        if category not in RESOURCE_OPERATIONS or operation not in RESOURCE_OPERATIONS[category]:
+            fail("Invalid resource category or operation")
+        ordinal = event["ordinal"]
+        if type(ordinal) is not int or not 1 <= ordinal <= 1000000000: fail("Invalid resource ordinal")
+        if (ordinal, operation) in seen or (ordinal in identities and identities[ordinal] != category):
+            fail("Duplicate or conflicting resource ordinal")
+        seen.add((ordinal, operation)); identities[ordinal] = category
+        number(event["startMs"]); number(event["durationMs"])
+        size = event["bodyBytes"]
+        if (size is not None and (type(size) is not int or not 0 <= size <= 1099511627776) or
+            (operation != "download" or event["status"] != "ok") and size is not None):
+            fail("Invalid resource body byte count")
+        status, code = event["status"], event["errorCode"]
+        if (status == "ok" and code is not None or
+            status == "cancelled" and code != "cancelled" or
+            status == "failed" and code not in ("timeout", "http", "network", "invalid") or
+            status not in ("ok", "cancelled", "failed") or operation == "reuse" and status != "ok"):
+            fail("Invalid resource result")
+        group = groups.setdefault((category, operation), {"category": category, "operation": operation,
+            "events": 0, "ok": 0, "failed": 0, "cancelled": 0, "maxDurationMs": 0, "bodyBytes": 0, "unknownBodyBytes": 0})
+        group["events"] += 1; group[status] += 1
+        group["maxDurationMs"] = max(group["maxDurationMs"], event["durationMs"])
+        group["bodyBytes"] += size or 0
+        if operation == "download" and size is None: group["unknownBodyBytes"] += 1
+    return {"available": True, "events": len(rows), "dropped": dropped, "endedBy": trace["endedBy"],
+            "maxOperationMs": max((row["durationMs"] for row in rows), default=0),
+            "bodyBytes": sum(row["bodyBytes"] or 0 for row in rows),
+            "unknownBodyBytes": sum(row["operation"] == "download" and row["bodyBytes"] is None for row in rows),
+            "categories": [groups[key] for key in sorted(groups)]}
+
+
 def extract(report):
     if type(report.get("schema")) is not int or report["schema"] != 1:
         fail("Unsupported diagnostic schema")
     version = label(report.get("pluginVersion"), 64)
+    for attempt in report.get("loadAttempts", []): resource_summary(attempt)
+    resources = resource_summary(report.get("load"))
     sample = report.get("sample")
     if not isinstance(sample, dict):
         fail("No explicit sample window")
@@ -135,7 +193,8 @@ def extract(report):
         if load.get("firstFrameStatus") == "observed":
             first = number(load.get("firstFrameMs"), minimum=ready)
     return {"version": version, "character": character, "environment": env,
-            "fps": fps, "cpuDrawMsAvg": cpu, "readyMs": ready, "firstFrameMs": first}
+            "fps": fps, "cpuDrawMsAvg": cpu, "readyMs": ready, "firstFrameMs": first,
+            "resources": resources}
 
 
 def stats(values):
@@ -195,12 +254,13 @@ def summarize(manifest_path):
                 fail("Session reused across different conditions")
             sessions[session] = key
             group = groups.setdefault(key, {"conditions": conditions, "windows": [], "loads": {},
-                                           "visualChecks": {"pass": 0, "fail": 0, "not-run": 0}})
+                                           "resourceLoads": {}, "visualChecks": {"pass": 0, "fail": 0, "not-run": 0}})
             if data["readyMs"] is not None and scenario == "load":
                 timings = (data["readyMs"], data["firstFrameMs"])
                 if session in group["loads"] and group["loads"][session] != timings:
                     fail("Load timing changed within the same session; use a new session after reload")
                 group["loads"][session] = timings
+                if data["resources"]["available"]: group["resourceLoads"][session] = data["resources"]
             group["windows"].append(data)
             group["visualChecks"][visual] += 1
             digests.add(digest)
@@ -228,13 +288,16 @@ def summarize(manifest_path):
                        "firstFrameMs": stats([x[1] for x in loads if x[1] is not None]),
                        "fps": stats([x["fps"] for x in windows]),
                        "cpuDrawMsAvg": stats([x["cpuDrawMsAvg"] for x in windows]),
+                       "resourceTimings": list(group["resourceLoads"].values()),
                        "visualChecks": group["visualChecks"]})
     return {"schema": 1, "inputRuns": len(runs), "acceptedWindows": sum(g["sampleWindows"] for g in output),
             "rejected": rejected, "groups": output, "hardwareVerified": False,
             "limitations": ["Device identity, cache state and visual checks are operator declarations.",
                             "Renderer classification is a heuristic, not hardware attestation.",
                             "CPU draw time is not GPU execution time; no automatic tuning or acceptance verdict.",
-                            "Repeated windows from one session count as one load, not independent cold starts."]}
+                            "Repeated windows from one session count as one load, not independent cold starts.",
+                            "Resource bodyBytes count decoded HTTP response bodies, not network transfer bytes.",
+                            "Resource operations can overlap; their durations are not a total load time or GPU time."]}
 
 
 BATCH_KIND = "wzf-mascot-diagnostic-batch"
@@ -266,7 +329,7 @@ def validate_error(value):
 
 def validate_load(value, session):
     if value is None: return
-    object_keys(value, ["sessionId", "characterId", "renderedCharacterId", "fallback", "stages", "status", "readyMs", "firstFrameMs", "firstFrameStatus", "error"])
+    object_keys(value, ["sessionId", "characterId", "renderedCharacterId", "fallback", "stages", "status", "readyMs", "firstFrameMs", "firstFrameStatus", "error", "resources"])
     random_id(value.get("sessionId"))
     label(value.get("characterId"))
     optional_label(value.get("renderedCharacterId"))
@@ -285,6 +348,7 @@ def validate_load(value, session):
     for stage in stages:
         object_keys(stage, ["phase", "elapsedMs"]); label(stage.get("phase"), 30); number(stage.get("elapsedMs"))
     validate_error(value.get("error"))
+    resource_summary(value)
 
 
 def validate_window(value, batch_id):
@@ -333,6 +397,30 @@ def validate_window(value, batch_id):
             else:
                 number(item, 1000000000)
     return value
+
+
+def summarize_resource_report(path):
+    report, _ = read_json(Path(path), MAX_REPORT_BYTES)
+    object_keys(report, ["schema", "pluginVersion", "batchId", "windowId", "loadSessionId", "characterId", "requestedCharacterId", "renderedCharacterId", "loadAttempts", "environment", "phase", "error", "load", "sample", "engineStats", "engineStatsCharacterId", "measurements"])
+    if type(report.get("schema")) is not int or report["schema"] != 1: fail("Unsupported schema")
+    random_id(report.get("batchId")); session = random_id(report.get("loadSessionId"))
+    version = label(report.get("pluginVersion"), 64)
+    object_keys(report.get("environment"), ["viewport", "reducedMotion", "webgl", "gpuRenderer", "softwareRenderer"])
+    object_keys(report["environment"].get("viewport"), ["width", "height", "pixelRatio"])
+    environment(report["environment"])
+    if report.get("sample") is not None: validate_window(report, report["batchId"])
+    attempts = report.get("loadAttempts")
+    if not isinstance(attempts, list) or len(attempts) > 20: fail("Invalid load attempts")
+    validate_load(report.get("load"), session)
+    if report.get("load") is not None and report["load"]["sessionId"] != session: fail("Mismatched loading session")
+    summaries = []
+    for load in attempts:
+        validate_load(load, session)
+        summaries.append({"characterId": load["characterId"], "status": load["status"],
+                          "resources": resource_summary(load)})
+    return {"schema": 1, "pluginVersion": version, "loads": summaries,
+            "limitations": ["bodyBytes measures HTTP response bodies, not network transfer bytes.",
+                            "Parallel operation durations must not be added as total loading or GPU time."]}
 
 
 def unpack_batch(batch_path, output_path):
@@ -404,17 +492,21 @@ def unpack_batch(batch_path, output_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path, nargs="?")
+    parser.add_argument("--resource-report", type=Path, help="Read resource timings from one explicit report, including failed or unsampled loads")
     parser.add_argument("--unpack-batch", type=Path, help="Explicit local batch JSON; unpack to a new directory")
     parser.add_argument("--out", type=Path, required=True, help="New private summary file or new batch directory; existing outputs are refused")
     args = parser.parse_args()
     try:
+        if args.resource_report is not None and (args.unpack_batch is not None or args.manifest is not None): fail("Choose one input")
         if args.unpack_batch is not None:
             if args.manifest is not None: fail("Choose a manifest or a batch")
             count = unpack_batch(args.unpack_batch, args.out)
             print(f"Unpacked {count} windows. Fill runs.json metadata; no device or visual acceptance is implied.")
             return 0
-        if args.manifest is None: fail("Explicit manifest or batch required")
-        result = summarize(args.manifest)
+        if args.resource_report is not None: result = summarize_resource_report(args.resource_report)
+        else:
+            if args.manifest is None: fail("Explicit manifest or batch required")
+            result = summarize(args.manifest)
         # Exclusive create prevents accidental replacement of input or evidence files.
         descriptor = os.open(args.out, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(descriptor, "w") as handle:
@@ -422,6 +514,9 @@ def main():
             handle.write("\n")
     except (ValueError, OSError, KeyError, TypeError, OverflowError, RecursionError):
         parser.exit(2, "Cannot process diagnostics: check schema, bounded local inputs and new output path; batch unpacking requires Linux/macOS.\n")
+    if args.resource_report is not None:
+        print("Resource timing summary saved. No network-transfer or GPU timing claim.")
+        return 0
     print(f"Accepted {result['acceptedWindows']} windows; excluded {len(result['rejected'])}. No hardware certification.")
     return 1 if result["rejected"] else 0
 

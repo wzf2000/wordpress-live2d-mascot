@@ -24,6 +24,92 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
   const visibility = (p, hidden) => p.evaluate((value) => {Object.defineProperty(document,'hidden',{configurable:true,value});document.dispatchEvent(new Event('visibilitychange'));},hidden);
   const bubble = (p) => p.locator('.wzf-haru-bubble');
   try {
+    // Independent channel failures remain visible, while cancelled work cannot
+    // overwrite a newer action or leave an error in the downloaded diagnostics.
+    for (const [type, action, source = 'picker'] of [
+      ['motion','other-reset'], ['expression','other-reset'],
+      ['motion','same-reset'], ['expression','same-reset'],
+      ['motion','same-play'], ['motion','hide'], ['expression','suspend'],
+      ['motion','switch'],
+      ...['greeting','touch'].flatMap(source=>['other-reset','hide','suspend'].map(action=>['motion',action,source])),
+    ]) {
+      const p=await context.newPage();const pageErrors=[];
+      p.on('pageerror',error=>pageErrors.push(error.message));
+      await p.goto(fixture.origin+'/?presets=1&role=administrator');await ready(p);
+      await p.getByText('Local diagnostics',{exact:true}).click();
+      await p.getByRole('button',{name:'Enable local diagnostics',exact:true}).click();
+      await p.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(p);
+      const play=p.getByRole('button',{name:source==='greeting'?'Say hello':source==='touch'?'Tap Alpha fixture to greet':type==='motion'?'Play motion':'Change expression',exact:true});
+      if(type==='motion')await p.getByLabel('Choose motion',{exact:true}).selectOption('wave');
+      let held;let requested;
+      const request=new Promise(resolve=>{requested=resolve;});
+      const route='**/'+type+'/'+(type==='motion'?'wave':'smile')+'.json';
+      await p.route(route,r=>{held=r;requested();},{times:1});
+      await play.click();await request;
+      if(action==='other-reset'||action==='same-reset') {
+        const resetType=action==='same-reset'?type:type==='motion'?'expression':'motion';
+        await p.getByRole('button',{name:resetType==='motion'?'Stop motion and return to idle':'Reset expression',exact:true}).click();
+      } else if(action==='same-play') {
+        await p.getByLabel('Choose motion',{exact:true}).selectOption('intro');await play.click();
+        await p.waitForFunction(()=>window.WZFHaruStatus().activeMotion==='intro');
+      } else if(action==='hide') {
+        await p.getByRole('button',{name:'Hide mascot',exact:true}).click();
+        await p.getByRole('button',{name:'Show mascot',exact:true}).click();
+      } else if(action==='suspend') {
+        await p.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'test',suspended:true}})));
+        await p.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'test',suspended:false}})));
+      } else {
+        await p.getByLabel('Choose character',{exact:true}).selectOption('beta');
+        await p.getByRole('button',{name:'Preview character',exact:true}).click();await ready(p);
+      }
+      const before=await p.locator('.wzf-haru-state').textContent();
+      if(action==='hide'||action==='suspend')assert.equal(before,'Cancelled');
+      await held.fulfill({status:503,body:'Synthetic failure'});
+      if(action==='other-reset')await p.waitForFunction(()=>!document.querySelector('.wzf-haru-state').textContent.includes('reset')&&!document.querySelector('.wzf-haru-state').textContent.includes('returned'));
+      else await p.waitForTimeout(100);
+      const after=await p.locator('.wzf-haru-state').textContent();
+      if(action==='other-reset')assert.notEqual(after,before,type+' independent failure must be shown');
+      else assert.equal(after,before,type+' cancelled failure must stay silent');
+      const downloadPromise=p.waitForEvent('download');
+      await p.getByRole('button',{name:'Download diagnostic JSON',exact:true,includeHidden:true}).evaluate(el=>el.click());
+      const stream=await (await downloadPromise).createReadStream();let json='';
+      for await(const chunk of stream)json+=chunk;
+      const report=JSON.parse(json);
+      if(action==='other-reset')assert.equal(report.error.category,type);
+      else assert.equal(report.error,null,'cancelled request must not be logged');
+      assert.deepEqual(pageErrors,[]);await p.close();checks++;
+    }
+    // Muted presets reject native keyboard, direct handlers and same-page API,
+    // while mixed presets keep their motion/expression and opt-in stays saved.
+    for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+      const p=await context.newPage();await p.setViewportSize(viewport);
+      await p.goto(fixture.origin+'/?presets=1&idle=1&mobile=1');await ready(p);
+      await p.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(p);
+      await p.getByText('Dialogue preferences',{exact:true}).click();
+      const mode=p.getByLabel('Dialogue mode',{exact:true}), text=p.getByRole('button',{name:'Text only',exact:true});
+      await mode.selectOption('silent');assert.equal(await text.isDisabled(),true);
+      assert.equal(await p.locator('#wzf-haru-preset-notice').isVisible(),true);
+      await text.evaluate(el=>{document.activeElement.blur();el.focus();});
+      assert.equal(await text.evaluate(el=>document.activeElement===el),false);await p.keyboard.press('Enter');
+      assert.equal(await bubble(p).textContent(),'');
+      assert.deepEqual(await p.evaluate(()=>window.WZFMascot.notify({event:'tool-complete',presetId:'text'})),{ok:false,code:'muted'});
+      await text.evaluate(el=>el.onclick());
+      assert.equal(await p.locator('.wzf-haru-state').textContent(),'Text-only interactions are unavailable in silent mode.');
+      await p.getByRole('button',{name:'Quick greeting',exact:true}).click();
+      await p.waitForFunction(()=>window.WZFHaruStatus().activeMotion==='wave'&&window.WZFHaruStatus().activeExpression==='smile');
+      assert.equal(await bubble(p).textContent(),'');
+      await mode.selectOption('active');await p.getByLabel('Occasional chatter',{exact:true}).check();
+      assert.equal(await p.locator('#wzf-haru-idle-notice').isVisible(),true);
+      assert.equal(await p.evaluate(()=>window.WZFHaruStatus().idleScheduled),false);
+      assert.equal(await p.evaluate(()=>localStorage.getItem('wzf-mascot-idle-v1')),'enabled');
+      if(output)await p.screenshot({path:path.join(output,'feedback-active-'+viewport.width+'.png')});
+      await mode.selectOption('silent');
+      if(output){await p.locator('#wzf-haru-preset-notice').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(output,'feedback-silent-'+viewport.width+'.png')});}
+      await mode.selectOption('auto');assert.equal(await p.locator('#wzf-haru-idle-notice').isVisible(),false);
+      assert.equal(await text.isEnabled(),true);await text.click();assert.equal(await bubble(p).textContent(),'alpha text only');
+      await p.evaluate(()=>{localStorage.removeItem('wzf-mascot-idle-v1');localStorage.removeItem('wzf-mascot-dialogue-v1');});
+      await p.close();checks++;
+    }
     // Explicit buttons respond during welcome cooldown and pending manual work.
     for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
       const buttonsPage=await context.newPage();await buttonsPage.setViewportSize(viewport);await buttonsPage.clock.install();

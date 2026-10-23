@@ -53,6 +53,36 @@
       field('name')?.closest('details')?.setAttribute('open','');
     }
   }));
+  // Preview is a separate POST and document, never a submission of the dirty form.
+  let previewDialog=null, previewRequest=null, previewSequence=0, previewTimer=null, previewOpener=null;
+  const closePreview=()=>{previewSequence++;clearTimeout(previewTimer);previewTimer=null;previewRequest?.abort();previewRequest=null;
+    previewDialog?.querySelector('iframe')?.contentWindow?.postMessage({type:'wzf-mascot-preview-stop'},location.origin);
+    previewDialog?.remove();previewDialog=null;};
+  root.querySelectorAll('.wzf-mascot-preview-draft').forEach(button=>button.addEventListener('click',async()=>{
+    closePreview();const form=button.closest('form'),draft={};
+    if(form.elements.namedItem('action')?.value==='wzf_mascot_interaction'){
+      draft.dialogue={};
+      for(const event of ['welcome','click','morning','afternoon','evening','return','idle']){
+        const get=key=>form.elements.namedItem('dialogue['+event+']['+key+']');
+        draft.dialogue[event]={enabled:!!get('enabled')?.checked,cooldown:Number(get('cooldown')?.value),lines:(get('lines')?.value||'').split(/\r\n|\r|\n/)};
+        if(event==='idle'){const motions=form.elements.namedItem('dialogue[idle][motions][]');if(motions)draft.dialogue[event].motions=[...motions.selectedOptions].map(option=>option.value);}
+      }
+    }else{
+      draft.presets=[];
+      for(let index=0;index<8;index++){const row={};for(const key of ['id','name','motion','expression','line'])row[key]=form.elements.namedItem('presets['+index+']['+key+']')?.value||'';draft.presets.push(row);}
+    }
+    const dialog=document.createElement('dialog'),title=document.createElement('h2'),close=document.createElement('button'),frame=document.createElement('iframe'),state=document.createElement('p');
+    dialog.className='wzf-mascot-preview-dialog';state.textContent=button.dataset.loading;title.textContent=button.dataset.title;title.id='wzf-mascot-preview-title';dialog.setAttribute('aria-labelledby',title.id);close.type='button';close.className='button';close.textContent=button.dataset.close;frame.title=button.dataset.title;frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups');state.setAttribute('role','status');
+    close.onclick=()=>{closePreview();button.focus();};dialog.addEventListener('cancel',event=>{event.preventDefault();close.onclick();});dialog.append(title,close,state,frame);root.append(dialog);previewDialog=dialog;previewOpener=button;dialog.showModal();close.focus();
+    const sequence=previewSequence,controller=new AbortController();previewRequest=controller;previewTimer=setTimeout(()=>controller.abort(),15000);
+    try{const response=await fetch(button.dataset.endpoint,{method:'POST',credentials:'same-origin',signal:controller.signal,body:new URLSearchParams({action:'wzf_mascot_interaction_preview',_wpnonce:button.dataset.nonce,character:form.elements.namedItem('character').value,version:form.elements.namedItem('version').value,draft:JSON.stringify(draft)})});
+      if(!response.ok){const error=await response.json().catch(()=>null);throw Object.assign(Error('preview'),{safeMessage:typeof error?.data?.message==='string'?error.data.message:button.dataset.failed});}const html=await response.text();if(sequence!==previewSequence)return;state.textContent='';frame.srcdoc=html;
+    }catch(error){if(sequence===previewSequence)state.textContent=error.safeMessage||button.dataset.failed;}
+    finally{if(sequence===previewSequence){clearTimeout(previewTimer);previewTimer=null;previewRequest=null;}}
+  }));
+  window.addEventListener('message',event=>{if(event.source===previewDialog?.querySelector('iframe')?.contentWindow&&event.data?.type==='wzf-mascot-preview-close'){const button=previewOpener;closePreview();button?.focus();}});
+  window.addEventListener('pagehide',closePreview);
+  document.addEventListener?.('visibilitychange',()=>{if(document.hidden)closePreview();});
   let submitting = false;
   const dirty = (except) => forms.some((form) => form !== except && snapshot(form) !== snapshots.get(form));
   const message = root.dataset.unsavedMessage || 'You have unsaved changes. Leave this page?';

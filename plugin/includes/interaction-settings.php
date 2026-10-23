@@ -48,20 +48,25 @@ function wzf_mascot_chatter_motions($value, $catalog = null) {
     }
     return $result;
 }
+function wzf_mascot_dialogue_patch($character, $dialogue) {
+    $dialogue = wzf_mascot_dialogue($dialogue, true);
+    if (!array_key_exists('motions', $dialogue['idle']) && array_key_exists('motions', $character['dialogue']['idle'] ?? [])) $dialogue['idle']['motions'] = $character['dialogue']['idle']['motions'];
+    if (($dialogue['idle']['motions'] ?? null) === [] && !array_key_exists('motions', $character['dialogue']['idle'] ?? [])) unset($dialogue['idle']['motions']);
+    if (!empty($dialogue['idle']['motions'])) wzf_mascot_chatter_motions($dialogue['idle']['motions'], wzf_mascot_character_catalog($character));
+    $character['dialogue'] = $dialogue;
+    return $character;
+}
 function wzf_mascot_save_interaction($id, $version, $dialogue) {
     if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
     if (!is_string($id) || !is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version) || !is_array($dialogue)) throw new RuntimeException(__('Dialogue settings are invalid.', 'live2d-show'));
-    $dialogue = wzf_mascot_dialogue($dialogue, true);
     $task = wzf_mascot_task_begin('settings');
     try {
         $config = $task['config'];
         if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before editing again.', 'live2d-show'));
         if (!is_array($config['characters'][$id] ?? null)) throw new RuntimeException(__('The character does not exist or its configuration is invalid.', 'live2d-show'));
-        if (!array_key_exists('motions', $dialogue['idle']) && array_key_exists('motions', $config['characters'][$id]['dialogue']['idle'] ?? [])) $dialogue['idle']['motions'] = $config['characters'][$id]['dialogue']['idle']['motions'];
-        if (($dialogue['idle']['motions'] ?? null) === [] && !array_key_exists('motions', $config['characters'][$id]['dialogue']['idle'] ?? [])) unset($dialogue['idle']['motions']);
-        if (!empty($dialogue['idle']['motions'])) wzf_mascot_chatter_motions($dialogue['idle']['motions'], wzf_mascot_character_catalog($config['characters'][$id]));
-        if (($config['characters'][$id]['dialogue'] ?? null) === $dialogue) return;
-        $config['characters'][$id]['dialogue'] = $dialogue;
+        $next = wzf_mascot_dialogue_patch($config['characters'][$id], $dialogue);
+        if ($next === $config['characters'][$id]) return;
+        $config['characters'][$id] = $next;
         if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     } finally { wzf_mascot_task_end($task); }
 }
@@ -236,7 +241,7 @@ function wzf_mascot_interaction_panel($config, $id) {
         }
         echo '</fieldset>';
     }
-    echo '</div>'; submit_button(__('Save dialogue settings', 'live2d-show')); echo '</form></section>';
+    echo '</div>'; submit_button(__('Save dialogue settings', 'live2d-show')); wzf_mascot_preview_button($id, $config); echo '</form></section>';
 }
 add_action('admin_post_wzf_mascot_interaction', 'wzf_mascot_interaction_post');
 
@@ -282,18 +287,23 @@ function wzf_mascot_current_presets($character) {
     try { $expressions = wzf_mascot_character_expressions($character); } catch (Throwable $e) { $expressions = []; }
     return wzf_mascot_presets($character['presets'], $motions, $expressions);
 }
+function wzf_mascot_presets_patch($character, $presets) {
+    $next = wzf_mascot_presets($presets, wzf_mascot_character_catalog($character), wzf_mascot_character_expressions($character), true);
+    if (($character['presets'] ?? []) === $next && empty($character['presetWarnings'])) return $character;
+    $character['presets'] = $next;
+    unset($character['presetWarnings']);
+    if (isset($character['hitBindings'])) {
+        $filtered = wzf_mascot_hit_bindings($character['hitBindings'], null, $next);
+        $character['hitWarnings'] = is_array($character['hitBindings']) ? max(0,count($character['hitBindings'])-count($filtered)) : 1;
+        $character['hitBindings'] = $filtered;
+    }
+    return $character;
+}
 function wzf_mascot_save_presets($id, $version, $presets) {
     wzf_mascot_locked_character($id, $version, function($config) use ($id, $presets) {
-        $c = $config['characters'][$id];
-        $next = wzf_mascot_presets($presets, wzf_mascot_character_catalog($c), wzf_mascot_character_expressions($c), true);
-        if (($c['presets'] ?? []) === $next && empty($c['presetWarnings'])) return;
-        $config['characters'][$id]['presets'] = $next;
-        unset($config['characters'][$id]['presetWarnings']);
-        if (isset($c['hitBindings'])) {
-            $filtered = wzf_mascot_hit_bindings($c['hitBindings'], null, $next);
-            $config['characters'][$id]['hitBindings'] = $filtered;
-            $config['characters'][$id]['hitWarnings'] = is_array($c['hitBindings']) ? max(0,count($c['hitBindings'])-count($filtered)) : 1;
-        }
+        $next = wzf_mascot_presets_patch($config['characters'][$id], $presets);
+        if ($config['characters'][$id] === $next) return;
+        $config['characters'][$id] = $next;
         if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
@@ -335,7 +345,7 @@ function wzf_mascot_presets_panel($config, $id) {
         }
         echo '</div></details>';
     }
-    submit_button(__('Save interaction presets', 'live2d-show')); echo '</form></section>';
+    submit_button(__('Save interaction presets', 'live2d-show')); wzf_mascot_preview_button($id, $config); echo '</form></section>';
 }
 add_action('admin_post_wzf_mascot_presets', 'wzf_mascot_presets_post');
 

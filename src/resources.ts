@@ -14,12 +14,21 @@ export const cancelled = () => new DOMException("Loading cancelled", 'AbortError
 export function checkSignal(signal: AbortSignal) {
   if (signal.aborted) throw signal.reason || cancelled();
 }
+export type ResourceSpan = {
+  ordinal: number;
+  finish: (error?: unknown, bodyBytes?: number | null) => void;
+};
+function finishSpan(span: ResourceSpan | undefined, error?: unknown, bodyBytes: number | null = null) {
+  try { span?.finish(error, bodyBytes); } catch { /* Diagnostics cannot change resource results. */ }
+}
 export function bounded<T>(
   work: (signal: AbortSignal) => Promise<T>,
   signal: AbortSignal,
   timeoutMs = RESOURCE_TIMEOUT_MS,
+  span?: ResourceSpan,
+  bodyBytes: () => number | null = () => null,
 ): Promise<T> {
-  checkSignal(signal);
+  try { checkSignal(signal); } catch (error) { finishSpan(span, error); return Promise.reject(error); }
   return new Promise((resolve, reject) => {
     const controller = new AbortController();
     let settled = false;
@@ -28,6 +37,11 @@ export function bounded<T>(
       settled = true;
       clearTimeout(timer);
       signal.removeEventListener('abort', abort);
+      if (span) {
+        let size: number | null = null;
+        if (!error) { try { size = bodyBytes(); } catch { /* Optional diagnostics only. */ } }
+        finishSpan(span, error, size);
+      }
       if (error) reject(error);
       else resolve(value as T);
     };
@@ -57,7 +71,9 @@ export function resource(
   url: string,
   signal: AbortSignal,
   type: 'bytes' | 'blob' | 'text' = 'bytes',
+  span?: ResourceSpan,
 ) {
+  let bodyBytes: number | null = null;
   return bounded(async (requestSignal) => {
     let response: Response;
     try {
@@ -75,21 +91,24 @@ export function resource(
       );
     }
     try {
-      const value = await (type === 'blob'
+      const rawText = type === 'text' && span ? await response.arrayBuffer() : null;
+      const value = rawText ? new TextDecoder().decode(rawText) : await (type === 'blob'
         ? response.blob()
         : type === 'text'
           ? response.text()
           : response.arrayBuffer());
       checkSignal(requestSignal);
+      if (span) bodyBytes = typeof value === 'string' ? rawText!.byteLength
+        : value instanceof Blob ? value.size : value.byteLength;
       return value;
     } catch (error) {
       checkSignal(requestSignal);
       throw new ResourceError('network', "Resource download interrupted. Check your connection and retry.");
     }
-  }, signal);
+  }, signal, RESOURCE_TIMEOUT_MS, span, () => bodyBytes);
 }
-export async function bytes(url: string, signal: AbortSignal) {
-  return (await resource(url, signal)) as ArrayBuffer;
+export async function bytes(url: string, signal: AbortSignal, span?: ResourceSpan) {
+  return (await resource(url, signal, 'bytes', span)) as ArrayBuffer;
 }
 export function jsonResource(raw: ArrayBuffer) {
   try {
@@ -98,7 +117,7 @@ export function jsonResource(raw: ArrayBuffer) {
     throw new ResourceError('invalid', "Character resource format is invalid. Retry or choose another character.");
   }
 }
-export function decodeImage(blob: Blob, signal: AbortSignal) {
+export function decodeImage(blob: Blob, signal: AbortSignal, span?: ResourceSpan) {
   return bounded(
     (imageSignal) =>
       new Promise<HTMLImageElement>((resolve, reject) => {
@@ -126,5 +145,7 @@ export function decodeImage(blob: Blob, signal: AbortSignal) {
         img.src = url;
       }),
     signal,
+    RESOURCE_TIMEOUT_MS,
+    span,
   );
 }

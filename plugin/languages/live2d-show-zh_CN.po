@@ -125,6 +125,9 @@ msgstr "预设需要名称，并至少包含动作、表情或台词中的一项
 msgid "A preset resource cannot be mapped. Repair the preset before exporting."
 msgstr "无法映射快捷互动资源，请先修复该快捷互动再导出。"
 
+msgid "A recovery record is unreadable or invalid. Preserve it for server inspection."
+msgstr "有恢复记录无法读取或校验未通过，请保留并由服务器管理员检查。"
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "资源或设置任务正在进行。请先检查任务状态，再重试。"
 
@@ -239,6 +242,9 @@ msgstr "资源配置已被其他请求修改，请刷新后重试。"
 msgid "Another request changed the resource configuration. Refresh before trying again."
 msgstr "资源配置已被其他请求修改，请刷新页面后重新操作。"
 
+msgid "Apply reviewed operation"
+msgstr "执行已复核的操作"
+
 msgid "Apply reviewed template"
 msgstr "应用已核对的模板"
 
@@ -272,6 +278,9 @@ msgstr "展臂闭眼笑"
 msgid "Arms slightly open"
 msgstr "双臂微张"
 
+msgid "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+msgstr "自动闲聊需要启用规则、访客主动开启，并使用自动台词模式。"
+
 msgid "Automatic dialogue"
 msgstr "自动台词"
 
@@ -295,6 +304,9 @@ msgstr "需要 1–16 张贴图。"
 
 msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
 msgstr "将模型声明的区域绑定到已有快捷互动。浏览器还会检查实际可用的绘制区域。未绑定、缺失或无效区域使用普通招呼。"
+
+msgid "Blocked"
+msgstr "无法应用"
 
 msgid "Blush"
 msgstr "脸红"
@@ -397,6 +409,9 @@ msgstr "换个角色"
 
 msgid "Change expression"
 msgstr "切换表情"
+
+msgid "Changed"
+msgstr "有改动"
 
 msgid "Character"
 msgstr "角色"
@@ -530,6 +545,9 @@ msgstr "检查已安装资源"
 msgid "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
 msgstr "请核对资源署名与条款，然后在每个浏览器中点击前台“显示看板娘”并同意条款。"
 
+msgid "Check resource terms"
+msgstr "查看资源条款"
+
 msgid "Check the installed resources before retrying."
 msgstr "请检查已安装资源后重试。"
 
@@ -544,6 +562,12 @@ msgstr "元气招呼"
 
 msgid "Chin in hand · open palm"
 msgstr "托腮摊手"
+
+msgid "Choose 1–50 target characters."
+msgstr "请选择 1–50 个目标角色。"
+
+msgid "Choose a draft rule or preset to try."
+msgstr "请选择要试播的草稿规则或快捷互动。"
 
 msgid "Choose a recent character candidate"
 msgstr "选择最近角色作为候选"
@@ -599,6 +623,9 @@ msgstr "点击"
 msgid "Close interaction"
 msgstr "收起互动"
 
+msgid "Close preview"
+msgstr "关闭试播"
+
 msgid "Compact mobile size:"
 msgstr "移动端紧凑大小："
 
@@ -616,6 +643,9 @@ msgstr "已配置 · Web 5 R5"
 
 msgid "Confirm recovery of the interrupted task record."
 msgstr "请确认恢复中断的任务记录。"
+
+msgid "Confirm reviewed operation"
+msgstr "确认复核结果"
 
 msgid "Confirm the displayed interaction changes before applying."
 msgstr "请确认已展示的互动变更后再应用。"
@@ -671,6 +701,9 @@ msgstr "当前／上一版重叠"
 msgid "Current chatter motions are retained."
 msgstr "保留当前闲聊动作池。"
 
+msgid "Current free space:"
+msgstr "当前可用空间："
+
 msgid "Current model directory"
 msgstr "当前模型目录"
 
@@ -682,6 +715,9 @@ msgstr "当前缩略图"
 
 msgid "Current, previous and shared references"
 msgstr "当前、上一版与共享资源引用"
+
+msgid "Current, previous, disabled or trashed resources and intersecting references are protected."
+msgstr "当前、上一版、停用和回收站资源及与它们交叉的引用均受保护。"
 
 msgid "Default layout configuration is invalid."
 msgstr "默认布局配置无效。"
@@ -797,6 +833,9 @@ msgstr "已启用"
 msgid "Encrypted ZIP files are not supported."
 msgstr "不支持加密 ZIP。"
 
+msgid "End preview"
+msgstr "结束试播"
+
 msgid "Engine"
 msgstr "引擎"
 
@@ -808,6 +847,9 @@ msgstr "读得投入的时候，也别忘了让眼睛歇一歇。"
 
 msgid "Evening"
 msgstr "晚间"
+
+msgid "Exact resource directory name"
+msgstr "完整资源目录名"
 
 msgid "Existing resource configuration is invalid."
 msgstr "现有资源配置无效。"
@@ -829,6 +871,9 @@ msgstr "Expression 无效。"
 
 msgid "Expression reset"
 msgstr "已恢复默认表情"
+
+msgid "Expressions"
+msgstr "表情"
 
 msgid "Favorite %1$s"
 msgstr "收藏 %1$s"
@@ -871,6 +916,9 @@ msgstr "前台显示"
 
 msgid "Frontend entry checks"
 msgstr "前台入口检查"
+
+msgid "Gaze parameters"
+msgstr "视线参数"
 
 msgid "Getting one question clear is already a good start."
 msgstr "先想清楚一个问题，就已经很不错了。"
@@ -980,11 +1028,17 @@ msgstr "命中区域绑定无效。"
 msgid "Hit area bindings saved."
 msgstr "命中区域绑定已保存。"
 
+msgid "Hit areas"
+msgstr "命中区域"
+
 msgid "I am here."
 msgstr "我在这里。"
 
 msgid "I am ready! How about your curiosity?"
 msgstr "我已经准备好啦，你的好奇心呢？"
+
+msgid "I confirm this reviewed move without changing configuration."
+msgstr "我确认执行本次复核的移动，保持配置不变。"
 
 msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
 msgstr "我已核对资源条款，并明确允许下载角色 PNG。"
@@ -1003,6 +1057,9 @@ msgstr "我已核对这些变更，并确认替换所选的互动设置。"
 
 msgid "I understand that recovery only removes the interrupted task record."
 msgstr "我理解恢复操作仅移除中断的任务记录。"
+
+msgid "I understand this deletion is irreversible."
+msgstr "我理解此次删除无法恢复。"
 
 msgid "Idle"
 msgstr "空闲"
@@ -1028,8 +1085,14 @@ msgstr "请导入一个模型、启用角色，或根据资源诊断修复被隔
 msgid "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
 msgstr "请导入指定 Web 5 R5 Core 文件，或恢复缺失文件。不能用其他版本替代。"
 
+msgid "Import the verified Core before previewing."
+msgstr "请先导入已核验的 Core，再开始试播。"
+
 msgid "Import type is invalid."
 msgstr "导入类型无效。"
+
+msgid "In recovery storage"
+msgstr "已移入恢复区"
 
 msgid "Include read-only cleanup review"
 msgstr "附加只读清理复核"
@@ -1042,6 +1105,9 @@ msgstr "互动"
 
 msgid "Interaction JSON (up to 64 KiB)"
 msgstr "互动 JSON（不超过 64 KiB）"
+
+msgid "Interaction draft is invalid."
+msgstr "互动草稿格式无效。"
 
 msgid "Interaction help"
 msgstr "互动帮助"
@@ -1075,6 +1141,9 @@ msgstr "配置无效"
 
 msgid "Invalid configuration structure · Isolated"
 msgstr "配置结构无效 · 被隔离"
+
+msgid "Invalid recovery operation."
+msgstr "恢复操作无效。"
 
 msgid "Invalid status"
 msgstr "状态无效"
@@ -1124,6 +1193,9 @@ msgstr "正在加载角色…"
 msgid "Loading mascot…"
 msgstr "加载看板娘…"
 
+msgid "Loading preview…"
+msgstr "正在加载试播…"
+
 msgid "Loading…"
 msgstr "正在加载…"
 
@@ -1138,6 +1210,9 @@ msgstr "逻辑字节数"
 
 msgid "Logical bytes / files"
 msgstr "逻辑字节数 / 文件数"
+
+msgid "Logical size:"
+msgstr "逻辑大小："
 
 msgid "Lowered brows"
 msgstr "低眉"
@@ -1162,6 +1237,9 @@ msgstr "喵？有新发现了吗？"
 
 msgid "Minimum review waiting period (days)"
 msgstr "最低复核等待期（天）"
+
+msgid "Minimum waiting period (days)"
+msgstr "最短等待天数"
 
 msgid "Minimum waiting period reached; review references and recovery needs before any cleanup."
 msgstr "已达到最低等待期；清理前仍需人工核对引用和恢复用途。"
@@ -1223,6 +1301,9 @@ msgstr "动作或表情资源无效，请重试"
 msgid "Motion stopped; returned to idle"
 msgstr "已停止动作，恢复待机"
 
+msgid "Motions"
+msgstr "动作"
+
 msgid "Motions is invalid."
 msgstr "Motions 无效。"
 
@@ -1231,6 +1312,12 @@ msgstr "移动看板娘"
 
 msgid "Move mascot: drag, use arrow keys, or Escape to reset"
 msgstr "移动看板娘：拖动、方向键移动或 Escape 复位"
+
+msgid "Move one unreferenced resource root"
+msgstr "移动一个未引用资源目录"
+
+msgid "Move to recovery storage"
+msgstr "移入恢复区"
 
 msgid "Move to trash"
 msgstr "移入回收站"
@@ -1262,6 +1349,9 @@ msgstr "最新修改时间（UTC）"
 msgid "No account preferences saved. Saving is optional."
 msgstr "账号尚未保存偏好，可自愿保存。"
 
+msgid "No associated motion; showing text only."
+msgstr "没有关联动作，仅显示台词。"
+
 msgid "No candidate character"
 msgstr "暂无候选角色"
 
@@ -1279,6 +1369,9 @@ msgstr "暂无可用的闲聊动作。"
 
 msgid "No cleanup review rows were available within the inspection limits."
 msgstr "本次扫描范围内没有可展示的清理复核条目。"
+
+msgid "No draft lines or presets are available."
+msgstr "当前没有可试播的台词或快捷互动。"
 
 msgid "No favorites yet. Turn off “Favorites only” to see all characters."
 msgstr "还没有收藏的角色，取消“只看收藏”可查看全部角色"
@@ -1316,6 +1409,9 @@ msgstr "尚未导入"
 msgid "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
 msgstr "尚未保存任何变更。应用将替换所选设置区，模板中没有的原台词或快捷互动也会被移除。偶尔闲聊保留此角色当前的启用状态；导入空台词时会关闭。"
 
+msgid "Nothing is loaded until you start. Changes remain unsaved."
+msgstr "点击开始后才加载角色；草稿不会保存。"
+
 msgid "Observed paths (admin only)"
 msgstr "已观察路径（仅管理员可见）"
 
@@ -1340,17 +1436,26 @@ msgstr "官方样例"
 msgid "One more page, or a well-earned rest?"
 msgstr "再读一页，还是好好休息一下？"
 
+msgid "One or more targets are blocked. Nothing was applied."
+msgstr "部分目标无法应用，整批均未修改。"
+
 msgid "One small step at a time!"
 msgstr "每次前进一小步就好！"
 
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr "仅接受 PNG、JPEG 或 WebP；宽高均须不超过 2048，最多 4M 像素。"
 
+msgid "Only complete model or thumbnail roots are eligible. Current, previous, disabled, trashed, Core and unknown resources are protected. All files must have reached the waiting period."
+msgstr "只接受完整的模型或缩略图目录。当前、上一版、停用、回收站、Core 和未知资源均受保护，所有文件都须达到等待期。"
+
 msgid "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
 msgstr "仅填入空白预设。请检查文本及已有招呼动作后保存；不会自动保存。"
 
 msgid "Only on interaction"
 msgstr "仅主动互动"
+
+msgid "Only the first 100 records are shown. Ask the server administrator to inspect the remaining records."
+msgstr "这里只显示前 100 条记录，其余记录请由服务器管理员检查。"
 
 msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
 msgstr "只接受已核验的 Web 5 R5 live2dcubismcore.min.js；SHA256 不匹配。"
@@ -1397,6 +1502,12 @@ msgstr "已开始下载 PNG。"
 msgid "Partial: %s observed bytes"
 msgstr "部分观察值：%s 字节"
 
+msgid "Partially deleted; new confirmation required"
+msgstr "已部分删除，须重新确认"
+
+msgid "Pause"
+msgstr "暂停"
+
 msgid "Pause and see whether you missed a clue."
 msgstr "不妨停一下，看看刚才有没有遗漏的线索。"
 
@@ -1405,6 +1516,18 @@ msgstr "需要的时候，停下来喘口气吧。"
 
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 msgstr "手机输入框聚焦时暂停（避免遮挡输入与软键盘）"
+
+msgid "Permanent deletion"
+msgstr "永久删除"
+
+msgid "Permanent deletion requires the server opt-in and at least 30 days in recovery storage."
+msgstr "永久删除须由服务器明确开启，且资源已在恢复区保留至少 30 天。"
+
+msgid "Permanently delete"
+msgstr "永久删除"
+
+msgid "Permanently deleted"
+msgstr "已永久删除"
 
 msgid "Physics"
 msgstr "物理"
@@ -1421,8 +1544,17 @@ msgstr "姿态"
 msgid "Position and size"
 msgstr "位置与大小"
 
+msgid "Prepared records retain the original directory or a complete recovery payload. Interrupted deletion remains partial; it cannot be restored. Review again before continuing deletion. Keep recovery manifests with their payloads."
+msgstr "已准备的记录会保留原目录或完整的恢复副本。删除中断后可能只剩部分文件，不能再还原；继续删除前须重新复核。请将恢复清单与对应文件一同保留。"
+
+msgid "Prepared; inspect original and recovery storage"
+msgstr "已准备，请核对原目录与恢复区"
+
 msgid "Preparing PNG…"
 msgstr "正在生成 PNG…"
+
+msgid "Preparing preview…"
+msgstr "正在准备预览…"
 
 msgid "Preset expression"
 msgstr "预设表情"
@@ -1445,8 +1577,17 @@ msgstr "预设名称"
 msgid "Preview character"
 msgstr "预览角色"
 
+msgid "Preview could not load. Check the installed resources and try again."
+msgstr "试播未能加载，请检查已安装资源后重试。"
+
+msgid "Preview ended."
+msgstr "试播已结束。"
+
 msgid "Preview template changes"
 msgstr "预览模板变更"
+
+msgid "Preview uses this form’s current values without saving them."
+msgstr "试播使用此表单当前内容，不会保存。"
 
 msgid "Previewing. Select “Use this character” to save."
 msgstr "正在预览，点击“使用这个角色”才会保存"
@@ -1538,6 +1679,15 @@ msgstr "最近确认的角色"
 msgid "Recover interrupted task"
 msgstr "恢复中断的任务"
 
+msgid "Recovery is read-only until the server administrator configures WZF_MASCOT_RECOVERY_DIR as a persistent private directory outside the web root."
+msgstr "当前仅提供只读信息。服务器管理员将 WZF_MASCOT_RECOVERY_DIR 配置为 Web 根目录之外的持久私有目录后，才能执行恢复操作。"
+
+msgid "Recovery records"
+msgstr "恢复记录"
+
+msgid "Recovery storage must be on the same filesystem as the resource directory."
+msgstr "恢复区须与资源目录位于同一文件系统。"
+
 msgid "Reduced motion enabled"
 msgstr "已减少动画"
 
@@ -1561,6 +1711,9 @@ msgstr "绘图失败，请重试"
 
 msgid "Replaced"
 msgstr "覆盖"
+
+msgid "Requires WZF_MASCOT_ALLOW_PERMANENT_DELETE and at least 30 days in recovery storage. Actual space released may differ from logical size."
+msgstr "须开启 WZF_MASCOT_ALLOW_PERMANENT_DELETE，且资源已在恢复区保留至少 30 天。实际释放空间可能与逻辑大小不同。"
 
 msgid "Reset defaults"
 msgstr "恢复默认"
@@ -1595,6 +1748,9 @@ msgstr "资源下载中断，请检查网络后重试"
 msgid "Resource file"
 msgstr "资源文件"
 
+msgid "Resource history and recovery"
+msgstr "资源历史与恢复"
+
 msgid "Resource loading timed out. Try again."
 msgstr "资源加载超时，请重试"
 
@@ -1613,6 +1769,12 @@ msgstr "资源路径不能使用软链接。"
 msgid "Resource preparation"
 msgstr "资源准备"
 
+msgid "Resource recovery checks failed. Refresh the review; retain both storage locations for inspection."
+msgstr "资源恢复校验未通过。请刷新复核，并保留原目录与恢复区供检查。"
+
+msgid "Resource recovery operation completed. Review the record below."
+msgstr "资源恢复操作已完成，请核对下方记录。"
+
 msgid "Resource write verification failed."
 msgstr "资源写入校验失败。"
 
@@ -1628,17 +1790,29 @@ msgstr "资源已导入。"
 msgid "Rest your eyes for a moment."
 msgstr "让眼睛休息一会儿吧。"
 
+msgid "Restore"
+msgstr "还原"
+
 msgid "Restore a configuration backup before retrying."
 msgstr "请恢复配置备份后重试。"
 
 msgid "Restore from trash"
 msgstr "从回收站恢复"
 
+msgid "Restore interrupted; review to finish"
+msgstr "还原中断，请重新复核以完成记录"
+
 msgid "Restore the character to a valid status before updating resources."
 msgstr "请先恢复角色有效状态再更新资源。"
 
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 msgstr "请恢复已配置的站点条款文件或配置备份。共享条款失效会停止所有前台输出。"
+
+msgid "Restored"
+msgstr "已还原"
+
+msgid "Resume"
+msgstr "继续"
 
 msgid "Retained Core directory / manual review"
 msgstr "留存的 Core 目录，需人工复核"
@@ -1661,11 +1835,29 @@ msgstr "通过 JSON 文件复用台词和快捷互动。文件不包含模型文
 msgid "Review interaction changes"
 msgstr "核对互动变更"
 
+msgid "Review move to recovery storage"
+msgstr "复核移入恢复区"
+
+msgid "Review permanent deletion"
+msgstr "复核永久删除"
+
+msgid "Review restore"
+msgstr "复核还原"
+
 msgid "Review status"
 msgstr "复核状态"
 
+msgid "Review storage usage above first. Moving to recovery storage and restoring do not free space on this filesystem. Logical file size and current free space are separate measurements."
+msgstr "请先核对上方磁盘占用。移入恢复区和还原不会释放本文件系统的空间；文件逻辑大小与当前可用空间分别显示。"
+
+msgid "Reviewed template applied to all selected characters."
+msgstr "已将审阅后的模板应用到全部选定角色。"
+
 msgid "Roll back to previous resources and motions"
 msgstr "回退到上一版资源与动作"
+
+msgid "Rule notes"
+msgstr "规则说明"
 
 msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
 msgstr "在限定范围内只读盘点 uploads/wzf-mascot 的文件元数据。未引用不代表可以安全删除。不会清理文件、计算哈希、读取贴图或修改配置。"
@@ -1675,6 +1867,9 @@ msgstr "运行中"
 
 msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
 msgstr "点击后只读检查 Core 哈希、角色运行引用、目录、布局和条款配置。不会写入配置或加载模型画面；运行文件总大小不含目录中的额外维护动作。"
+
+msgid "Runtime capabilities"
+msgstr "模型实际能力"
 
 msgid "Runtime download failed. Check your connection and retry."
 msgstr "运行组件下载失败，请检查网络后重试"
@@ -1760,6 +1955,9 @@ msgstr "搜索名称或角色 ID"
 msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 msgstr "选择角色编辑名称、署名、默认布局与动作。升级插件保留 uploads 中的资源和浏览器偏好。"
 
+msgid "Select every character you want to update. Review all targets before applying."
+msgstr "勾选要更新的所有角色，应用前检查每个目标的变化。"
+
 msgid "Select the read-only cleanup review option before continuing."
 msgstr "请勾选只读清理复核后继续。"
 
@@ -1795,6 +1993,9 @@ msgstr "登录后才能读取或保存账号偏好。"
 
 msgid "Silent"
 msgstr "静默"
+
+msgid "Simulate trigger"
+msgstr "模拟触发"
 
 msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
 msgstr "单份报告下载最后保存的窗口；尚未采样时下载当前诊断状态。"
@@ -1844,6 +2045,9 @@ msgstr "候选目录／保留"
 msgid "Stand quietly (idle)"
 msgstr "安静站立（待机）"
 
+msgid "Start preview"
+msgstr "开始试播"
+
 msgid "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
 msgstr "小写字母开头，使用字母、数字或短横线；已有 ID 不覆盖。"
 
@@ -1861,6 +2065,9 @@ msgstr "停止采样"
 
 msgid "Surprised"
 msgstr "惊讶"
+
+msgid "Switch to automatic dialogue to use occasional chatter."
+msgstr "切换到自动台词后，偶尔闲聊才会生效。"
 
 msgid "Swordsman and dragon ready! Which page shall we explore?"
 msgstr "剑士与飞龙就位，今天想探索哪一页？"
@@ -1886,6 +2093,9 @@ msgstr "轻点 %1$s 打招呼"
 msgid "Tap to greet"
 msgstr "轻点打招呼"
 
+msgid "Target characters (up to 50)"
+msgstr "目标角色（最多 50 个）"
+
 msgid "Task age: %s seconds. Age alone does not permit recovery."
 msgstr "任务已开始 %s 秒。仅凭经过时间不能恢复任务。"
 
@@ -1906,6 +2116,9 @@ msgstr "条款"
 
 msgid "Terms configuration is valid."
 msgstr "条款配置正常。"
+
+msgid "Text-only interactions are unavailable in silent mode."
+msgstr "静默模式下无法使用纯台词互动。"
 
 msgid "Texture"
 msgstr "贴图"
@@ -2033,14 +2246,23 @@ msgstr "动作目录包含重复 ID 或无效文件引用。"
 msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 msgstr "新模型无法按文件路径保留现有 %s 动作。配置未改变；确认后勾选“允许重置不兼容动作”再上传。"
 
+msgid "The newest item has not reached the selected waiting period."
+msgstr "目录中最新修改的文件或子目录尚未达到所选等待期。"
+
 msgid "The newest item in this subtree is still within the minimum waiting period."
 msgstr "此子树中最新修改的条目尚未达到最低等待期。"
+
+msgid "The original resource path is occupied. Nothing will be overwritten."
+msgstr "原资源路径已被占用，本次不会覆盖。"
 
 msgid "The path display is truncated; metadata counts cover the bounded scan."
 msgstr "路径列表已截断；元数据统计覆盖本次有界扫描。"
 
 msgid "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
 msgstr "插件不附带 Core 或模型。请自行取得有权在本站使用的资源，阅读来源许可与使用条件；导入成功不代表取得再分发许可。"
+
+msgid "The recovery directory must be private to its server owner (0700)."
+msgstr "恢复目录须仅允许服务器所有者访问，权限为 0700。"
 
 msgid "The rendering program is invalid; this character cannot be displayed."
 msgstr "绘图程序无效，无法显示此角色"
@@ -2126,6 +2348,9 @@ msgstr "此角色已有点击区域绑定。请仅导入台词，或先在原设
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "此角色需要 WebGL 2，请选择其他角色或更换浏览器"
 
+msgid "This directory contains files outside the model runtime references. Preserve it for manual review."
+msgstr "此目录含模型运行时引用之外的文件，请保留供人工核查。"
+
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "此入口检查不渲染模型。移动端仍默认关闭；减少动画与账号显示偏好仍然有效。"
 
@@ -2143,6 +2368,15 @@ msgstr "此偏好仅在本页生效；浏览器未允许保存。"
 
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr "此预览将在 15 分钟后过期。其他地方修改配置后，需要重新预览。"
+
+msgid "This review expires after 15 minutes. Changes to references, files or storage invalidate it."
+msgstr "复核结果在 15 分钟后失效。引用、文件或存储目录变化后须重新复核。"
+
+msgid "This rule has no lines."
+msgstr "此规则没有台词。"
+
+msgid "This rule is disabled."
+msgstr "此规则未启用。"
 
 msgid "This subtree contains protected storage; preserve it as a whole."
 msgstr "此子树含有受保护存储，请整体保留。"
@@ -2189,8 +2423,14 @@ msgstr "工具操作已完成"
 msgid "Trash"
 msgstr "回收站"
 
+msgid "Try unsaved changes"
+msgstr "试播未保存的内容"
+
 msgid "Turn with hands behind"
 msgstr "转身背手"
+
+msgid "Type the exact directory name to permanently delete it"
+msgstr "输入完整目录名以确认永久删除"
 
 msgid "Unchanged"
 msgstr "未变化"
@@ -2227,6 +2467,9 @@ msgstr "未知动作"
 
 msgid "Unreferenced / preserve"
 msgstr "未引用／保留"
+
+msgid "Unsaved interaction preview"
+msgstr "未保存的互动试播"
 
 msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
 msgstr "最多 8 个命名组合，可选择动作、表情、纯文本台词或将其组合。全部留空可移除预设。名称最多 80 字节，台词最多 300 字节。仅在访客主动操作时播放。"
@@ -2299,6 +2542,9 @@ msgstr "欢迎回来，我们按你的节奏继续吧。"
 
 msgid "Welcome motion (first display)"
 msgstr "欢迎动作（首次显示时播放）"
+
+msgid "Welcome takes priority over the time-of-day rule. Both run only on the first display."
+msgstr "欢迎台词优先于时段台词，两者都只在首次展示时触发。"
 
 msgid "Welcome. I hope you find something here."
 msgstr "欢迎来到这里，希望你有所发现。"

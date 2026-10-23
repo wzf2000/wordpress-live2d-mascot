@@ -76,7 +76,9 @@ require_once __DIR__ . '/hit-settings.php';
 require_once __DIR__ . '/account-preferences.php';
 require_once __DIR__ . '/capture-settings.php';
 require_once __DIR__ . '/interaction-transfer.php';
+require_once __DIR__ . '/interaction-preview.php';
 require_once __DIR__ . '/admin-inventory.php';
+require_once __DIR__ . '/admin-recovery.php';
 require_once __DIR__ . '/admin-listing.php';
 require_once __DIR__ . '/admin-readiness.php';
 function wzf_mascot_save_character($id, $version, $fields) {
@@ -145,8 +147,8 @@ function wzf_mascot_settings_post() {
 }
 function wzf_mascot_admin_styles($hook) {
     if (!in_array($hook, ['settings_page_wzf-mascot','profile.php','user-edit.php'], true)) return;
-    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.10.0-rc.2', true);
-    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.10.0-rc.2.1');
+    if ($hook === 'settings_page_wzf-mascot') wp_enqueue_script('wzf-mascot-admin', plugins_url('admin.js', dirname(__DIR__) . '/live2d-show.php'), [], '3.11.0', true);
+    wp_enqueue_style('wzf-mascot-admin', plugins_url('admin.css', dirname(__DIR__) . '/live2d-show.php'), [], '3.11.0');
 }
 function wzf_mascot_motion_select($key, $label, $motions, $value, $optional = false) {
     echo '<div class="wzf-mascot-field"><label for="mascot-' . esc_attr($key) . '">' . esc_html($label) . '</label><select id="mascot-' . esc_attr($key) . '" name="' . esc_attr($key) . '">';
@@ -229,6 +231,7 @@ function wzf_mascot_admin_page() {
     wzf_mascot_mobile_panel($config);
     wzf_mascot_admin_diagnostics($config, $display_rows);
     wzf_mascot_inventory_panel($raw);
+    wzf_mascot_recovery_panel($raw);
     echo '</div>';
 }
 add_action('admin_post_wzf_mascot_settings', 'wzf_mascot_settings_post');

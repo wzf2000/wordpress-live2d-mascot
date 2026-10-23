@@ -128,6 +128,9 @@ msgstr "A preset needs a name and at least one motion, expression or line."
 msgid "A preset resource cannot be mapped. Repair the preset before exporting."
 msgstr "A preset resource cannot be mapped. Repair the preset before exporting."
 
+msgid "A recovery record is unreadable or invalid. Preserve it for server inspection."
+msgstr "A recovery record is unreadable or invalid. Preserve it for server inspection."
+
 msgid "A resource or settings task is in progress. Inspect task status before retrying."
 msgstr "A resource or settings task is in progress. Inspect task status before retrying."
 
@@ -242,6 +245,9 @@ msgstr "Another request changed the resource configuration. Refresh before retry
 msgid "Another request changed the resource configuration. Refresh before trying again."
 msgstr "Another request changed the resource configuration. Refresh before trying again."
 
+msgid "Apply reviewed operation"
+msgstr "Apply reviewed operation"
+
 msgid "Apply reviewed template"
 msgstr "Apply reviewed template"
 
@@ -275,6 +281,9 @@ msgstr "Arms open · smile with eyes closed"
 msgid "Arms slightly open"
 msgstr "Arms slightly open"
 
+msgid "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+msgstr "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+
 msgid "Automatic dialogue"
 msgstr "Automatic dialogue"
 
@@ -298,6 +307,9 @@ msgstr "Between 1 and 16 textures are required."
 
 msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
 msgstr "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+
+msgid "Blocked"
+msgstr "Blocked"
 
 msgid "Blush"
 msgstr "Blush"
@@ -400,6 +412,9 @@ msgstr "Change character"
 
 msgid "Change expression"
 msgstr "Change expression"
+
+msgid "Changed"
+msgstr "Changed"
 
 msgid "Character"
 msgstr "Character"
@@ -533,6 +548,9 @@ msgstr "Check installed resources"
 msgid "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
 msgstr "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
 
+msgid "Check resource terms"
+msgstr "Check resource terms"
+
 msgid "Check the installed resources before retrying."
 msgstr "Check the installed resources before retrying."
 
@@ -547,6 +565,12 @@ msgstr "Cheerful greeting"
 
 msgid "Chin in hand · open palm"
 msgstr "Chin in hand · open palm"
+
+msgid "Choose 1–50 target characters."
+msgstr "Choose 1–50 target characters."
+
+msgid "Choose a draft rule or preset to try."
+msgstr "Choose a draft rule or preset to try."
 
 msgid "Choose a recent character candidate"
 msgstr "Choose a recent character candidate"
@@ -602,6 +626,9 @@ msgstr "Click"
 msgid "Close interaction"
 msgstr "Close interaction"
 
+msgid "Close preview"
+msgstr "Close preview"
+
 msgid "Compact mobile size:"
 msgstr "Compact mobile size:"
 
@@ -619,6 +646,9 @@ msgstr "Configured · Web 5 R5"
 
 msgid "Confirm recovery of the interrupted task record."
 msgstr "Confirm recovery of the interrupted task record."
+
+msgid "Confirm reviewed operation"
+msgstr "Confirm reviewed operation"
 
 msgid "Confirm the displayed interaction changes before applying."
 msgstr "Confirm the displayed interaction changes before applying."
@@ -674,6 +704,9 @@ msgstr "Current / previous overlap"
 msgid "Current chatter motions are retained."
 msgstr "Current chatter motions are retained."
 
+msgid "Current free space:"
+msgstr "Current free space:"
+
 msgid "Current model directory"
 msgstr "Current model directory"
 
@@ -685,6 +718,9 @@ msgstr "Current thumbnail"
 
 msgid "Current, previous and shared references"
 msgstr "Current, previous and shared references"
+
+msgid "Current, previous, disabled or trashed resources and intersecting references are protected."
+msgstr "Current, previous, disabled or trashed resources and intersecting references are protected."
 
 msgid "Default layout configuration is invalid."
 msgstr "Default layout configuration is invalid."
@@ -800,6 +836,9 @@ msgstr "Enabled"
 msgid "Encrypted ZIP files are not supported."
 msgstr "Encrypted ZIP files are not supported."
 
+msgid "End preview"
+msgstr "End preview"
+
 msgid "Engine"
 msgstr "Engine"
 
@@ -811,6 +850,9 @@ msgstr "Even when reading gets absorbing, give your eyes a rest."
 
 msgid "Evening"
 msgstr "Evening"
+
+msgid "Exact resource directory name"
+msgstr "Exact resource directory name"
 
 msgid "Existing resource configuration is invalid."
 msgstr "Existing resource configuration is invalid."
@@ -832,6 +874,9 @@ msgstr "Expression is invalid."
 
 msgid "Expression reset"
 msgstr "Expression reset"
+
+msgid "Expressions"
+msgstr "Expressions"
 
 msgid "Favorite %1$s"
 msgstr "Favorite %1$s"
@@ -874,6 +919,9 @@ msgstr "Frontend display"
 
 msgid "Frontend entry checks"
 msgstr "Frontend entry checks"
+
+msgid "Gaze parameters"
+msgstr "Gaze parameters"
 
 msgid "Getting one question clear is already a good start."
 msgstr "Getting one question clear is already a good start."
@@ -983,11 +1031,17 @@ msgstr "Hit area bindings are invalid."
 msgid "Hit area bindings saved."
 msgstr "Hit area bindings saved."
 
+msgid "Hit areas"
+msgstr "Hit areas"
+
 msgid "I am here."
 msgstr "I am here."
 
 msgid "I am ready! How about your curiosity?"
 msgstr "I am ready! How about your curiosity?"
+
+msgid "I confirm this reviewed move without changing configuration."
+msgstr "I confirm this reviewed move without changing configuration."
 
 msgid "I have checked the resource terms and explicitly authorize character PNG downloads."
 msgstr "I have checked the resource terms and explicitly authorize character PNG downloads."
@@ -1006,6 +1060,9 @@ msgstr "I reviewed these changes and want to replace the selected interaction se
 
 msgid "I understand that recovery only removes the interrupted task record."
 msgstr "I understand that recovery only removes the interrupted task record."
+
+msgid "I understand this deletion is irreversible."
+msgstr "I understand this deletion is irreversible."
 
 msgid "Idle"
 msgstr "Idle"
@@ -1031,8 +1088,14 @@ msgstr "Import one model, enable a character, or repair isolated entries using r
 msgid "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
 msgstr "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
 
+msgid "Import the verified Core before previewing."
+msgstr "Import the verified Core before previewing."
+
 msgid "Import type is invalid."
 msgstr "Import type is invalid."
+
+msgid "In recovery storage"
+msgstr "In recovery storage"
 
 msgid "Include read-only cleanup review"
 msgstr "Include read-only cleanup review"
@@ -1045,6 +1108,9 @@ msgstr "Interact"
 
 msgid "Interaction JSON (up to 64 KiB)"
 msgstr "Interaction JSON (up to 64 KiB)"
+
+msgid "Interaction draft is invalid."
+msgstr "Interaction draft is invalid."
 
 msgid "Interaction help"
 msgstr "Interaction help"
@@ -1078,6 +1144,9 @@ msgstr "Invalid configuration"
 
 msgid "Invalid configuration structure · Isolated"
 msgstr "Invalid configuration structure · Isolated"
+
+msgid "Invalid recovery operation."
+msgstr "Invalid recovery operation."
 
 msgid "Invalid status"
 msgstr "Invalid status"
@@ -1127,6 +1196,9 @@ msgstr "Loading character…"
 msgid "Loading mascot…"
 msgstr "Loading mascot…"
 
+msgid "Loading preview…"
+msgstr "Loading preview…"
+
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -1141,6 +1213,9 @@ msgstr "Logical bytes"
 
 msgid "Logical bytes / files"
 msgstr "Logical bytes / files"
+
+msgid "Logical size:"
+msgstr "Logical size:"
 
 msgid "Lowered brows"
 msgstr "Lowered brows"
@@ -1165,6 +1240,9 @@ msgstr "Meow? Found something new?"
 
 msgid "Minimum review waiting period (days)"
 msgstr "Minimum review waiting period (days)"
+
+msgid "Minimum waiting period (days)"
+msgstr "Minimum waiting period (days)"
 
 msgid "Minimum waiting period reached; review references and recovery needs before any cleanup."
 msgstr "Minimum waiting period reached; review references and recovery needs before any cleanup."
@@ -1226,6 +1304,9 @@ msgstr "Motion or expression resources are invalid. Try again."
 msgid "Motion stopped; returned to idle"
 msgstr "Motion stopped; returned to idle"
 
+msgid "Motions"
+msgstr "Motions"
+
 msgid "Motions is invalid."
 msgstr "Motions is invalid."
 
@@ -1234,6 +1315,12 @@ msgstr "Move mascot"
 
 msgid "Move mascot: drag, use arrow keys, or Escape to reset"
 msgstr "Move mascot: drag, use arrow keys, or Escape to reset"
+
+msgid "Move one unreferenced resource root"
+msgstr "Move one unreferenced resource root"
+
+msgid "Move to recovery storage"
+msgstr "Move to recovery storage"
 
 msgid "Move to trash"
 msgstr "Move to trash"
@@ -1265,6 +1352,9 @@ msgstr "Newest modification (UTC)"
 msgid "No account preferences saved. Saving is optional."
 msgstr "No account preferences saved. Saving is optional."
 
+msgid "No associated motion; showing text only."
+msgstr "No associated motion; showing text only."
+
 msgid "No candidate character"
 msgstr "No candidate character"
 
@@ -1282,6 +1372,9 @@ msgstr "No chatter motions are available."
 
 msgid "No cleanup review rows were available within the inspection limits."
 msgstr "No cleanup review rows were available within the inspection limits."
+
+msgid "No draft lines or presets are available."
+msgstr "No draft lines or presets are available."
 
 msgid "No favorites yet. Turn off “Favorites only” to see all characters."
 msgstr "No favorites yet. Turn off “Favorites only” to see all characters."
@@ -1319,6 +1412,9 @@ msgstr "Not imported"
 msgid "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
 msgstr "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
 
+msgid "Nothing is loaded until you start. Changes remain unsaved."
+msgstr "Nothing is loaded until you start. Changes remain unsaved."
+
 msgid "Observed paths (admin only)"
 msgstr "Observed paths (admin only)"
 
@@ -1343,17 +1439,26 @@ msgstr "Official samples"
 msgid "One more page, or a well-earned rest?"
 msgstr "One more page, or a well-earned rest?"
 
+msgid "One or more targets are blocked. Nothing was applied."
+msgstr "One or more targets are blocked. Nothing was applied."
+
 msgid "One small step at a time!"
 msgstr "One small step at a time!"
 
 msgid "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 msgstr "Only PNG, JPEG or WebP is accepted; dimensions must not exceed 2048 and 4M pixels."
 
+msgid "Only complete model or thumbnail roots are eligible. Current, previous, disabled, trashed, Core and unknown resources are protected. All files must have reached the waiting period."
+msgstr "Only complete model or thumbnail roots are eligible. Current, previous, disabled, trashed, Core and unknown resources are protected. All files must have reached the waiting period."
+
 msgid "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
 msgstr "Only empty slots are filled. Review the text and existing greeting motion before saving; no changes are saved automatically."
 
 msgid "Only on interaction"
 msgstr "Only on interaction"
+
+msgid "Only the first 100 records are shown. Ask the server administrator to inspect the remaining records."
+msgstr "Only the first 100 records are shown. Ask the server administrator to inspect the remaining records."
 
 msgid "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
 msgstr "Only the verified Web 5 R5 live2dcubismcore.min.js is accepted; SHA256 does not match."
@@ -1400,6 +1505,12 @@ msgstr "PNG download started."
 msgid "Partial: %s observed bytes"
 msgstr "Partial: %s observed bytes"
 
+msgid "Partially deleted; new confirmation required"
+msgstr "Partially deleted; new confirmation required"
+
+msgid "Pause"
+msgstr "Pause"
+
 msgid "Pause and see whether you missed a clue."
 msgstr "Pause and see whether you missed a clue."
 
@@ -1408,6 +1519,18 @@ msgstr "Pause for a breath when you need one."
 
 msgid "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
 msgstr "Pause when mobile inputs are focused (keep inputs and the keyboard clear)"
+
+msgid "Permanent deletion"
+msgstr "Permanent deletion"
+
+msgid "Permanent deletion requires the server opt-in and at least 30 days in recovery storage."
+msgstr "Permanent deletion requires the server opt-in and at least 30 days in recovery storage."
+
+msgid "Permanently delete"
+msgstr "Permanently delete"
+
+msgid "Permanently deleted"
+msgstr "Permanently deleted"
 
 msgid "Physics"
 msgstr "Physics"
@@ -1424,8 +1547,17 @@ msgstr "Pose"
 msgid "Position and size"
 msgstr "Position and size"
 
+msgid "Prepared records retain the original directory or a complete recovery payload. Interrupted deletion remains partial; it cannot be restored. Review again before continuing deletion. Keep recovery manifests with their payloads."
+msgstr "Prepared records retain the original directory or a complete recovery payload. Interrupted deletion remains partial; it cannot be restored. Review again before continuing deletion. Keep recovery manifests with their payloads."
+
+msgid "Prepared; inspect original and recovery storage"
+msgstr "Prepared; inspect original and recovery storage"
+
 msgid "Preparing PNG…"
 msgstr "Preparing PNG…"
+
+msgid "Preparing preview…"
+msgstr "Preparing preview…"
 
 msgid "Preset expression"
 msgstr "Preset expression"
@@ -1448,8 +1580,17 @@ msgstr "Preset name"
 msgid "Preview character"
 msgstr "Preview character"
 
+msgid "Preview could not load. Check the installed resources and try again."
+msgstr "Preview could not load. Check the installed resources and try again."
+
+msgid "Preview ended."
+msgstr "Preview ended."
+
 msgid "Preview template changes"
 msgstr "Preview template changes"
+
+msgid "Preview uses this form’s current values without saving them."
+msgstr "Preview uses this form’s current values without saving them."
 
 msgid "Previewing. Select “Use this character” to save."
 msgstr "Previewing. Select “Use this character” to save."
@@ -1541,6 +1682,15 @@ msgstr "Recent confirmed characters"
 msgid "Recover interrupted task"
 msgstr "Recover interrupted task"
 
+msgid "Recovery is read-only until the server administrator configures WZF_MASCOT_RECOVERY_DIR as a persistent private directory outside the web root."
+msgstr "Recovery is read-only until the server administrator configures WZF_MASCOT_RECOVERY_DIR as a persistent private directory outside the web root."
+
+msgid "Recovery records"
+msgstr "Recovery records"
+
+msgid "Recovery storage must be on the same filesystem as the resource directory."
+msgstr "Recovery storage must be on the same filesystem as the resource directory."
+
 msgid "Reduced motion enabled"
 msgstr "Reduced motion enabled"
 
@@ -1564,6 +1714,9 @@ msgstr "Rendering failed. Try again."
 
 msgid "Replaced"
 msgstr "Replaced"
+
+msgid "Requires WZF_MASCOT_ALLOW_PERMANENT_DELETE and at least 30 days in recovery storage. Actual space released may differ from logical size."
+msgstr "Requires WZF_MASCOT_ALLOW_PERMANENT_DELETE and at least 30 days in recovery storage. Actual space released may differ from logical size."
 
 msgid "Reset defaults"
 msgstr "Reset defaults"
@@ -1598,6 +1751,9 @@ msgstr "Resource download interrupted. Check your connection and retry."
 msgid "Resource file"
 msgstr "Resource file"
 
+msgid "Resource history and recovery"
+msgstr "Resource history and recovery"
+
 msgid "Resource loading timed out. Try again."
 msgstr "Resource loading timed out. Try again."
 
@@ -1616,6 +1772,12 @@ msgstr "Resource paths must not use symbolic links."
 msgid "Resource preparation"
 msgstr "Resource preparation"
 
+msgid "Resource recovery checks failed. Refresh the review; retain both storage locations for inspection."
+msgstr "Resource recovery checks failed. Refresh the review; retain both storage locations for inspection."
+
+msgid "Resource recovery operation completed. Review the record below."
+msgstr "Resource recovery operation completed. Review the record below."
+
 msgid "Resource write verification failed."
 msgstr "Resource write verification failed."
 
@@ -1631,17 +1793,29 @@ msgstr "Resources imported."
 msgid "Rest your eyes for a moment."
 msgstr "Rest your eyes for a moment."
 
+msgid "Restore"
+msgstr "Restore"
+
 msgid "Restore a configuration backup before retrying."
 msgstr "Restore a configuration backup before retrying."
 
 msgid "Restore from trash"
 msgstr "Restore from trash"
 
+msgid "Restore interrupted; review to finish"
+msgstr "Restore interrupted; review to finish"
+
 msgid "Restore the character to a valid status before updating resources."
 msgstr "Restore the character to a valid status before updating resources."
 
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 msgstr "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
+
+msgid "Restored"
+msgstr "Restored"
+
+msgid "Resume"
+msgstr "Resume"
 
 msgid "Retained Core directory / manual review"
 msgstr "Retained Core directory / manual review"
@@ -1664,11 +1838,29 @@ msgstr "Reuse your dialogue and quick interactions with a JSON file. Model files
 msgid "Review interaction changes"
 msgstr "Review interaction changes"
 
+msgid "Review move to recovery storage"
+msgstr "Review move to recovery storage"
+
+msgid "Review permanent deletion"
+msgstr "Review permanent deletion"
+
+msgid "Review restore"
+msgstr "Review restore"
+
 msgid "Review status"
 msgstr "Review status"
 
+msgid "Review storage usage above first. Moving to recovery storage and restoring do not free space on this filesystem. Logical file size and current free space are separate measurements."
+msgstr "Review storage usage above first. Moving to recovery storage and restoring do not free space on this filesystem. Logical file size and current free space are separate measurements."
+
+msgid "Reviewed template applied to all selected characters."
+msgstr "Reviewed template applied to all selected characters."
+
 msgid "Roll back to previous resources and motions"
 msgstr "Roll back to previous resources and motions"
+
+msgid "Rule notes"
+msgstr "Rule notes"
 
 msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
 msgstr "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
@@ -1678,6 +1870,9 @@ msgstr "Running"
 
 msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
 msgstr "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
+
+msgid "Runtime capabilities"
+msgstr "Runtime capabilities"
 
 msgid "Runtime download failed. Check your connection and retry."
 msgstr "Runtime download failed. Check your connection and retry."
@@ -1763,6 +1958,9 @@ msgstr "Search name or character ID"
 msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 msgstr "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 
+msgid "Select every character you want to update. Review all targets before applying."
+msgstr "Select every character you want to update. Review all targets before applying."
+
 msgid "Select the read-only cleanup review option before continuing."
 msgstr "Select the read-only cleanup review option before continuing."
 
@@ -1798,6 +1996,9 @@ msgstr "Sign in to read or save account preferences."
 
 msgid "Silent"
 msgstr "Silent"
+
+msgid "Simulate trigger"
+msgstr "Simulate trigger"
 
 msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
 msgstr "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
@@ -1847,6 +2048,9 @@ msgstr "Staging / preserve"
 msgid "Stand quietly (idle)"
 msgstr "Stand quietly (idle)"
 
+msgid "Start preview"
+msgstr "Start preview"
+
 msgid "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
 msgstr "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
 
@@ -1864,6 +2068,9 @@ msgstr "Stop sampling"
 
 msgid "Surprised"
 msgstr "Surprised"
+
+msgid "Switch to automatic dialogue to use occasional chatter."
+msgstr "Switch to automatic dialogue to use occasional chatter."
 
 msgid "Swordsman and dragon ready! Which page shall we explore?"
 msgstr "Swordsman and dragon ready! Which page shall we explore?"
@@ -1889,6 +2096,9 @@ msgstr "Tap %1$s to greet"
 msgid "Tap to greet"
 msgstr "Tap to greet"
 
+msgid "Target characters (up to 50)"
+msgstr "Target characters (up to 50)"
+
 msgid "Task age: %s seconds. Age alone does not permit recovery."
 msgstr "Task age: %s seconds. Age alone does not permit recovery."
 
@@ -1909,6 +2119,9 @@ msgstr "Terms"
 
 msgid "Terms configuration is valid."
 msgstr "Terms configuration is valid."
+
+msgid "Text-only interactions are unavailable in silent mode."
+msgstr "Text-only interactions are unavailable in silent mode."
 
 msgid "Texture"
 msgstr "Texture"
@@ -2036,14 +2249,23 @@ msgstr "The motion catalog contains duplicate IDs or invalid file references."
 msgid "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 msgstr "The new model cannot preserve %s motions by file path. Configuration is unchanged. Review and select “Allow incompatible motion reset” before uploading again."
 
+msgid "The newest item has not reached the selected waiting period."
+msgstr "The newest item has not reached the selected waiting period."
+
 msgid "The newest item in this subtree is still within the minimum waiting period."
 msgstr "The newest item in this subtree is still within the minimum waiting period."
+
+msgid "The original resource path is occupied. Nothing will be overwritten."
+msgstr "The original resource path is occupied. Nothing will be overwritten."
 
 msgid "The path display is truncated; metadata counts cover the bounded scan."
 msgstr "The path display is truncated; metadata counts cover the bounded scan."
 
 msgid "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
 msgstr "The plugin includes no Core or models. Obtain resources you have the right to use on this site and read their source licenses and terms. Successful import does not grant redistribution rights."
+
+msgid "The recovery directory must be private to its server owner (0700)."
+msgstr "The recovery directory must be private to its server owner (0700)."
 
 msgid "The rendering program is invalid; this character cannot be displayed."
 msgstr "The rendering program is invalid; this character cannot be displayed."
@@ -2129,6 +2351,9 @@ msgstr "This character has hit-area bindings. Import dialogue only, or remove th
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "This character requires WebGL 2. Choose another character or browser."
 
+msgid "This directory contains files outside the model runtime references. Preserve it for manual review."
+msgstr "This directory contains files outside the model runtime references. Preserve it for manual review."
+
 msgid "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 msgstr "This entry check does not render models. Mobile remains off by default; reduced motion and account display preferences still apply."
 
@@ -2146,6 +2371,15 @@ msgstr "This preference applies only to this page; the browser did not allow sav
 
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
+
+msgid "This review expires after 15 minutes. Changes to references, files or storage invalidate it."
+msgstr "This review expires after 15 minutes. Changes to references, files or storage invalidate it."
+
+msgid "This rule has no lines."
+msgstr "This rule has no lines."
+
+msgid "This rule is disabled."
+msgstr "This rule is disabled."
 
 msgid "This subtree contains protected storage; preserve it as a whole."
 msgstr "This subtree contains protected storage; preserve it as a whole."
@@ -2192,8 +2426,14 @@ msgstr "Tool completed"
 msgid "Trash"
 msgstr "Trash"
 
+msgid "Try unsaved changes"
+msgstr "Try unsaved changes"
+
 msgid "Turn with hands behind"
 msgstr "Turn with hands behind"
+
+msgid "Type the exact directory name to permanently delete it"
+msgstr "Type the exact directory name to permanently delete it"
 
 msgid "Unchanged"
 msgstr "Unchanged"
@@ -2230,6 +2470,9 @@ msgstr "Unknown motion"
 
 msgid "Unreferenced / preserve"
 msgstr "Unreferenced / preserve"
+
+msgid "Unsaved interaction preview"
+msgstr "Unsaved interaction preview"
 
 msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
 msgstr "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
@@ -2302,6 +2545,9 @@ msgstr "Welcome back. We can continue at your pace."
 
 msgid "Welcome motion (first display)"
 msgstr "Welcome motion (first display)"
+
+msgid "Welcome takes priority over the time-of-day rule. Both run only on the first display."
+msgstr "Welcome takes priority over the time-of-day rule. Both run only on the first display."
 
 msgid "Welcome. I hope you find something here."
 msgstr "Welcome. I hope you find something here."

@@ -29,8 +29,8 @@ PINS = {
 PHP_RUNTIME = """echo json_encode([
     'sapi' => PHP_SAPI, 'zts' => PHP_ZTS,
     'ini' => array_map('ini_get', array_combine(
-        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'],
-        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size'])),
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size', 'opcache.validate_timestamps', 'opcache.revalidate_freq', 'opcache.file_update_protection'],
+        ['opcache.enable', 'opcache.enable_cli', 'opcache.jit', 'opcache.jit_buffer_size', 'opcache.validate_timestamps', 'opcache.revalidate_freq', 'opcache.file_update_protection'])),
     'jit' => function_exists('opcache_get_status') ? (opcache_get_status(false)['jit'] ?? null) : null
 ]);"""
 def png_chunk(kind, data):
@@ -85,6 +85,47 @@ def server_diagnostics(path, site):
             if item not in locations and len(locations) < 8:
                 locations.append(item)
     return {'counts': counts, 'locations': locations}
+
+
+def private_payload_http_probe(origin, path, payload):
+    """Stream an anonymous same-origin response; retain metadata, never its body."""
+    if not payload:
+        raise ValueError('Private payload fixture must not be empty')
+    allowed = urllib.parse.urlsplit(origin)
+    def same_origin(url):
+        parsed = urllib.parse.urlsplit(url)
+        return (parsed.scheme, parsed.netloc) == (allowed.scheme, allowed.netloc)
+    class LocalRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            if not same_origin(newurl):
+                raise RuntimeError('Private payload probe refused a redirect outside the lab origin')
+            return super().redirect_request(req, fp, code, msg, headers, newurl)
+    url = origin + path
+    if not same_origin(url):
+        raise ValueError('Private payload probe requires the lab origin')
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), LocalRedirect())
+    try:
+        response = opener.open(url, timeout=15)
+    except urllib.error.HTTPError as error:
+        response = error
+    with response:
+        if not same_origin(response.geturl()):
+            raise RuntimeError('Private payload response left the lab origin')
+        summary = {'status':response.status, 'contentType':response.headers.get('Content-Type', ''),
+                   'redirected':response.geturl() != url, 'privateBytesReturned':False, 'pngSignatureReturned':False}
+        tail = b''; total = 0; overlap = max(len(payload), 8) - 1
+        while True:
+            chunk = response.read(4096)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > 2 * 1024 * 1024:
+                raise RuntimeError('Private payload probe response exceeds its byte limit')
+            window = tail + chunk
+            summary['privateBytesReturned'] |= payload in window
+            summary['pngSignatureReturned'] |= b'\x89PNG\r\n\x1a\n' in window
+            tail = window[-overlap:]
+        return summary
 
 
 def main():
@@ -158,6 +199,10 @@ def main():
     languages = site / 'wp-content/languages'; languages.mkdir(exist_ok=True)
     (languages / 'zh_CN.mo').write_bytes(mo_bytes({'': (None, ['Content-Type: text/plain; charset=UTF-8\nLanguage: zh_CN\nPlural-Forms: nplurals=1; plural=0;\n'])}))
     (mu / 'synthetic-no-mail.php').write_text("<?php add_filter('pre_wp_mail', '__return_true');\n")
+    interaction_counts = lab / 'interaction-counts.txt'
+    (mu / 'synthetic-interaction-counts.php').write_text("<?php if (($_POST['action'] ?? '') === 'wzf_mascot_template_batch_apply') {" +
+        "add_action('added_option',function($name){if($name==='wzf_mascot_import_lock_v1')file_put_contents(" + json.dumps(str(interaction_counts)) + ",\"guard\\n\",FILE_APPEND);});" +
+        "add_action('updated_option',function($name){if($name==='wzf_mascot_resources_v1')file_put_contents(" + json.dumps(str(interaction_counts)) + ",\"save\\n\",FILE_APPEND);});}")
     wp('db', 'create')
     origin = 'http://127.0.0.1:' + str(args.port)
     password = secrets.token_urlsafe(24)
@@ -180,17 +225,20 @@ def main():
     router = lab / 'router.php'
     router.write_text("<?php $p=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH); if ($p === '/__mascot-ci-runtime') { header('Content-Type: application/json'); " + PHP_RUNTIME + " return; } if (is_file($_SERVER['DOCUMENT_ROOT'].$p)) return false; if (is_dir($_SERVER['DOCUMENT_ROOT'].$p) && is_file(rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php')) { require rtrim($_SERVER['DOCUMENT_ROOT'].$p,'/').'/index.php'; return; } require $_SERVER['DOCUMENT_ROOT'].'/index.php';\n")
     logfile = (lab / 'http.log').open('w')
-    server = subprocess.Popen(['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)], env=env, stdout=logfile, stderr=logfile)
+    server_command = ['php', '-S', '127.0.0.1:' + str(args.port), '-t', str(site), str(router)]
+    server = subprocess.Popen(server_command, env=env, stdout=logfile, stderr=logfile)
     checks = []
     completed = False
     failure = None
     last_request = None
     http_runtime = None
+    http_restarts = []
+    private_payload_probe = None
 
     def client(): return urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     anonymous, admin, reader = client(), client(), client()
 
-    def request(opener, path, data=None, files=None, with_headers=False):
+    def request(opener, path, data=None, files=None, with_headers=False, timeout=15):
         nonlocal last_request
         last_request = {'method': 'GET' if data is None and files is None else 'POST',
                         'path': urllib.parse.urlsplit(path).path}
@@ -198,19 +246,54 @@ def main():
         headers = {}
         if files:
             boundary = 'mascot-' + secrets.token_hex(12); parts = []
-            for k, v in data.items():
-                parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
+            for k, values in data.items():
+                for v in values if isinstance(values, list) else [values]:
+                    parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
             for k, (filename, raw) in files.items():
                 parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"; filename="{filename}"\r\nContent-Type: application/octet-stream\r\n\r\n'.encode() + raw + b'\r\n')
             payload = b''.join(parts) + f'--{boundary}--\r\n'.encode(); headers['Content-Type'] = 'multipart/form-data; boundary=' + boundary
         else: payload = urllib.parse.urlencode(data, doseq=True).encode() if data is not None else None
         try:
-            with opener.open(urllib.request.Request(url, payload, headers), timeout=15) as response:
+            with opener.open(urllib.request.Request(url, payload, headers), timeout=timeout) as response:
                 result = (response.status, response.read().decode())
                 return (*result, dict(response.headers.items())) if with_headers else result
         except urllib.error.HTTPError as error:
             result = (error.code, error.read().decode())
             return (*result, dict(error.headers.items())) if with_headers else result
+
+    def runtime_ready():
+        deadline = time.monotonic() + 10
+        while True:
+            if server.poll() is not None:
+                raise RuntimeError('Owned PHP HTTP server exited before readiness')
+            try:
+                status, body = request(anonymous, '/__mascot-ci-runtime', timeout=.5)
+                if status != 200:
+                    raise RuntimeError('Owned PHP HTTP runtime probe failed')
+                runtime = json.loads(body)
+                if runtime.get('sapi') != 'cli-server':
+                    raise RuntimeError('Unexpected PHP HTTP runtime')
+                return runtime
+            except (urllib.error.URLError, ConnectionError):
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('Owned PHP HTTP server readiness deadline exceeded')
+                time.sleep(.05)  # Poll startup readiness; never wait for cache expiry.
+
+    def set_http_config(name, value, raw=False):
+        nonlocal server
+        wp('config', 'set', name, value, *(['--raw'] if raw else []))
+        # A persistent cli-server may keep old wp-config.php bytecode.
+        # Restart only this lab's process; keep its exact PHP
+        # command/environment, cookies, first runtime and append-only HTTP log.
+        if server.poll() is not None:
+            raise RuntimeError('Owned PHP HTTP server exited before config reload')
+        server.terminate()
+        previous_exit = server.wait(timeout=10)
+        logfile.flush()
+        server = subprocess.Popen(server_command, env=env, stdout=logfile, stderr=logfile)
+        runtime = runtime_ready()
+        http_restarts.append({'configuration':name, 'previous_exit':previous_exit, 'runtime':runtime})
+        print('RESTART owned PHP HTTP server after ' + name, flush=True)
 
     def state(): return json.loads(wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode='state'))
     def fixture(mode): return wp('eval-file', str(ROOT / 'tests/wordpress-fixture.php'), mode=mode)
@@ -273,19 +356,14 @@ echo 'released';
                 raise RuntimeError('Synthetic lock holder did not finish cleanly')
 
     try:
-        for _ in range(50):
-            try: request(anonymous, '/wp-login.php'); break
-            except (urllib.error.URLError, ConnectionError): time.sleep(.1)
-        status, runtime_body = request(anonymous, '/__mascot-ci-runtime')
-        assert status == 200
-        http_runtime = json.loads(runtime_body)
+        http_runtime = runtime_ready()
         assert front() is None; record('real install/upgrade preserves existing option; empty resources emit nothing')
         for opener, user in [(admin, 'mascot-admin'), (reader, 'mascot-reader')]:
             request(opener, '/wp-login.php')
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply', 'interaction_preview', 'template_batch_apply']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -507,11 +585,12 @@ echo 'released';
         assert 'root' not in body and str(site) not in body and state() == template_base
         preview_url = inventory_url + '&character=23&mascot_template_preview=1'
 
-        def template_preview(raw, presets=False, actor=None, invalid_nonce=False):
+        def template_preview(raw, presets=False, actor=None, invalid_nonce=False, targets=None):
             code, page = request(admin, inventory_url + '&character=23')
             assert code == 200
             fields = next(f for f in Forms(page).forms if 'action' not in f and f.get('character') == '23')
             if presets: fields['include_presets'] = '1'
+            if targets is not None: fields['targets[]'] = targets
             if invalid_nonce: fields['_wpnonce'] = 'invalid'
             return request(actor or admin, preview_url, fields, {'template': ('interactions.json', raw)})
 
@@ -576,6 +655,49 @@ echo 'released';
         wp('option', 'update', 'wzf_mascot_resources_v1', json.dumps(template_base['config']), '--format=json')
         assert state() == template_base
         record('real preset template maps existing paths, rejects bound hit areas and preserves all resource bytes')
+
+        # The preview document contains draft data and one small controller only.
+        # Heavy runtime/model requests are checked separately by browser fixtures.
+        preview_before = state()
+        page = request(admin, inventory_url + '&character=legacy_character')[1]
+        preview_nonce = re.search(r'class="button wzf-mascot-preview-draft"[^>]*data-nonce="([^"]+)"', page)[1]
+        draft = {'dialogue': {'click': {'enabled': True, 'cooldown': 30, 'lines': ['Unsaved HTTP line']}},
+                 'presets': [{'id':'http-draft','name':'HTTP draft','motion':'01_extra','expression':'','line':'Unsaved preset'}]}
+        preview_fields = {'action':'wzf_mascot_interaction_preview','_wpnonce':preview_nonce,
+            'character':'legacy_character','version':preview_before['version'],'draft':json.dumps(draft)}
+        assert post(preview_fields, opener=reader)[0] == 403
+        assert post(dict(preview_fields,_wpnonce='invalid'))[0] == 403
+        for changed in [dict(preview_fields,version='0'*64), dict(preview_fields,url='https://invalid.example/'),
+                        dict(preview_fields,draft=json.dumps({'root':'https://invalid.example/'}))]:
+            assert post(changed)[0] == 400
+            assert state() == preview_before
+        code, preview_html = post(preview_fields)
+        assert code == 200 and 'Unsaved HTTP line' in preview_html and 'interaction-preview.js' in preview_html
+        assert '<script src="' + front()['core'] not in preview_html
+        assert state() == preview_before
+        record('real unsaved preview nonce, permission, version and strict fields reject writes; document contains current draft without heavy script loading')
+
+        batch_before=state()
+        code, batch_page=template_preview(raw_template, targets=['legacy_character','23','legacy_character'])
+        assert code == 200 and state() == batch_before
+        batch_form=next(f for f in Forms(batch_page).forms if f.get('action')=='wzf_mascot_template_batch_apply')
+        assert json.loads(batch_form['targets']) == ['23','legacy_character']
+        batch_form['confirm']='1'
+        for changed in [dict(batch_form,targets='["missing"]'),dict(batch_form,signature='0'*64),dict(batch_form,issued='1')]:
+            post(changed);assert state()==batch_before
+        code, blocked_page=template_preview(raw_template,targets=['23','missing'])
+        assert code==200 and not any(f.get('action')=='wzf_mascot_template_batch_apply' for f in Forms(blocked_page).forms)
+        assert state()==batch_before
+        if interaction_counts.exists(): interaction_counts.unlink()
+        post(batch_form)
+        batch_after=state()
+        assert interaction_counts.read_text().splitlines()==['guard','save']
+        for target in ['23','legacy_character']:
+            assert batch_after['config']['characters'][target]['dialogue']['click']['lines']==template['dialogue']['click']['lines']
+        assert batch_after['config']['characters']['fixture']==batch_before['config']['characters']['fixture']
+        assert {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site/'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}==template_files
+        wp('option','update','wzf_mascot_resources_v1',json.dumps(batch_before['config']),'--format=json')
+        record('real all-target template preview blocks any invalid target; signed batch applies once under one guard and one resource update')
         data = form('wzf_mascot_hits'); data.update({'hitBindings[0][area]':'Head [synthetic]','hitBindings[0][preset]':'hello'})
         post(data); hit_state = state()['config']; assert hit_state['characters']['legacy_character']['hitBindings'] == [{'area':'Head [synthetic]','preset':'hello'}]
         bad = dict(data); bad['version'] = state()['version']; bad['hitBindings[0][area]']='Missing'
@@ -704,6 +826,59 @@ echo 'released';
         data = form('wzf_mascot_mobile'); data.update(mobile_enabled='1', pause_input='1'); post(data)
         assert front()['mobileEnabled'] is True and front()['mobilePauseOnInput'] is True
         record('real thumbnail upload/reencode/clear and explicit mobile settings')
+
+        # Operate only on the real re-encoded synthetic thumbnail just detached
+        # above. The private directory is outside this disposable HTTP document root.
+        recovery_before = state()
+        private = lab / 'recovery'; private.mkdir(mode=0o700)
+        assert 'WZF_MASCOT_RECOVERY_DIR' in request(admin, inventory_url)[1]
+        default_error = wp('eval', "wp_set_current_user(" + str(uid) + ");try{wzf_mascot_recovery_preview('quarantine'," + json.dumps(Path(thumb).parent.name) + ");echo 'unsafe';}catch(Throwable $e){echo 'disabled';}")
+        assert default_error == 'disabled' and state() == recovery_before
+        record('resource recovery is read-only without an explicit private server directory')
+        set_http_config('WZF_MASCOT_RECOVERY_DIR', str(private))
+        old_root = thumb_file.parent.name
+        for path in [thumb_file, thumb_file.parent]: os.utime(path,(time.time()-40*86400,)*2)
+        def recovery_review(operation, target):
+            page = request(admin, inventory_url)[1]
+            nonce = next(f['_wpnonce'] for f in Forms(page).forms if f.get('recovery_review') == '1')
+            fields = {'recovery_review':'1','operation':operation,'path':target,'days':'30','version':state()['version'],'_wpnonce':nonce}
+            code, page = request(admin, inventory_url, fields)
+            assert code == 200
+            return fields, next((f for f in Forms(page).forms if f.get('action') == 'wzf_mascot_recovery'), None)
+        fields, move = recovery_review('quarantine',old_root)
+        assert move and state() == recovery_before
+        assert request(reader, inventory_url,fields)[0] == 403
+        assert request(admin,inventory_url,dict(fields,_wpnonce='invalid'))[0] == 403
+        assert post(dict(move,confirm='1'),opener=reader)[0] == 403
+        assert post(dict(move,_wpnonce='invalid',confirm='1'))[0] == 403
+        post(move); assert thumb_file.exists()  # Separate confirmation.
+        post(dict(move,confirm='1',signature='0'*64)); assert thumb_file.exists()
+        post(dict(move,confirm='1')); assert not thumb_file.exists() and state() == recovery_before
+        records=list((private/'blog-1').glob('*/manifest.json')); assert len(records)==1
+        rid=records[0].parent.name; payload=records[0].parent/'payload/image.png'
+        assert payload.is_file()
+        private_payload_probe = private_payload_http_probe(origin, '/recovery/blog-1/'+rid+'/payload/image.png', payload.read_bytes())
+        print('Private payload HTTP probe: ' + json.dumps(private_payload_probe), flush=True)
+        assert private_payload_probe['status'] in (200, 404)
+        assert not private_payload_probe['contentType'].split(';', 1)[0].strip().lower().startswith('image/')
+        assert not private_payload_probe['privateBytesReturned'] and not private_payload_probe['pngSignatureReturned']
+        _, restore=recovery_review('restore',rid); assert restore
+        post(dict(restore,confirm='1')); assert thumb_file.is_file() and not payload.exists()
+        assert json.loads(records[0].read_text())['state']=='restored' and state()==recovery_before
+        record('real signed quarantine and restore require permission, nonce and separate confirmation; private payload has no HTTP route and config is unchanged')
+        _, move=recovery_review('quarantine',old_root); post(dict(move,confirm='1'))
+        records=[p for p in (private/'blog-1').glob('*/manifest.json') if json.loads(p.read_text())['state']=='quarantined']; assert len(records)==1
+        rid=records[0].parent.name
+        _, purge=recovery_review('purge',rid); assert purge is None
+        set_http_config('WZF_MASCOT_ALLOW_PERMANENT_DELETE', 'true', raw=True)
+        _, purge=recovery_review('purge',rid); assert purge is None  # No shortened 30-day hold.
+        wp('eval', "$r=wzf_mascot_recovery_record("+json.dumps(rid)+");$r['quarantined']=time()-31*86400;wzf_mascot_recovery_write(wzf_mascot_recovery_record_dir($r['id']),$r);")
+        _, purge=recovery_review('purge',rid); assert purge
+        post(dict(purge,confirm='1',typed='wrong')); assert (records[0].parent/'payload').exists()
+        post(dict(purge,confirm='1',typed=old_root)); assert not (records[0].parent/'payload').exists()
+        assert json.loads(records[0].read_text())['state']=='purged' and state()==recovery_before
+        set_http_config('WZF_MASCOT_ALLOW_PERMANENT_DELETE', 'false', raw=True)
+        record('real permanent deletion requires server opt-in, 30 days in quarantine, signed review and exact-name confirmation; tombstone and configuration remain')
         fixture('restore'); fixture('fault'); faulty = state(); assert set(front()['characters']) == {'fixture', 'legacy_character', '23'}
         status, html = request(admin, '/wp-admin/options-general.php?page=wzf-mascot&character=bad-name'); assert status == 200 and 'Isolated' in html
         assert str(site) not in request(anonymous, '/')[1] and state() == faulty
@@ -737,8 +912,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 29:
-            raise RuntimeError(f'Expected 29 completed integration groups, got {len(checks)}')
+        if len(checks) != 34:
+            raise RuntimeError(f'Expected 34 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}
@@ -748,14 +923,25 @@ echo 'released';
         if exit_before_cleanup is None:
             server.terminate()
         server.wait(timeout=10); logfile.close()
+        http_diagnostics = server_diagnostics(lab / 'http.log', site)
+        php_log_failure = {level:count for level,count in http_diagnostics['counts'].items()
+                           if level in ('Warning', 'Fatal error', 'Parse error') and count > 0}
+        if php_log_failure:
+            completed = False
+            if failure is None:
+                failure = {'type':'PHPServerDiagnostics', 'severities':php_log_failure}
         report = {'wordpress': PINS['wordpress'][0], 'wp_cli': PINS['wp-cli'][0], 'php': subprocess.check_output(['php', '-r', 'echo PHP_VERSION;'], text=True), 'checks': checks, 'complete': completed, 'synthetic_only': True, 'real_rendering_tested': False, 'server_stopped': True}
         report['http_server'] = {'exit_before_cleanup': exit_before_cleanup,
                                  'exit_after_cleanup': server.returncode,
                                  'runtime': http_runtime,
-                                 'log': server_diagnostics(lab / 'http.log', site)}
+                                 'configuration_restarts': http_restarts,
+                                 'private_payload_probe': private_payload_probe,
+                                 'log': http_diagnostics}
         if failure is not None:
             report['failure'] = failure
         (lab / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
+    if php_log_failure:
+        raise RuntimeError('PHP HTTP server emitted Warning/Fatal/Parse diagnostics; see results.json')
     print(json.dumps(report, indent=2))
 
 

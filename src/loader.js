@@ -249,6 +249,7 @@
       windowSequence = 0,
       sampleSeries = null,
       seriesMessage = '';
+    let resourceOwner = null;
     const diagnosticsAllowed = config.diagnosticsAllowed === true;
     const diagnostics = diagnosticsAllowed ? make('details', '', 'wzf-haru-diagnostics') : document.createDocumentFragment();
     diagnostics.append(make('summary', t("Local diagnostics")));
@@ -342,8 +343,46 @@
       for (const load of copy.loadAttempts || []) delete load.started;
       return copy;
     };
+    // Resource ownership is a load attempt, not the engine generation: load()
+    // deliberately destroys the previous engine after this attempt has started.
+    const resourceCodes = new Set(['timeout', 'http', 'network', 'invalid', 'cancelled']);
+    const createResourceOwner = (loadRecord) => {
+      const epoch = diagnosticGeneration, attempt = loadAttempt, pending = new Set();
+      let closed = false, slots = 0, ordinal = 0;
+      const valid = () => !closed && diagnosticsEnabled && diagnosticGeneration === epoch &&
+        loadAttempt === attempt && currentLoad === loadRecord &&
+        diagnosticReport?.loadSessionId === loadRecord.sessionId;
+      const start = (category, operation, sharedOrdinal) => {
+        if (!valid() || !['core','engine','model','catalog','moc','physics','pose','texture','shader','motion'].includes(category) ||
+            !['download','decode','runtime-wait','reuse'].includes(operation)) return;
+        if (slots >= 128) { loadRecord.resources.dropped++; return; }
+        slots++;
+        const number = sharedOrdinal ?? ++ordinal, started = performance.now();
+        let done = false;
+        const finish = (error, bodyBytes = null) => {
+          if (done) return;
+          done = true; pending.delete(finish);
+          if (!valid()) return;
+          const code = error ? error.name === 'AbortError' ? 'cancelled' : resourceCodes.has(error.code) ? error.code : 'invalid' : null;
+          loadRecord.resources.events.push({category, operation, ordinal: number,
+            startMs: Math.max(0, started - loadRecord.started), durationMs: Math.max(0, performance.now() - started),
+            bodyBytes: operation === 'download' && !code ? bodyBytes : null, status: code === 'cancelled' ? 'cancelled' : code ? 'failed' : 'ok', errorCode: code});
+        };
+        pending.add(finish);
+        return {ordinal: number, finish};
+      };
+      const close = (reason) => {
+        if (!valid()) { closed = true; return; }
+        // End in-flight observations once. This does not change network policy.
+        for (const finish of [...pending]) finish({name:'AbortError'});
+        loadRecord.resources.endedBy = reason;
+        closed = true;
+      };
+      return {start, close};
+    };
     const diagnosticBegin = (id, fallback = false) => {
       if (!diagnosticsEnabled) return;
+      resourceOwner?.close('replaced');
       if (!fallback) diagnosticReport.requestedCharacterId = id;
       diagnosticReport.loadSessionId = diagnosticId();
       currentLoad = {
@@ -356,7 +395,9 @@
         readyMs: null,
         firstFrameMs: null,
         firstFrameStatus: 'not-observed',
+        resources: {events: [], dropped: 0, endedBy: null},
       };
+      resourceOwner = createResourceOwner(currentLoad);
       diagnosticReport.load = currentLoad;
       diagnosticReport.renderedCharacterId = null;
       diagnosticReport.loadAttempts.push(currentLoad);
@@ -479,7 +520,9 @@
       }
       diagnosticUpdate();
     };
-    const interruptDiagnostics = (reason) => {
+    const interruptDiagnostics = (reason, preserveResourceOwner = false) => {
+      if (!preserveResourceOwner) resourceOwner?.close(
+        currentLoad?.status === 'failed' ? 'failed' : reason === 'user-stopped' ? 'stopped' : 'cancelled');
       finishDiagnosticSample(true, reason);
       if (firstFrameWatch) {
         clearTimeout(firstFrameWatch.timer);
@@ -507,9 +550,11 @@
         if (target.state().frames > 0) {
           loadRecord.firstFrameMs = performance.now() - started;
           loadRecord.firstFrameStatus = 'observed';
+          resourceOwner?.close('first-frame');
           firstFrameWatch = null;
         } else if (performance.now() - started > 75000) {
           loadRecord.firstFrameStatus = 'not-observed';
+          resourceOwner?.close('not-observed');
           firstFrameWatch = null;
         } else firstFrameWatch.timer = setTimeout(observe, 30);
       };
@@ -802,6 +847,9 @@
     const helpButton = make('details', '', 'wzf-haru-layout');
     helpButton.append(make('summary',t("Interaction help")),make('p',t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.")));
     const presetControls = make('div', '', 'wzf-haru-presets');
+    const presetNotice = make('p', t("Text-only interactions are unavailable in silent mode."), 'wzf-haru-interaction-note');
+    presetNotice.id = 'wzf-haru-preset-notice';
+    presetNotice.hidden = true;
     presetControls.setAttribute('aria-label', t("Quick interactions"));
     const dialogueChoice = make('select');
     dialogueChoice.setAttribute('aria-label', t("Dialogue mode"));
@@ -823,6 +871,10 @@
     const idleChoice = make('input'), idleLabel = make('label', '', 'wzf-haru-favorites-filter');
     idleChoice.type='checkbox'; idleChoice.checked=idleEnabled;
     idleLabel.append(idleChoice, document.createTextNode(t("Occasional chatter")));
+    const idleNotice = make('p', t("Switch to automatic dialogue to use occasional chatter."));
+    idleNotice.id = 'wzf-haru-idle-notice';
+    idleNotice.hidden = true;
+    idleChoice.setAttribute('aria-describedby', idleNotice.id);
     const idleLines = () => {
       const rule=characters[active].dialogue?.idle;
       return rule?.enabled === true && Array.isArray(rule.lines)
@@ -898,7 +950,7 @@
         syncIdle();
       },delay*(1+Math.random())*1000);
     };
-    idleChoice.onchange=()=>{if(pendingPreset?.chatter)cancelPreset();idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
+    idleChoice.onchange=()=>{if(pendingPreset?.chatter)cancelPreset();idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');paint();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -906,7 +958,7 @@
     const searchRow = make('div', '', 'wzf-haru-search-row');
     searchRow.append(characterSearch, clearSearch);
     const dialogueSettings = make('details', '', 'wzf-haru-layout');
-    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice, idleLabel);
+    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice, idleLabel, idleNotice);
     const pointerSettings = make('details', '', 'wzf-haru-layout');
     const gazeChoice = make('input'), gazeLabel = make('label', '', 'wzf-haru-favorites-filter'), pointerStatus = make('p');
     gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
@@ -931,7 +983,7 @@
       dialogueSettings, pointerSettings, helpButton, credit);
     const previewActions = make('div', '', 'wzf-haru-preview-actions');
     previewActions.append(commitButton, cancelPreview);
-    panel.append(label, greeting, chatButton, presetControls, previewActions, characterSettings, moreSettings, state);
+    panel.append(label, greeting, chatButton, presetControls, presetNotice, previewActions, characterSettings, moreSettings, state);
     document.body.append(panel);
     const retryLoading = make('button', t("Retry loading"), 'wzf-haru-reset');
     panel.insertBefore(retryLoading, greeting);
@@ -1381,7 +1433,18 @@
       chatButton.hidden = !engine || failed || !idleLines().length;
       chatButton.disabled = dialogueMode === 'silent' || !run || !engine || loading || preview;
       idleLabel.hidden = !idleLines().length;
+      idleNotice.hidden = idleLabel.hidden || !idleEnabled || dialogueMode === 'auto';
       if (!run) {
+        const cancelledInteraction = touchPending || manualPending.has('motion') || manualPending.has('expression');
+        for (const type of ['motion', 'expression']) {
+          if (manualPending.has(type) || (type === 'motion' && touchPending)) {
+            engine?.cancelPending(type);
+            interactions[type]++;
+          }
+        }
+        touchPending = false;
+        manualPending.clear();
+        if (cancelledInteraction && !loading) state.textContent = t("Cancelled");
         endDrag();
         cancelPNG();
         clearDialogue();
@@ -1393,7 +1456,7 @@
       captureButton.disabled=!!pendingCapture||!run||!engine||loading||characters[active].captureAllowed!==true||typeof engine?.captureFrame!=='function';
       if(characters[active].captureAllowed!==true)captureStatus.textContent=t("PNG download is not enabled for this character.");
       if (!run || loading || (sampleWindow && sampleWindow.target !== engine))
-        interruptDiagnostics('hidden-suspended-or-loading');
+        interruptDiagnostics('hidden-suspended-or-loading', run && loading);
       controlsDock.hidden = suspensions.size > 0;
       if (diagnosticsAllowed) diagnostics.hidden = panelOpen;
       diagnosticUpdate();
@@ -1447,7 +1510,16 @@
         face.disabled =
         resetFace.disabled =
           !(run && engine && !loading);
-      for (const button of [...presetControls.querySelectorAll('button'), ...extraPresets.querySelectorAll('button')]) button.disabled = !(run && engine && !loading);
+      let mutedPreset = false;
+      for (const button of [...presetControls.querySelectorAll('button'), ...extraPresets.querySelectorAll('button')]) {
+        const preset = livePresets.get(button.dataset.presetId);
+        const muted = dialogueMode === 'silent' && preset && !preset.motion && !preset.expression;
+        button.disabled = !(run && engine && !loading) || muted;
+        if (muted) button.setAttribute('aria-describedby', presetNotice.id);
+        else button.removeAttribute('aria-describedby');
+        mutedPreset ||= muted;
+      }
+      presetNotice.hidden = !mutedPreset || !engine || failed;
       face.disabled = face.disabled || !expression.options.length;
       expression.hidden = face.hidden = resetFace.hidden = !expression.options.length;
       resetFace.disabled = resetFace.disabled || !expression.options.length;
@@ -1601,9 +1673,13 @@
     // Download first: an aborted/timed-out request never leaves executable script
     // behind. Once a Blob script is appended its execution is shared across callers.
     const scriptExecutions = new Map();
-    const waitForScript = (request, signal) =>
+    const waitForScript = (request, signal, span) =>
       new Promise((resolve, reject) => {
+        let settled = false;
         const finish = (error) => {
+          if (settled) return;
+          settled = true;
+          span?.finish(error);
           clearTimeout(timer);
           signal.removeEventListener('abort', abort);
           if (error) reject(error);
@@ -1630,11 +1706,13 @@
           }
         }, finish);
       });
-    const script = async (src, exists, signal) => {
+    const script = async (src, exists, signal, category, observe) => {
       checkSignal(signal);
-      if (exists()) return;
+      if (exists()) { observe?.(category, 'reuse')?.finish(); return; }
       const executing = scriptExecutions.get(src);
-      if (executing) return waitForScript(executing, signal);
+      if (executing) return waitForScript(executing, signal, observe?.(category, 'runtime-wait'));
+      const span = observe?.(category, 'download');
+      let bodyBytes = 0;
       const controller = new AbortController();
       const abort = () => controller.abort(cancelled());
       signal.addEventListener('abort', abort, { once: true });
@@ -1667,20 +1745,23 @@
                 ),
                 { name: 'ResourceError', code: 'http' },
               );
-            return response.text();
+            if (!span) return response.text();
+            const raw = await response.arrayBuffer();
+            bodyBytes = raw.byteLength;
+            return new TextDecoder().decode(raw);
           })()
             .then(resolve, reject)
             .finally(() => controller.signal.removeEventListener('abort', aborted));
         });
         checkSignal(signal);
+        span?.finish(undefined, bodyBytes);
       } catch (error) {
-        if (signal.aborted) throw cancelled();
-        if (controller.signal.aborted) throw controller.signal.reason;
-        if (error?.name === 'ResourceError') throw error;
-        throw Object.assign(new Error(t("Runtime download failed. Check your connection and retry.")), {
-          name: 'ResourceError',
-          code: 'network',
-        });
+        const normalized = signal.aborted ? cancelled() : controller.signal.aborted ? controller.signal.reason :
+          error?.name === 'ResourceError' ? error : Object.assign(new Error(t("Runtime download failed. Check your connection and retry.")), {
+            name: 'ResourceError', code: 'network',
+          });
+        span?.finish(normalized);
+        throw normalized;
       } finally {
         clearTimeout(timer);
         signal.removeEventListener('abort', abort);
@@ -1721,7 +1802,7 @@
         });
         scriptExecutions.set(src, request);
       }
-      return waitForScript(request, signal);
+      return waitForScript(request, signal, observe?.(category, 'runtime-wait', span?.ordinal));
     };
     const cancelLoad = () => {
       if (!loadController) return;
@@ -1752,6 +1833,7 @@
       cancelPNG();captureStatus.textContent='';
       clearDialogue();
       interruptDiagnostics('load-started');
+      const attempt = ++loadAttempt;
       if (diagnosticsEnabled) {
         diagnosticReport.characterId = id;
         diagnosticBegin(id);
@@ -1759,7 +1841,6 @@
       }
       const controller = new AbortController();
       loadController = controller;
-      const attempt = ++loadAttempt;
       recoveryLoad = recoveryError === null ? null : { attempt, error: recoveryError };
       loading = true;
       loadError = '';
@@ -1774,14 +1855,14 @@
       loading = false;
       paint();
     };
-    const destroy = () => {
+    const destroy = (preserveResourceOwner = false) => {
       cancelPNG();
       endDrag();
       cancelPreset();
       clearDialogue();
       cancelWelcome();
       cancelExternal();
-      interruptDiagnostics('engine-replaced');
+      interruptDiagnostics('engine-replaced', preserveResourceOwner);
       generation++;
       operation++;
       manualPending.clear();
@@ -1827,7 +1908,7 @@
     };
     const load = async (id, signal) => {
       checkSignal(signal);
-      destroy();
+      destroy(true);
       active = id;
       if (diagnosticsEnabled && currentLoad?.status === 'failed') diagnosticBegin(id, true);
       diagnosticPhase('webgl');
@@ -1878,11 +1959,13 @@
         .querySelector('button')
         .setAttribute('aria-label', t("Tap %1$s to greet", characters[id].name));
       layout();
+      const owner = diagnosticsEnabled ? resourceOwner : null, attempt = loadAttempt;
       const candidate = await window.WZFHaruEngine.create(
         canvas,
         characters[id].root,
         config.shaders,
-        { ...characters[id], onDiagnosticStage: diagnosticPhase },
+        { ...characters[id], onDiagnosticStage: phase => { if (!signal.aborted && attempt === loadAttempt) diagnosticPhase(phase); },
+          ...(owner ? {onDiagnosticResource: owner.start} : {}) },
         signal,
       );
       if (signal.aborted) {
@@ -1901,10 +1984,11 @@
       failed = false;
     };
     const loadRuntime = async (signal) => {
+      const observe = diagnosticsEnabled ? resourceOwner?.start : undefined;
       diagnosticPhase('core');
-      await script(config.core, () => !!window.Live2DCubismCore, signal);
+      await script(config.core, () => !!window.Live2DCubismCore, signal, 'core', observe);
       diagnosticPhase('engine');
-      await script(config.engine, () => !!window.WZFHaruEngine, signal);
+      await script(config.engine, () => !!window.WZFHaruEngine, signal, 'engine', observe);
       checkSignal(signal);
     };
     const apply = async () => {
@@ -2056,13 +2140,15 @@
       state.textContent = t("Loading…");
       try {
         const done = await target.play(type, id);
-        if (n === operation && g === generation)
+        if (n === operation && channel === interactions[type] && g === generation && target === engine && allowed())
           state.textContent = done ? t("Previewing: %1$s", text) : t("Cancelled");
       } catch (error) {
-        if (n === operation && g === generation && error?.name !== 'AbortError')
-          diagnosticError(error, type);
-        if (n === operation && g === generation)
+        // A reset or play on the other channel must not hide this failure.
+        // Cancelled requests stay silent, even after the page becomes visible again.
+        if (channel === interactions[type] && g === generation && target === engine && allowed()) {
+          if (error?.name !== 'AbortError') diagnosticError(error, type);
           state.textContent = error?.name === 'AbortError' ? t("Cancelled") : errorMessage(error);
+        }
       } finally {
         if (channel === interactions[type] && g === generation) manualPending.delete(type);
         syncIdle();
@@ -2070,6 +2156,10 @@
     };
     const performPreset = async (preset) => {
       if (!allowed() || !engine || loading || engine.state().paused) return false;
+      if (dialogueMode === 'silent' && !preset.motion && !preset.expression) {
+        state.textContent = t("Text-only interactions are unavailable in silent mode.");
+        return false;
+      }
       cancelPreset(); clearDialogue(); cancelExternal();
       welcomeConsumed = true; dialogueWelcomeConsumed = true; cancelWelcome();
       const n = ++operation, g = generation, target = engine;
@@ -2173,17 +2263,18 @@
         id = list[touchCount % list.length];
       try {
         const done = await target.play('motion', id);
-        if (g !== generation || channel !== interactions.motion) return;
+        if (g !== generation || channel !== interactions.motion || target !== engine || !allowed()) return;
         if (done) {
           touchCount++;
           if (n === operation) state.textContent = t("%1$s greeted you", characters[active].name);
         } else nextTouch = 0;
       } catch (error) {
-        if (g === generation && channel === interactions.motion && error?.name !== 'AbortError')
-          diagnosticError(error, 'motion');
-        if (g === generation && channel === interactions.motion) {
+        if (g === generation && channel === interactions.motion && target === engine && allowed()) {
           nextTouch = 0;
-          if (n === operation) state.textContent = t("The greeting could not load yet. Tap again to retry.");
+          if (error?.name !== 'AbortError') {
+            diagnosticError(error, 'motion');
+            state.textContent = t("The greeting could not load yet. Tap again to retry.");
+          } else if (n === operation) state.textContent = t("Cancelled");
         }
       } finally {
         if (g === generation && channel === interactions.motion) touchPending = false;
@@ -2383,7 +2474,7 @@
       if(manualPending.size||touchPending||externalPending)return {ok:false,code:'busy'};
       const now=performance.now(), key=active+':'+event;
       if(now<semanticNext || now-(semanticTimes.get(key)??-Infinity)<30000)return {ok:false,code:'rate-limited'};
-      if(!preset&&dialogueMode==='silent')return {ok:false,code:'muted'};
+      if(dialogueMode==='silent'&&(!preset||(!preset.motion&&!preset.expression)))return {ok:false,code:'muted'};
       semanticNext=now+15000; semanticTimes.set(key,now);
       const characterId=active;
       const line=caption??(event==='help'?t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."):event==='tool-complete'?t("Tool completed"):t("Action completed"));
@@ -2425,7 +2516,7 @@
     const installReadingSuspension = () => {
       // Keep all existing-reader DOM knowledge here. Observe a complete mutation batch,
       // so moving a panel between a dock and dialog cannot briefly resume the mascot.
-      const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel';
+      const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel,[data-pagenest-reading-panel],.pagenest-pc-panel';
       const own = (node) =>
         [button, panel, panelToggle, host, consent, controlsDock, dragHandle].some(
           (element) => element && (element === node || element.contains(node)),
@@ -2438,11 +2529,14 @@
         );
         const dockOpen = [
           ...document.querySelectorAll(
-            '.pagenest-reading-rail.llmn-show-notes .pagenest-notes-slot',
+            '.pagenest-reading-rail.llmn-show-notes .pagenest-notes-slot,' +
+              '.pagenest-reading-rail.pagenest-panel-active [data-pagenest-reading-panel]',
           ),
         ].some(
           (slot) =>
-            visible(slot) && [...slot.querySelectorAll('.llmn-panel,.llmc-panel')].some(visible),
+            visible(slot) && [...slot.querySelectorAll(
+              slot.matches('[data-pagenest-reading-panel]') ? '.pagenest-pc-panel' : '.llmn-panel,.llmc-panel',
+            )].some(visible),
         );
         setSuspension('reading-ui', dialogOpen || dockOpen);
       };

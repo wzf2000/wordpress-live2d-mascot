@@ -88,7 +88,7 @@ const testEngine = { gl: {
 const makeElement = () => ({ append() {}, setAttribute() {}, click() {}, remove() {} });
 const exerciseDiagnostics = new Function('make', 'document', 'engine', 'allowed', 'performance', 'setTimeout', 'clearTimeout', 'config', 'active', 'reduce', 'innerWidth', 'innerHeight', 'devicePixelRatio', 'URL', 'fetch', 'crypto', 'assert', 'advance', 'gpuCount', 'runNextTimer', `
   const t = ${translate.toString()};
-  let loading = false;
+  let loading = false, loadAttempt = 1;
   ${diagnosticCode}
   diagnosticUpdate();
   assert.equal(gpuCount(), 0);

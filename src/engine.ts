@@ -31,6 +31,10 @@ class Mascot extends CubismUserModel {
     this.stage = stage;
     if (typeof this.options.onDiagnosticStage === 'function') this.options.onDiagnosticStage(stage);
   }
+  trace(category: string, operation: string, ordinal?: number) {
+    try { return this.options.onDiagnosticResource?.(category, operation, ordinal); }
+    catch { return undefined; }
+  }
   catalog: any;
   options: any;
   idle: string;
@@ -120,7 +124,7 @@ class Mascot extends CubismUserModel {
   async init() {
     const signal = this.abort.signal;
     this.phase('model');
-    const raw = await bytes(this.root + (this.options.file || 'Haru.model3.json'), signal);
+    const raw = await bytes(this.root + (this.options.file || 'Haru.model3.json'), signal, this.trace('model', 'download'));
     const json = jsonResource(raw);
     const refs = json?.FileReferences;
     if (
@@ -134,7 +138,7 @@ class Mascot extends CubismUserModel {
     }
     this.settings = new CubismModelSettingJson(raw, raw.byteLength);
     this.phase('catalog');
-    const cat = await bytes(this.root + 'catalog.json', signal);
+    const cat = await bytes(this.root + 'catalog.json', signal, this.trace('catalog', 'download'));
     this.catalog = jsonResource(cat);
     if (
       !this.catalog ||
@@ -149,7 +153,7 @@ class Mascot extends CubismUserModel {
       throw new ResourceError('invalid', "Character motion catalog is invalid. Choose another character.");
     }
     this.phase('moc');
-    this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal), true);
+    this.loadModel(await bytes(this.root + json.FileReferences.Moc, signal, this.trace('moc', 'download')), true);
     if (!this.getModel()) throw new Error("Model validation failed");
     const model=this.getModel();
     const gazeIds=new Set(['ParamAngleX','ParamAngleY','ParamAngleZ','ParamBodyAngleX','ParamEyeBallX','ParamEyeBallY']);
@@ -169,7 +173,7 @@ class Mascot extends CubismUserModel {
     ] as const) {
       if (!json.FileReferences[key]) continue;
       this.phase(key.toLowerCase());
-      const b = await bytes(this.root + json.FileReferences[key], signal);
+      const b = await bytes(this.root + json.FileReferences[key], signal, this.trace(key.toLowerCase(), 'download'));
       jsonResource(b);
       this[fn](b, b.byteLength);
     }
@@ -183,8 +187,9 @@ class Mascot extends CubismUserModel {
     this.phase('texture');
     await Promise.all(
       json.FileReferences.Textures.map(async (file: string, index: number) => {
-        const blob = (await resource(this.root + file, signal, 'blob')) as Blob;
-        const img = await decodeImage(blob, signal);
+        const span = this.trace('texture', 'download');
+        const blob = (await resource(this.root + file, signal, 'blob', span)) as Blob;
+        const img = await decodeImage(blob, signal, this.trace('texture', 'decode', span?.ordinal));
         checkSignal(signal);
         const gl = this.gl,
           t = gl.createTexture();
@@ -208,7 +213,7 @@ class Mascot extends CubismUserModel {
     let shaderError: unknown;
     (shader as any).loadShader = async (url: string) => {
       try {
-        return await resource(url, signal, 'text');
+        return await resource(url, signal, 'text', this.trace('shader', 'download'));
       } catch (error) {
         shaderError = error;
         throw error;
@@ -228,7 +233,7 @@ class Mascot extends CubismUserModel {
         if (shaderError) throw shaderError;
         await new Promise((resolve) => setTimeout(resolve, 80));
       }
-    }, signal);
+    }, signal, undefined, this.trace('shader', 'runtime-wait'));
     checkSignal(signal);
     if (!shader._shaderSets[0]?.shaderProgram)
       throw new ResourceError('invalid', "The rendering program is invalid; this character cannot be displayed.");
@@ -249,7 +254,7 @@ class Mascot extends CubismUserModel {
       this.pending.set(
         key,
         (async () => {
-          const b = await bytes(this.root + entry.file, this.abort.signal);
+          const b = await bytes(this.root + entry.file, this.abort.signal, type === 'motion' ? this.trace('motion', 'download') : undefined);
           checkSignal(this.abort.signal);
           jsonResource(b);
           const m =

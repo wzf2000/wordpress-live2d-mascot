@@ -12,8 +12,7 @@ function wzf_mascot_template_path($value, $suffix) {
     if (strlen($path) > 1024 || !str_ends_with($path, $suffix)) throw new RuntimeException(__('Template resource paths must be relative motion or expression files.', 'live2d-show'));
     return $path;
 }
-function wzf_mascot_template_decode($raw) {
-    if (!is_string($raw) || strlen($raw) < 1 || strlen($raw) > 65536) throw new RuntimeException(__('Choose a valid interaction JSON file no larger than 64 KiB.', 'live2d-show'));
+function wzf_mascot_interaction_json($raw) {
     try { $object = json_decode($raw, false, 12, JSON_THROW_ON_ERROR); }
     catch (Throwable $e) { throw new RuntimeException(__('The template is not valid UTF-8 JSON or is nested too deeply.', 'live2d-show')); }
     // json_decode accepts duplicate object keys. Reject them, including escaped aliases.
@@ -33,6 +32,11 @@ function wzf_mascot_template_decode($raw) {
             }
         }
     }
+    return $object;
+}
+function wzf_mascot_template_decode($raw) {
+    if (!is_string($raw) || strlen($raw) < 1 || strlen($raw) > 65536) throw new RuntimeException(__('Choose a valid interaction JSON file no larger than 64 KiB.', 'live2d-show'));
+    $object = wzf_mascot_interaction_json($raw);
     $value = wzf_mascot_template_fields($object, ['type','schema','dialogue','presets']);
     if ($value['type'] !== 'wzf-mascot-interactions' || $value['schema'] !== 1) throw new RuntimeException(__('This interaction template type or version is not supported.', 'live2d-show'));
     $rules = wzf_mascot_template_fields($value['dialogue'], array_keys(wzf_mascot_line_events()));
@@ -172,6 +176,61 @@ function wzf_mascot_template_apply($id, $version, $raw, $scope, $issued, $signat
         if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
     }, 'settings');
 }
+function wzf_mascot_template_targets($value) {
+    if (is_string($value)) {
+        if (strlen($value) > 16384) throw new RuntimeException(__('Choose 1–50 target characters.', 'live2d-show'));
+        try { $value = json_decode($value, true, 4, JSON_THROW_ON_ERROR); } catch (Throwable $e) { $value = null; }
+    }
+    if (!is_array($value) || !array_is_list($value) || count($value) < 1 || count($value) > 50) throw new RuntimeException(__('Choose 1–50 target characters.', 'live2d-show'));
+    foreach ($value as $id) if (!is_string($id) || !preg_match('/\A[A-Za-z0-9_-]{1,200}\z/D', $id)) throw new RuntimeException(__('Choose 1–50 target characters.', 'live2d-show'));
+    $value = array_values(array_unique($value)); sort($value, SORT_STRING); return $value;
+}
+function wzf_mascot_template_batch_plan($config, $targets, $version, $raw, $scope) {
+    if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
+    $targets = wzf_mascot_template_targets($targets); $rows = []; $blocked = false;
+    foreach ($targets as $id) {
+        try { $rows[$id] = ['plan'=>wzf_mascot_template_plan($config, $id, $version, $raw, $scope)]; }
+        catch (Throwable $e) { $rows[$id] = ['error'=>wzf_mascot_error_message($e)]; $blocked = true; }
+    }
+    return ['targets'=>$targets,'rows'=>$rows,'blocked'=>$blocked];
+}
+function wzf_mascot_template_batch_signature($targets, $version, $raw, $scope, $issued) {
+    return hash_hmac('sha256', serialize(['batch',get_current_blog_id(),get_current_user_id(),wzf_mascot_template_targets($targets),$version,$raw,$scope,$issued]), wp_salt('nonce'));
+}
+function wzf_mascot_template_batch_preview($targets, $version, $raw, $scope) {
+    $raw = wzf_mascot_template_json(wzf_mascot_template_decode($raw), false);
+    $review = wzf_mascot_template_batch_plan(wzf_mascot_task_snapshot()['config'], $targets, $version, $raw, $scope);
+    $issued = (string)time();
+    return $review + ['batch'=>true,'version'=>$version,'payload'=>$raw,'scope'=>$scope,'issued'=>$issued,
+        'signature'=>$review['blocked'] ? '' : wzf_mascot_template_batch_signature($review['targets'], $version, $raw, $scope, $issued)];
+}
+function wzf_mascot_template_batch_apply($targets, $version, $raw, $scope, $issued, $signature, $confirmed) {
+    if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
+    $targets = wzf_mascot_template_targets($targets);
+    if ($confirmed !== '1') throw new RuntimeException(__('Confirm the displayed interaction changes before applying.', 'live2d-show'));
+    if (!is_string($issued) || !preg_match('/\A[0-9]{1,12}\z/D', $issued) || (int)$issued > time() || time()-(int)$issued > 900 || !is_string($signature) || !hash_equals(wzf_mascot_template_batch_signature($targets,$version,$raw,$scope,$issued),$signature)) throw new RuntimeException(__('This template preview expired or changed. Upload it again to review a fresh preview.', 'live2d-show'));
+    $review = wzf_mascot_template_batch_plan(wzf_mascot_task_snapshot()['config'],$targets,$version,$raw,$scope);
+    if ($review['blocked']) throw new RuntimeException(__('One or more targets are blocked. Nothing was applied.', 'live2d-show'));
+    $task = wzf_mascot_task_begin('settings');
+    try {
+        $config = $task['config']; $review = wzf_mascot_template_batch_plan($config,$targets,$version,$raw,$scope);
+        if ($review['blocked']) throw new RuntimeException(__('One or more targets are blocked. Nothing was applied.', 'live2d-show'));
+        $changed = false;
+        foreach ($review['rows'] as $id=>$row) if ($row['plan']['before'] !== $row['plan']['after']) { $config['characters'][$id]=$row['plan']['after']; $changed=true; }
+        if ($changed && !wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save character settings.', 'live2d-show'));
+    } finally { wzf_mascot_task_end($task); }
+}
+function wzf_mascot_template_batch_apply_post() {
+    if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);
+    check_admin_referer('wzf_mascot_template_batch_apply'); $id = is_string($_POST['character'] ?? null) ? wp_unslash($_POST['character']) : '';
+    try {
+        if (array_diff(array_keys($_POST), ['action','_wpnonce','_wp_http_referer','character','targets','version','payload','scope','issued','signature','confirm'])) throw new RuntimeException(__('Interaction template fields are invalid.', 'live2d-show'));
+        $fields = wzf_mascot_template_post_fields(['targets','version','payload','scope','issued','signature','confirm']);
+        wzf_mascot_template_batch_apply($fields['targets'],$fields['version'],$fields['payload'],$fields['scope'],$fields['issued'],$fields['signature'],$fields['confirm']);
+        $notice = __('Reviewed template applied to all selected characters.', 'live2d-show');
+    } catch (Throwable $e) { $notice = wzf_mascot_error_message($e); }
+    wp_safe_redirect(add_query_arg(['mascot_notice'=>rawurlencode($notice),'character'=>$id],admin_url('options-general.php?page=wzf-mascot'))); exit;
+}
 function wzf_mascot_template_post_fields($keys) {
     $values = [];
     foreach ($keys as $key) {
@@ -192,7 +251,10 @@ function wzf_mascot_template_preview_gate() {
         $upload = $_FILES['template'] ?? null;
         if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_string($upload['tmp_name'] ?? null) || !is_uploaded_file($upload['tmp_name'])) throw new RuntimeException(__('Choose a valid interaction JSON file no larger than 64 KiB.', 'live2d-show'));
         $raw = @file_get_contents($upload['tmp_name'], false, null, 0, 65537);
-        $wzf_mascot_template_review = wzf_mascot_template_preview($fields['character'], $fields['version'], $raw, $scope);
+        if (isset($_POST['targets'])) {
+            $wzf_mascot_template_review = wzf_mascot_template_batch_preview(wp_unslash($_POST['targets']), $fields['version'], $raw, $scope);
+            $wzf_mascot_template_review['character'] = $fields['character'];
+        } else $wzf_mascot_template_review = wzf_mascot_template_preview($fields['character'], $fields['version'], $raw, $scope);
     } catch (Throwable $e) { $wzf_mascot_template_review = ['error'=>wzf_mascot_error_message($e)]; }
 }
 function wzf_mascot_template_export_post() {
@@ -281,20 +343,31 @@ function wzf_mascot_template_diff($review) {
 function wzf_mascot_template_panel($config, $id) {
     global $wzf_mascot_template_review;
     $review = $wzf_mascot_template_review ?? null;
-    if (is_array($review) && !isset($review['error']) && $review['character'] !== (string)$id) $review = null;
+    if (is_array($review) && !isset($review['error']) && empty($review['batch']) && ($review['character'] ?? null) !== (string)$id) $review = null;
     echo '<section class="wzf-mascot-card"><details class="wzf-mascot-template"' . ($review ? ' open' : '') . '><summary>' . esc_html__('Interaction templates', 'live2d-show') . '</summary><p>' . esc_html__('Reuse your dialogue and quick interactions with a JSON file. Model files, account preferences, PNG permission and hit-area bindings are excluded. Uploading only previews changes; applying needs a separate confirmation.', 'live2d-show') . '</p>';
     $values = ['character'=>(string)$id,'version'=>wzf_mascot_config_version($config)];
     echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">'; wp_nonce_field('wzf_mascot_template_export'); wzf_mascot_template_hidden(['action'=>'wzf_mascot_template_export'] + $values); submit_button(__('Download interaction JSON', 'live2d-show'), 'secondary'); echo '</form>';
     echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(add_query_arg(['page'=>'wzf-mascot','character'=>$id,'mascot_template_preview'=>'1'], admin_url('options-general.php'))) . '">';
     wp_nonce_field('wzf_mascot_template_preview'); wzf_mascot_template_hidden($values);
     echo '<div class="wzf-mascot-field"><label>' . esc_html__('Interaction JSON (up to 64 KiB)', 'live2d-show') . '<input type="file" name="template" accept=".json,application/json" required></label></div><p><label><input type="checkbox" name="include_presets" value="1"> ' . esc_html__('Also replace quick interactions and chatter motions', 'live2d-show') . '</label></p>';
+    echo '<fieldset><legend>' . esc_html__('Target characters (up to 50)', 'live2d-show') . '</legend><div class="wzf-mascot-checks">';
+    foreach ($config['characters'] as $target_id=>$target) if (is_array($target) && wzf_mascot_character_status($target) !== 'trash') echo '<label><input type="checkbox" name="targets[]" value="' . esc_attr($target_id) . '" ' . checked((string)$target_id, (string)$id, false) . '> ' . esc_html((is_string($target['name'] ?? null) ? $target['name'] : (string)$target_id) . ' · ' . $target_id) . '</label>';
+    echo '</div><p class="description">' . esc_html__('Select every character you want to update. Review all targets before applying.', 'live2d-show') . '</p></fieldset>';
     submit_button(__('Preview template changes', 'live2d-show'), 'secondary'); echo '</form>';
     if (isset($review['error'])) echo '<div class="notice notice-error inline" role="alert"><p>' . esc_html($review['error']) . '</p></div>';
     elseif ($review) {
-        wzf_mascot_template_diff($review);
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">'; wp_nonce_field('wzf_mascot_template_apply');
+        if (!empty($review['batch'])) {
+            foreach ($review['rows'] as $target_id=>$row) {
+                echo '<details class="wzf-mascot-replace"><summary>' . esc_html((is_string($config['characters'][$target_id]['name'] ?? null) ? $config['characters'][$target_id]['name'] : (string)$target_id) . ' · ' . $target_id . ' · ' . (isset($row['error']) ? __('Blocked', 'live2d-show') : ($row['plan']['before'] === $row['plan']['after'] ? __('Unchanged', 'live2d-show') : __('Changed', 'live2d-show')))) . '</summary>';
+                if (isset($row['error'])) echo '<p>' . esc_html($row['error']) . '</p>'; else wzf_mascot_template_diff(['plan'=>$row['plan'],'scope'=>$review['scope']]);
+                echo '</details>';
+            }
+            if ($review['blocked']) { echo '<p role="alert">' . esc_html__('One or more targets are blocked. Nothing was applied.', 'live2d-show') . '</p></details></section>'; return; }
+        } else wzf_mascot_template_diff($review);
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">'; wp_nonce_field(!empty($review['batch']) ? 'wzf_mascot_template_batch_apply' : 'wzf_mascot_template_apply');
         $fields = array_intersect_key($review, array_flip(['character','version','payload','scope','issued','signature']));
-        wzf_mascot_template_hidden(['action'=>'wzf_mascot_template_apply'] + $fields);
+        if (!empty($review['batch'])) $fields['targets'] = wp_json_encode($review['targets']);
+        wzf_mascot_template_hidden(['action'=>!empty($review['batch']) ? 'wzf_mascot_template_batch_apply' : 'wzf_mascot_template_apply'] + $fields);
         echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . esc_html__('I reviewed these changes and want to replace the selected interaction settings.', 'live2d-show') . '</label></p><p class="description">' . esc_html__('This preview expires after 15 minutes. Changes elsewhere require a fresh preview.', 'live2d-show') . '</p>';
         submit_button(__('Apply reviewed template', 'live2d-show')); echo '<a class="button" href="' . esc_url(add_query_arg('character', $id, admin_url('options-general.php?page=wzf-mascot'))) . '">' . esc_html__('Cancel preview', 'live2d-show') . '</a></form>';
     }
@@ -303,3 +376,5 @@ function wzf_mascot_template_panel($config, $id) {
 add_action('admin_init', 'wzf_mascot_template_preview_gate');
 add_action('admin_post_wzf_mascot_template_export', 'wzf_mascot_template_export_post');
 add_action('admin_post_wzf_mascot_template_apply', 'wzf_mascot_template_apply_post');
+
+add_action('admin_post_wzf_mascot_template_batch_apply', 'wzf_mascot_template_batch_apply_post');

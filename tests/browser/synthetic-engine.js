@@ -7,6 +7,7 @@
   window.WZFHaruEngine = {
     async create(canvas, root, shaders, character, signal) {
       const id = ++sequence;
+      (fixture.resourceObservers ||= []).push(character.onDiagnosticResource);
       record({ type: 'create-start', id, root });
       character.onDiagnosticStage?.('model');
       const catalog = await fetch(root + 'catalog.json', { signal }).then((response) => response.json());
@@ -46,7 +47,7 @@
         captureFrame(){if(capture||paused||disposed||character.captureAllowed!==true)return Promise.reject(Error('Synthetic capture unavailable'));record({type:'capture',id});return new Promise((resolve,reject)=>{capture={resolve,reject,started:false};});},
         cancelCapture,
         pause() { cancelCapture(); paused = true; cancelAnimationFrame(timer); },
-        resume() { if (paused && !disposed) { paused = false; timer = requestAnimationFrame(draw); } },
+        resume() { if (paused && !disposed) { record({type:'resume',id}); paused = false; timer = requestAnimationFrame(draw); } },
         cancelPending(type) { channels[type]++; record({ type: 'cancel', id, channel: type }); },
         idleNow() { this.cancelPending('motion'); activeMotion = character.idle; },
         resetExpression() { this.cancelPending('expression'); activeExpression = null; },

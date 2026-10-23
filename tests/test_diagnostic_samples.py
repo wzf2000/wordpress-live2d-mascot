@@ -304,5 +304,65 @@ class DiagnosticBatchTests(unittest.TestCase):
         self.assertFalse((self.root/'bad').exists())
 
 
+def resource_trace():
+    return {"events": [
+        {"category": "texture", "operation": "download", "ordinal": 1, "startMs": 0, "durationMs": 50, "bodyBytes": 10, "status": "ok", "errorCode": None},
+        {"category": "shader", "operation": "download", "ordinal": 2, "startMs": 2, "durationMs": 60, "bodyBytes": 5, "status": "ok", "errorCode": None},
+        {"category": "texture", "operation": "decode", "ordinal": 1, "startMs": 50, "durationMs": 20, "bodyBytes": None, "status": "ok", "errorCode": None}],
+        "dropped": 0, "endedBy": "first-frame"}
+
+
+class ResourceTimingTests(unittest.TestCase):
+    def test_optional_old_reports_and_parallel_summary(self):
+        self.assertEqual(SAMPLES.resource_summary({}), {"available": False})
+        summary = SAMPLES.resource_summary({"resources": resource_trace()})
+        self.assertEqual(summary["maxOperationMs"], 60)
+        self.assertEqual(summary["bodyBytes"], 15)
+        self.assertEqual(len(summary["categories"]), 3)
+        self.assertNotIn("totalDurationMs", summary)
+
+    def test_resource_lists_and_fields_are_strict(self):
+        mutations = [lambda v: v.update(url="secret"), lambda v:v.update(dropped=True),
+            lambda v:v.update(endedBy="user supplied error"), lambda v:v.update(events=v["events"]*50),
+            lambda v:v["events"][0].update(url="secret"), lambda v:v["events"][0].update(category="arbitrary"),
+            lambda v:v["events"][0].update(operation="GPU"), lambda v:v["events"][0].update(ordinal=True),
+            lambda v:v["events"][0].update(bodyBytes=1.5), lambda v:v["events"][2].update(bodyBytes=1),
+            lambda v:v["events"][0].update(startMs=-1), lambda v:v["events"][0].update(durationMs=float("nan")),
+            lambda v:v["events"][0].update(status="failed",errorCode="private exception"),
+            lambda v:v["events"][0].update(errorCode="http"),
+            lambda v:v["events"].append(copy.deepcopy(v["events"][0])),
+            lambda v:v["events"][1].update(ordinal=1)]
+        for mutate in mutations:
+            with self.subTest(mutate=mutate):
+                value=resource_trace();mutate(value)
+                with self.assertRaises((ValueError,TypeError)): SAMPLES.resource_summary({"resources":value})
+
+    def test_failures_cancellation_and_cap(self):
+        trace=resource_trace();trace["events"]=[dict(trace["events"][0],ordinal=i+1) for i in range(128)]
+        trace.update(dropped=10,endedBy="cancelled")
+        trace["events"][0].update(status="failed",errorCode="timeout",bodyBytes=None)
+        trace["events"][1].update(status="cancelled",errorCode="cancelled",bodyBytes=None)
+        result=SAMPLES.resource_summary({"resources":trace})
+        self.assertEqual(result["events"],128);self.assertEqual(result["dropped"],10)
+        self.assertEqual(result["categories"][0]["failed"],1)
+        self.assertEqual(result["categories"][0]["cancelled"],1)
+
+    def test_unsampled_report_and_batch_preserve_optional_trace(self):
+        value=batch(1);row=value["windows"][0]
+        row["load"]["resources"]=resource_trace();row["loadAttempts"]=[copy.deepcopy(row["load"])]
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/"report.json"
+            path.write_text(json.dumps(dict(row,sample=None,windowId=None)))
+            result=SAMPLES.summarize_resource_report(path)
+            self.assertEqual(result["loads"][0]["resources"]["bodyBytes"],15)
+            path.write_text(json.dumps(value));out=Path(temp)/"out"
+            SAMPLES.unpack_batch(path,out)
+            retained=json.loads((out/"window-01.json").read_text())
+            self.assertEqual(retained["load"]["resources"],resource_trace())
+            row["load"]["resources"]["events"][0]["url"]="private"
+            path.write_text(json.dumps(value))
+            with self.assertRaises(ValueError): SAMPLES.unpack_batch(path,Path(temp)/"bad")
+
+
 if __name__ == "__main__":
     unittest.main()
