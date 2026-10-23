@@ -22,7 +22,7 @@ class ReleasePackageTests(unittest.TestCase):
         self.out=Path(self.temp.name)/'package'
         names=['build.py','package.json','package-lock.json','LICENSE','COPYING','README.md','docs/DISTRIBUTION.md','docs/INTERACTIONS.md','docs/index.md','docs/INSTALL.md','docs/TROUBLESHOOTING.md','docs/DEVELOPMENT.md','docs/assets/hero.svg','docs/assets/reading-flow.svg','docs/assets/hero-small.svg','docs/assets/reading-flow-small.svg',
                'tools/package_release.py','tests/test_release_package.py','tests/test_importer.py','tests/wordpress-fixture.php','tools/wordpress-integration.py','tests/release-smoke.cjs','tests/test_release_pipeline.py',
-               'tools/ci.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/account-browser.cjs','tests/selection-browser.cjs','tests/capture-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
+               'tools/ci.py','tools/ci_browser_sources.py','tests/test_ci_browser.py','tools/verify_release.py','tools/diagnostic_samples.py','tests/test_diagnostic_samples.py','docs/DEVICE_SAMPLING.md','tools/translations.py','tests/test_admin_inventory.py','tests/test_admin_task.py','tests/admin-ui.cjs','tests/frontend-browser.cjs','tests/dialogue-browser.cjs','tests/movement-browser.cjs','tests/account-browser.cjs','tests/selection-browser.cjs','tests/capture-browser.cjs','tests/test_interaction_settings.py','tests/browser/fixture.cjs','tests/browser/synthetic-engine.js',
                'src/loader.js','src/style.css','src/engine.ts','src/resources.ts','src/framework/live2dcubismframework.ts',
                'plugin/live2d-show.php','plugin/includes/admin-import.php','plugin/includes/admin-task.php','plugin/includes/admin-settings.php','plugin/includes/admin-lifecycle.php','plugin/includes/admin-diagnostics.php','plugin/includes/admin-thumbnail.php','plugin/includes/admin-mobile.php','plugin/includes/admin-inventory.php','plugin/includes/admin-listing.php','plugin/includes/admin-readiness.php','plugin/includes/interaction-settings.php','plugin/includes/interaction-transfer.php','plugin/includes/hit-settings.php','plugin/includes/account-preferences.php','plugin/includes/capture-settings.php','plugin/includes/i18n.php','plugin/admin.js','plugin/languages/live2d-show.pot','plugin/languages/live2d-show-en_US.po','plugin/languages/live2d-show-en_US.mo','plugin/languages/live2d-show-zh_CN.po','plugin/languages/live2d-show-zh_CN.mo','plugin/admin.css','plugin/characters.json','plugin/haru-assets.json',
                'plugin/usage-imported-resources.html','plugin/licenses/Framework-LICENSE.md']
@@ -72,6 +72,11 @@ class ReleasePackageTests(unittest.TestCase):
 
     def test_source_zip_repackages_without_binary_assets(self):
         first=package(self.repo,self.out)
+        with zipfile.ZipFile(self.out/first['source_archive']['filename']) as archive:
+            for name in ['tools/ci_browser_sources.py', 'tests/test_ci_browser.py']:
+                self.assertEqual(archive.read('wordpress-live2d-mascot/' + name), (self.repo/name).read_bytes())
+        with zipfile.ZipFile(self.out/first['archive']['filename']) as archive:
+            self.assertFalse(any('/tools/' in name or '/tests/' in name for name in archive.namelist()))
         extracted=Path(self.temp.name)/'source'
         with zipfile.ZipFile(self.out/first['source_archive']['filename']) as archive:archive.extractall(extracted)
         repo=extracted/'wordpress-live2d-mascot'
