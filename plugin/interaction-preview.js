@@ -42,6 +42,7 @@
       const candidate=await window.WZFHaruEngine.create(canvas,config.root,config.shaders,config.options,signal);
       if(signal.aborted||token!==generation){candidate.destroy();return;}engine=candidate;controller=null;canvas.hidden=false;engine.resume();status.textContent=labels.ready;
       const supported=engine.capabilities();capabilities.textContent=`${labels.capabilities}: ${labels.gaze} ${supported.gazeParameters.length} · ${labels.hits} ${supported.hitAreas.length}`;paint();
+      window.scrollTo(0,Math.max(0,window.scrollY+canvas.getBoundingClientRect().bottom-window.innerHeight+12));
     }catch{if(token===generation){end();status.textContent=labels.failed;}}
   };
   stop.onclick=end;pause.onclick=()=>{if(!engine)return;paused=!paused;playing++;engine.cancelPending('motion');engine.cancelPending('expression');paused?engine.pause():engine.resume();paint();};
