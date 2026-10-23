@@ -802,6 +802,9 @@
     const helpButton = make('details', '', 'wzf-haru-layout');
     helpButton.append(make('summary',t("Interaction help")),make('p',t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys.")));
     const presetControls = make('div', '', 'wzf-haru-presets');
+    const presetNotice = make('p', t("Text-only interactions are unavailable in silent mode."), 'wzf-haru-interaction-note');
+    presetNotice.id = 'wzf-haru-preset-notice';
+    presetNotice.hidden = true;
     presetControls.setAttribute('aria-label', t("Quick interactions"));
     const dialogueChoice = make('select');
     dialogueChoice.setAttribute('aria-label', t("Dialogue mode"));
@@ -823,6 +826,10 @@
     const idleChoice = make('input'), idleLabel = make('label', '', 'wzf-haru-favorites-filter');
     idleChoice.type='checkbox'; idleChoice.checked=idleEnabled;
     idleLabel.append(idleChoice, document.createTextNode(t("Occasional chatter")));
+    const idleNotice = make('p', t("Switch to automatic dialogue to use occasional chatter."));
+    idleNotice.id = 'wzf-haru-idle-notice';
+    idleNotice.hidden = true;
+    idleChoice.setAttribute('aria-describedby', idleNotice.id);
     const idleLines = () => {
       const rule=characters[active].dialogue?.idle;
       return rule?.enabled === true && Array.isArray(rule.lines)
@@ -898,7 +905,7 @@
         syncIdle();
       },delay*(1+Math.random())*1000);
     };
-    idleChoice.onchange=()=>{if(pendingPreset?.chatter)cancelPreset();idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');syncIdle();};
+    idleChoice.onchange=()=>{if(pendingPreset?.chatter)cancelPreset();idleEnabled=idleChoice.checked;saveLocalPreference('wzf-mascot-idle-v1',idleEnabled?'enabled':'disabled');paint();};
     const credit = make('a');
     credit.href = config.terms;
     credit.target = '_blank';
@@ -906,7 +913,7 @@
     const searchRow = make('div', '', 'wzf-haru-search-row');
     searchRow.append(characterSearch, clearSearch);
     const dialogueSettings = make('details', '', 'wzf-haru-layout');
-    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice, idleLabel);
+    dialogueSettings.append(make('summary', t("Dialogue preferences")), dialogueChoice, idleLabel, idleNotice);
     const pointerSettings = make('details', '', 'wzf-haru-layout');
     const gazeChoice = make('input'), gazeLabel = make('label', '', 'wzf-haru-favorites-filter'), pointerStatus = make('p');
     gazeChoice.type='checkbox'; gazeChoice.checked=gazeEnabled;
@@ -931,7 +938,7 @@
       dialogueSettings, pointerSettings, helpButton, credit);
     const previewActions = make('div', '', 'wzf-haru-preview-actions');
     previewActions.append(commitButton, cancelPreview);
-    panel.append(label, greeting, chatButton, presetControls, previewActions, characterSettings, moreSettings, state);
+    panel.append(label, greeting, chatButton, presetControls, presetNotice, previewActions, characterSettings, moreSettings, state);
     document.body.append(panel);
     const retryLoading = make('button', t("Retry loading"), 'wzf-haru-reset');
     panel.insertBefore(retryLoading, greeting);
@@ -1381,7 +1388,18 @@
       chatButton.hidden = !engine || failed || !idleLines().length;
       chatButton.disabled = dialogueMode === 'silent' || !run || !engine || loading || preview;
       idleLabel.hidden = !idleLines().length;
+      idleNotice.hidden = idleLabel.hidden || !idleEnabled || dialogueMode === 'auto';
       if (!run) {
+        const cancelledInteraction = touchPending || manualPending.has('motion') || manualPending.has('expression');
+        for (const type of ['motion', 'expression']) {
+          if (manualPending.has(type) || (type === 'motion' && touchPending)) {
+            engine?.cancelPending(type);
+            interactions[type]++;
+          }
+        }
+        touchPending = false;
+        manualPending.clear();
+        if (cancelledInteraction && !loading) state.textContent = t("Cancelled");
         endDrag();
         cancelPNG();
         clearDialogue();
@@ -1447,7 +1465,16 @@
         face.disabled =
         resetFace.disabled =
           !(run && engine && !loading);
-      for (const button of [...presetControls.querySelectorAll('button'), ...extraPresets.querySelectorAll('button')]) button.disabled = !(run && engine && !loading);
+      let mutedPreset = false;
+      for (const button of [...presetControls.querySelectorAll('button'), ...extraPresets.querySelectorAll('button')]) {
+        const preset = livePresets.get(button.dataset.presetId);
+        const muted = dialogueMode === 'silent' && preset && !preset.motion && !preset.expression;
+        button.disabled = !(run && engine && !loading) || muted;
+        if (muted) button.setAttribute('aria-describedby', presetNotice.id);
+        else button.removeAttribute('aria-describedby');
+        mutedPreset ||= muted;
+      }
+      presetNotice.hidden = !mutedPreset || !engine || failed;
       face.disabled = face.disabled || !expression.options.length;
       expression.hidden = face.hidden = resetFace.hidden = !expression.options.length;
       resetFace.disabled = resetFace.disabled || !expression.options.length;
@@ -2056,13 +2083,15 @@
       state.textContent = t("Loading…");
       try {
         const done = await target.play(type, id);
-        if (n === operation && g === generation)
+        if (n === operation && channel === interactions[type] && g === generation && target === engine && allowed())
           state.textContent = done ? t("Previewing: %1$s", text) : t("Cancelled");
       } catch (error) {
-        if (n === operation && g === generation && error?.name !== 'AbortError')
-          diagnosticError(error, type);
-        if (n === operation && g === generation)
+        // A reset or play on the other channel must not hide this failure.
+        // Cancelled requests stay silent, even after the page becomes visible again.
+        if (channel === interactions[type] && g === generation && target === engine && allowed()) {
+          if (error?.name !== 'AbortError') diagnosticError(error, type);
           state.textContent = error?.name === 'AbortError' ? t("Cancelled") : errorMessage(error);
+        }
       } finally {
         if (channel === interactions[type] && g === generation) manualPending.delete(type);
         syncIdle();
@@ -2070,6 +2099,10 @@
     };
     const performPreset = async (preset) => {
       if (!allowed() || !engine || loading || engine.state().paused) return false;
+      if (dialogueMode === 'silent' && !preset.motion && !preset.expression) {
+        state.textContent = t("Text-only interactions are unavailable in silent mode.");
+        return false;
+      }
       cancelPreset(); clearDialogue(); cancelExternal();
       welcomeConsumed = true; dialogueWelcomeConsumed = true; cancelWelcome();
       const n = ++operation, g = generation, target = engine;
@@ -2173,17 +2206,18 @@
         id = list[touchCount % list.length];
       try {
         const done = await target.play('motion', id);
-        if (g !== generation || channel !== interactions.motion) return;
+        if (g !== generation || channel !== interactions.motion || target !== engine || !allowed()) return;
         if (done) {
           touchCount++;
           if (n === operation) state.textContent = t("%1$s greeted you", characters[active].name);
         } else nextTouch = 0;
       } catch (error) {
-        if (g === generation && channel === interactions.motion && error?.name !== 'AbortError')
-          diagnosticError(error, 'motion');
-        if (g === generation && channel === interactions.motion) {
+        if (g === generation && channel === interactions.motion && target === engine && allowed()) {
           nextTouch = 0;
-          if (n === operation) state.textContent = t("The greeting could not load yet. Tap again to retry.");
+          if (error?.name !== 'AbortError') {
+            diagnosticError(error, 'motion');
+            state.textContent = t("The greeting could not load yet. Tap again to retry.");
+          } else if (n === operation) state.textContent = t("Cancelled");
         }
       } finally {
         if (g === generation && channel === interactions.motion) touchPending = false;
@@ -2383,7 +2417,7 @@
       if(manualPending.size||touchPending||externalPending)return {ok:false,code:'busy'};
       const now=performance.now(), key=active+':'+event;
       if(now<semanticNext || now-(semanticTimes.get(key)??-Infinity)<30000)return {ok:false,code:'rate-limited'};
-      if(!preset&&dialogueMode==='silent')return {ok:false,code:'muted'};
+      if(dialogueMode==='silent'&&(!preset||(!preset.motion&&!preset.expression)))return {ok:false,code:'muted'};
       semanticNext=now+15000; semanticTimes.set(key,now);
       const characterId=active;
       const line=caption??(event==='help'?t("Use Interact to preview characters and play quick interactions. The move handle supports dragging and arrow keys."):event==='tool-complete'?t("Tool completed"):t("Action completed"));

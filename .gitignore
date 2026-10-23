@@ -23,3 +23,6 @@ __pycache__/
 
 !/plugin/admin.js
 !/plugin/languages/
+
+!/plugin/haru-loader-13371a563458.js
+!/plugin/haru-css-3ac26e193d33.css

@@ -2380,3 +2380,9 @@ msgstr "· 预览中"
 
 msgid "· Sources and terms"
 msgstr "· 来源与条款"
+
+msgid "Text-only interactions are unavailable in silent mode."
+msgstr "静默模式下无法使用纯台词互动。"
+
+msgid "Switch to automatic dialogue to use occasional chatter."
+msgstr "切换到自动台词后，偶尔闲聊才会生效。"

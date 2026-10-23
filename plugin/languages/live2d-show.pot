@@ -1865,6 +1865,9 @@ msgstr ""
 msgid "Surprised"
 msgstr ""
 
+msgid "Switch to automatic dialogue to use occasional chatter."
+msgstr ""
+
 msgid "Swordsman and dragon ready! Which page shall we explore?"
 msgstr ""
 
@@ -1908,6 +1911,9 @@ msgid "Terms"
 msgstr ""
 
 msgid "Terms configuration is valid."
+msgstr ""
+
+msgid "Text-only interactions are unavailable in silent mode."
 msgstr ""
 
 msgid "Texture"

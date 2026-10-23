@@ -2383,3 +2383,9 @@ msgstr "· Previewing"
 
 msgid "· Sources and terms"
 msgstr "· Sources and terms"
+
+msgid "Text-only interactions are unavailable in silent mode."
+msgstr "Text-only interactions are unavailable in silent mode."
+
+msgid "Switch to automatic dialogue to use occasional chatter."
+msgstr "Switch to automatic dialogue to use occasional chatter."
