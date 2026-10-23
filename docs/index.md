@@ -1,8 +1,8 @@
 # 使用文档
 
-适用于 WordPress Live2D Mascot **3.11.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
+适用于 WordPress Live2D Mascot **3.11.1**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
 
-本版增加保存前试播、多角色模板复核，以及按需配置的资源隔离与还原；完善互动失败反馈和首帧资源耗时诊断。配置方法见[互动与偏好指南](INTERACTIONS.md#配置台词)，资源维护见[常见问题与维护](TROUBLESHOOTING.md)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.0)。
+本版修复长互动面板与固定页眉的遮挡。后台保留保存前试播、多角色模板复核，以及按需配置的资源隔离与还原；本地诊断可查看首帧资源耗时。配置方法见[互动与偏好指南](INTERACTIONS.md#配置台词)，资源维护见[常见问题与维护](TROUBLESHOOTING.md)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.1)。
 
 | 你想做什么 | 阅读入口 |
 | --- | --- |
@@ -16,8 +16,8 @@
 
 ## English entry points
 
-The plugin interface supports **en_US / zh_CN**. Version 3.11.0 adds draft interaction previews, reviewed batch templates, optional resource quarantine and restore, clearer interaction feedback, and first-frame resource timings. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [physical-device sampling](DEVICE_SAMPLING.md). The remaining guides are maintained primarily in Chinese; code identifiers and API examples retain their original names.
+The plugin interface supports **en_US / zh_CN**. Version 3.11.1 keeps long interaction panels below the visible PageNest header and WordPress admin toolbar. Draft previews, batch templates, resource recovery and first-frame timings remain available. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [physical-device sampling](DEVICE_SAMPLING.md). The remaining guides are maintained primarily in Chinese; code identifiers and API examples retain their original names.
 
 ## 项目入口
 
-[项目首页](../README.md) · [下载 3.11.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
+[项目首页](../README.md) · [下载 3.11.1](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.11.1) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)

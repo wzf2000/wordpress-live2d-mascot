@@ -1299,6 +1299,25 @@
       mobileSize.textContent = t("Compact mobile size: %1$s pixels (desktop settings retained)", renderedSize);
       output.textContent = t("%1$s pixels", size);
     };
+    const topObstructionSelector = '.pagenest-header,#wpadminbar';
+    const panelTopBoundary = (view) => {
+      const panelBox = panel.getBoundingClientRect();
+      const bars = [...document.querySelectorAll(topObstructionSelector)]
+        .map((element) => ({ element, box: element.getBoundingClientRect(), css: getComputedStyle(element) }))
+        .filter(({ element, box, css }) =>
+          element.getClientRects().length && box.height > 0 && box.bottom > view.top &&
+          box.right > panelBox.left && box.left < panelBox.right &&
+          ['fixed', 'sticky'].includes(css.position) &&
+          css.visibility === 'visible' && Number(css.opacity) > 0,
+        )
+        .sort((a, b) => a.box.top - b.box.top);
+      let edge = view.top;
+      for (const { box } of bars) {
+        // Only the contiguous stack at the viewport top obstructs the panel.
+        if (box.top <= edge + 1) edge = Math.max(edge, box.bottom);
+      }
+      return edge + Math.max(16, view.safeTop);
+    };
     const layoutDock = () => {
       const view = visibleViewport();
       const left=view.left+Math.max(16,view.safeLeft), right=view.right-Math.max(16,view.safeRight);
@@ -1311,7 +1330,7 @@
       controlsDock.style.bottom = dockBottom+'px';
       const bottom = dockBottom+controlsDock.offsetHeight+8;
       panel.style.bottom = bottom+'px';
-      panel.style.maxHeight = Math.max(44,innerHeight-bottom-view.top-Math.max(16,view.safeTop))+'px';
+      panel.style.maxHeight = Math.max(44,innerHeight-bottom-panelTopBoundary(view))+'px';
     };
     const rememberLayout = () => {
       const row={position,size,...(anchor?{anchor:{...anchor}}:{})};
@@ -2588,6 +2607,36 @@
       syncMobileInput();
     });
     document.addEventListener('focusout', () => setTimeout(syncMobileInput, 0));
+    let dockFrame = 0;
+    const scheduleDockLayout = () => {
+      if (dockFrame) return;
+      dockFrame = requestAnimationFrame(() => { dockFrame = 0; layoutDock(); });
+    };
+    // Header height, visibility and sticky position can change without a viewport resize.
+    const observedBars = new Set();
+    const barResize = new ResizeObserver(scheduleDockLayout);
+    const observeTopBars = () => {
+      const current = new Set(document.querySelectorAll(topObstructionSelector));
+      for (const element of observedBars) if (!current.has(element)) {
+        barResize.unobserve(element); observedBars.delete(element);
+      }
+      for (const element of current) if (!observedBars.has(element)) {
+        barResize.observe(element); observedBars.add(element);
+      }
+    };
+    const concernsTopBar = (node) => node.nodeType === Node.ELEMENT_NODE &&
+      (observedBars.has(node) || node.matches(topObstructionSelector) || node.closest(topObstructionSelector) ||
+        node.querySelector(topObstructionSelector));
+    new MutationObserver((records) => {
+      if (records.some((record) => concernsTopBar(record.target) ||
+        [...record.addedNodes, ...record.removedNodes].some(concernsTopBar))) {
+        observeTopBars(); scheduleDockLayout();
+      }
+    }).observe(document.documentElement, {
+      subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'],
+    });
+    observeTopBars();
+    window.addEventListener('scroll', scheduleDockLayout, { capture: true, passive: true });
     window.visualViewport?.addEventListener('resize', () => { syncMobileInput(); layout(); layoutDock(); });
     window.visualViewport?.addEventListener('scroll', () => { layout(); layoutDock(); });
     window.addEventListener('resize', () => {
