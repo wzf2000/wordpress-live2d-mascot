@@ -2516,7 +2516,7 @@
     const installReadingSuspension = () => {
       // Keep all existing-reader DOM knowledge here. Observe a complete mutation batch,
       // so moving a panel between a dock and dialog cannot briefly resume the mascot.
-      const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel';
+      const selector = 'dialog,.pagenest-reading-rail,.pagenest-notes-slot,.llmn-panel,.llmc-panel,[data-pagenest-reading-panel],.pagenest-pc-panel';
       const own = (node) =>
         [button, panel, panelToggle, host, consent, controlsDock, dragHandle].some(
           (element) => element && (element === node || element.contains(node)),
@@ -2529,11 +2529,14 @@
         );
         const dockOpen = [
           ...document.querySelectorAll(
-            '.pagenest-reading-rail.llmn-show-notes .pagenest-notes-slot',
+            '.pagenest-reading-rail.llmn-show-notes .pagenest-notes-slot,' +
+              '.pagenest-reading-rail.pagenest-panel-active [data-pagenest-reading-panel]',
           ),
         ].some(
           (slot) =>
-            visible(slot) && [...slot.querySelectorAll('.llmn-panel,.llmc-panel')].some(visible),
+            visible(slot) && [...slot.querySelectorAll(
+              slot.matches('[data-pagenest-reading-panel]') ? '.pagenest-pc-panel' : '.llmn-panel,.llmc-panel',
+            )].some(visible),
         );
         setSuspension('reading-ui', dialogOpen || dockOpen);
       };

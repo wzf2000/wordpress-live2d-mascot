@@ -234,6 +234,71 @@ if (output) fs.mkdirSync(output, { recursive: true });
       assert.equal(await page.getByRole('button', { name: 'Interact', exact: true }).evaluate((node) => node === document.activeElement), true);
       assert.equal((await status(page)).committed, 'beta');
     });
+    await run('PageNest docked comments preserve reading suspension across empty, hidden, dialog and overlapping states', async () => {
+      const target = await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference',serviceWorkers:'block'});
+      target.on('pageerror', error => errors.push(error.message));
+      await target.route('**/*', route => {
+        if(route.request().url().startsWith(fixture.origin + '/')) return route.continue();
+        externalRequests.push(new URL(route.request().url()).protocol); return route.abort();
+      });
+      await target.goto(fixture.origin + '/?dialogue=1&mobile=1');
+      await target.evaluate(() => {
+        localStorage.setItem('wzfl-mascot','shown'); localStorage.setItem('wzf-haru-terms','synthetic-v1');
+        localStorage.setItem('wzf-mascot-character','alpha'); localStorage.setItem('wzf-mascot-dialogue-v1','auto');
+        localStorage.setItem('wzf-mascot-mobile-v1','enabled');
+      });
+      await target.reload(); await wait(target, {ready:true,loading:false,paused:false});
+      assert.equal(await target.locator('.wzf-haru-bubble').textContent(), 'alpha <literal> welcome');
+      // Match PageNest reading.php and Companion paragraph-comments.js, without loading either product.
+      await target.evaluate(() => {
+        const rail=document.createElement('aside'); rail.className='pagenest-reading-rail pagenest-panel-active';
+        rail.innerHTML='<div class="pagenest-reading-panel" data-pagenest-reading-panel><section class="pagenest-pc-panel" hidden>Comment panel fixture</section></div>';
+        document.body.append(rail);
+      });
+      await target.waitForTimeout(60); assert.equal((await status(target)).paused,false);
+      await target.evaluate(() => document.querySelector('.pagenest-pc-panel').hidden=false);
+      await wait(target,{suspended:true,paused:true}); await shot(target,'comments-docked-desktop');
+      await target.evaluate(() => document.querySelector('[data-pagenest-reading-panel]').hidden=true);
+      await wait(target,{suspended:false,paused:false});
+      await target.evaluate(() => document.querySelector('[data-pagenest-reading-panel]').hidden=false);
+      await wait(target,{paused:true});
+      const resumes = () => target.evaluate(() => window.__mascotFixture.events.filter(e=>e.type==='resume').length);
+      const before = await resumes();
+      await target.evaluate(() => {
+        const rail=document.querySelector('.pagenest-reading-rail'), slot=rail.querySelector('[data-pagenest-reading-panel]');
+        const dialog=document.getElementById('reader-dialog'); dialog.append(slot.firstElementChild);
+        rail.classList.remove('pagenest-panel-active'); slot.hidden=true; dialog.showModal();
+      });
+      await target.waitForTimeout(60); assert.equal((await status(target)).paused,true); assert.equal(await resumes(),before);
+      await target.setViewportSize({width:390,height:844}); await shot(target,'comments-dialog-mobile');
+      await target.evaluate(() => {
+        const dialog=document.getElementById('reader-dialog'), rail=document.querySelector('.pagenest-reading-rail');
+        const slot=rail.querySelector('[data-pagenest-reading-panel]');
+        dialog.close(); slot.append(dialog.querySelector('.pagenest-pc-panel')); slot.hidden=false; rail.classList.add('pagenest-panel-active');
+      });
+      await target.waitForTimeout(60); assert.equal((await status(target)).paused,true); assert.equal(await resumes(),before);
+      await suspend(target,'other-reader',true);
+      await target.evaluate(() => {
+        document.querySelector('.pagenest-reading-rail').classList.remove('pagenest-panel-active');
+        document.querySelector('[data-pagenest-reading-panel]').hidden=true;
+      });
+      await target.waitForTimeout(60); assert.equal((await status(target)).paused,true);
+      await suspend(target,'other-reader',false); await wait(target,{paused:false,suspended:false});
+      assert.equal(await target.locator('.wzf-haru-bubble').textContent(),'');
+      await target.evaluate(() => {
+        const slot=document.querySelector('[data-pagenest-reading-panel]'); slot.replaceChildren(); slot.hidden=false;
+        document.querySelector('.pagenest-reading-rail').classList.add('pagenest-panel-active');
+      });
+      await target.waitForTimeout(60); assert.equal((await status(target)).paused,false);
+      await target.evaluate(() => {
+        const rail=document.querySelector('.pagenest-reading-rail'); rail.className='pagenest-reading-rail llmn-show-notes';
+        rail.innerHTML='<div class="pagenest-notes-slot"><section class="llmc-panel">Legacy comments fixture</section></div>';
+      });
+      await wait(target,{paused:true});
+      await target.evaluate(() => document.querySelector('.llmc-panel').hidden=true);
+      await wait(target,{paused:false});
+      await target.close();
+    });
     await run('reading DOM and multiple suspension sources compose; visibility/page lifecycle pause and resume', async () => {
       await page.evaluate(() => document.getElementById('reader-dialog').showModal());
       await wait(page, { suspended: true, paused: true });
@@ -552,7 +617,7 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await shot(target,'dialogue-mobile'); assert.equal(await target.evaluate(() => document.documentElement.scrollWidth > innerWidth),false);
       await target.close();
     });
-    await context.close(); report.complete = checks.length === 20;
+    await context.close(); report.complete = checks.length === 21;
     assert.equal(report.complete, true);
   } catch (error) {
     report.failure = String(error.message); throw error;
