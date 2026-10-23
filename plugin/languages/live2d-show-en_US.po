@@ -2389,3 +2389,114 @@ msgstr "Text-only interactions are unavailable in silent mode."
 
 msgid "Switch to automatic dialogue to use occasional chatter."
 msgstr "Switch to automatic dialogue to use occasional chatter."
+
+msgid "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+msgstr "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+
+msgid "Blocked"
+msgstr "Blocked"
+
+msgid "Changed"
+msgstr "Changed"
+
+msgid "Check resource terms"
+msgstr "Check resource terms"
+
+msgid "Choose 1–50 target characters."
+msgstr "Choose 1–50 target characters."
+
+msgid "Choose a draft rule or preset to try."
+msgstr "Choose a draft rule or preset to try."
+
+msgid "Close preview"
+msgstr "Close preview"
+
+msgid "End preview"
+msgstr "End preview"
+
+msgid "Expressions"
+msgstr "Expressions"
+
+msgid "Gaze parameters"
+msgstr "Gaze parameters"
+
+msgid "Hit areas"
+msgstr "Hit areas"
+
+msgid "Import the verified Core before previewing."
+msgstr "Import the verified Core before previewing."
+
+msgid "Interaction draft is invalid."
+msgstr "Interaction draft is invalid."
+
+msgid "Loading preview…"
+msgstr "Loading preview…"
+
+msgid "Motions"
+msgstr "Motions"
+
+msgid "No associated motion; showing text only."
+msgstr "No associated motion; showing text only."
+
+msgid "No draft lines or presets are available."
+msgstr "No draft lines or presets are available."
+
+msgid "Nothing is loaded until you start. Changes remain unsaved."
+msgstr "Nothing is loaded until you start. Changes remain unsaved."
+
+msgid "One or more targets are blocked. Nothing was applied."
+msgstr "One or more targets are blocked. Nothing was applied."
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Preview could not load. Check the installed resources and try again."
+msgstr "Preview could not load. Check the installed resources and try again."
+
+msgid "Preview ended."
+msgstr "Preview ended."
+
+msgid "Preview uses this form’s current values without saving them."
+msgstr "Preview uses this form’s current values without saving them."
+
+msgid "Resume"
+msgstr "Resume"
+
+msgid "Reviewed template applied to all selected characters."
+msgstr "Reviewed template applied to all selected characters."
+
+msgid "Runtime capabilities"
+msgstr "Runtime capabilities"
+
+msgid "Simulate trigger"
+msgstr "Simulate trigger"
+
+msgid "Start preview"
+msgstr "Start preview"
+
+msgid "Target characters (up to 50)"
+msgstr "Target characters (up to 50)"
+
+msgid "This rule has no lines."
+msgstr "This rule has no lines."
+
+msgid "This rule is disabled."
+msgstr "This rule is disabled."
+
+msgid "Try unsaved changes"
+msgstr "Try unsaved changes"
+
+msgid "Unsaved interaction preview"
+msgstr "Unsaved interaction preview"
+
+msgid "Welcome takes priority over the time-of-day rule. Both run only on the first display."
+msgstr "Welcome takes priority over the time-of-day rule. Both run only on the first display."
+
+msgid "Preparing preview…"
+msgstr "Preparing preview…"
+
+msgid "Select every character you want to update. Review all targets before applying."
+msgstr "Select every character you want to update. Review all targets before applying."
+
+msgid "Rule notes"
+msgstr "Rule notes"

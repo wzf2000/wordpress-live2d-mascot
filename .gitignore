@@ -29,3 +29,5 @@ __pycache__/
 
 !/plugin/haru-engine-ad3346669e43.js
 !/plugin/haru-loader-83381a07b4d3.js
+
+!/plugin/interaction-preview.js

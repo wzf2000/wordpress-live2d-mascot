@@ -2386,3 +2386,114 @@ msgstr "静默模式下无法使用纯台词互动。"
 
 msgid "Switch to automatic dialogue to use occasional chatter."
 msgstr "切换到自动台词后，偶尔闲聊才会生效。"
+
+msgid "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+msgstr "自动闲聊需要启用规则、访客主动开启，并使用自动台词模式。"
+
+msgid "Blocked"
+msgstr "无法应用"
+
+msgid "Changed"
+msgstr "有改动"
+
+msgid "Check resource terms"
+msgstr "查看资源条款"
+
+msgid "Choose 1–50 target characters."
+msgstr "请选择 1–50 个目标角色。"
+
+msgid "Choose a draft rule or preset to try."
+msgstr "请选择要试播的草稿规则或快捷互动。"
+
+msgid "Close preview"
+msgstr "关闭试播"
+
+msgid "End preview"
+msgstr "结束试播"
+
+msgid "Expressions"
+msgstr "表情"
+
+msgid "Gaze parameters"
+msgstr "视线参数"
+
+msgid "Hit areas"
+msgstr "命中区域"
+
+msgid "Import the verified Core before previewing."
+msgstr "请先导入已核验的 Core，再开始试播。"
+
+msgid "Interaction draft is invalid."
+msgstr "互动草稿格式无效。"
+
+msgid "Loading preview…"
+msgstr "正在加载试播…"
+
+msgid "Motions"
+msgstr "动作"
+
+msgid "No associated motion; showing text only."
+msgstr "没有关联动作，仅显示台词。"
+
+msgid "No draft lines or presets are available."
+msgstr "当前没有可试播的台词或快捷互动。"
+
+msgid "Nothing is loaded until you start. Changes remain unsaved."
+msgstr "点击开始后才加载角色；草稿不会保存。"
+
+msgid "One or more targets are blocked. Nothing was applied."
+msgstr "部分目标无法应用，整批均未修改。"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Preview could not load. Check the installed resources and try again."
+msgstr "试播未能加载，请检查已安装资源后重试。"
+
+msgid "Preview ended."
+msgstr "试播已结束。"
+
+msgid "Preview uses this form’s current values without saving them."
+msgstr "试播使用此表单当前内容，不会保存。"
+
+msgid "Resume"
+msgstr "继续"
+
+msgid "Reviewed template applied to all selected characters."
+msgstr "已将审阅后的模板应用到全部选定角色。"
+
+msgid "Runtime capabilities"
+msgstr "模型实际能力"
+
+msgid "Simulate trigger"
+msgstr "模拟触发"
+
+msgid "Start preview"
+msgstr "开始试播"
+
+msgid "Target characters (up to 50)"
+msgstr "目标角色（最多 50 个）"
+
+msgid "This rule has no lines."
+msgstr "此规则没有台词。"
+
+msgid "This rule is disabled."
+msgstr "此规则未启用。"
+
+msgid "Try unsaved changes"
+msgstr "试播未保存的内容"
+
+msgid "Unsaved interaction preview"
+msgstr "未保存的互动试播"
+
+msgid "Welcome takes priority over the time-of-day rule. Both run only on the first display."
+msgstr "欢迎台词优先于时段台词，两者都只在首次展示时触发。"
+
+msgid "Preparing preview…"
+msgstr "正在准备预览…"
+
+msgid "Select every character you want to update. Review all targets before applying."
+msgstr "勾选要更新的所有角色，应用前检查每个目标的变化。"
+
+msgid "Rule notes"
+msgstr "规则说明"

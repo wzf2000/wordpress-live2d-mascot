@@ -157,7 +157,7 @@ class BrowserWorkflowTests(unittest.TestCase):
         browser = workflow.split('\n  browser:\n')[1]
         paths = browser.split('          path: |\n')[1].split('          if-no-files-found:')[0]
         expected = {'build/browser/results.json', 'build/browser/*.png'}
-        for suite in ['dialogue', 'movement', 'account', 'selection', 'capture']:
+        for suite in ['dialogue', 'movement', 'account', 'selection', 'capture', 'admin-preview']:
             expected.update({'build/browser/' + suite + '/results.json', 'build/browser/' + suite + '/*.png'})
         self.assertEqual(set(paths.split()), expected)
         self.assertIn('node "tests/$suite-browser.cjs"', browser)

@@ -5,13 +5,14 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'plugin/haru-assets.json')));
 
-async function startFixture() {
+async function startFixture(options = {}) {
   const requests = [];
   const server = http.createServer((request, response) => {
     const url = new URL(request.url, 'http://127.0.0.1');
     requests.push({ path: url.pathname, method: request.method });
     response.setHeader('Cache-Control', 'no-store');
     const send = (type, bytes) => { response.setHeader('Content-Type', type); response.end(bytes); };
+    if (options.handle?.(request, response, url, send)) return;
     if (url.pathname === '/') {
       const character = (id) => ({ name: id === 'alpha' ? 'Alpha fixture' : 'Beta fixture',
         root: '/synthetic/resources/' + id + '/', file: 'fixture.model3.json', idle: 'idle',

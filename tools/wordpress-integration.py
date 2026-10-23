@@ -158,6 +158,10 @@ def main():
     languages = site / 'wp-content/languages'; languages.mkdir(exist_ok=True)
     (languages / 'zh_CN.mo').write_bytes(mo_bytes({'': (None, ['Content-Type: text/plain; charset=UTF-8\nLanguage: zh_CN\nPlural-Forms: nplurals=1; plural=0;\n'])}))
     (mu / 'synthetic-no-mail.php').write_text("<?php add_filter('pre_wp_mail', '__return_true');\n")
+    interaction_counts = lab / 'interaction-counts.txt'
+    (mu / 'synthetic-interaction-counts.php').write_text("<?php if (($_POST['action'] ?? '') === 'wzf_mascot_template_batch_apply') {" +
+        "add_action('added_option',function($name){if($name==='wzf_mascot_import_lock_v1')file_put_contents(" + json.dumps(str(interaction_counts)) + ",\"guard\\n\",FILE_APPEND);});" +
+        "add_action('updated_option',function($name){if($name==='wzf_mascot_resources_v1')file_put_contents(" + json.dumps(str(interaction_counts)) + ",\"save\\n\",FILE_APPEND);});}")
     wp('db', 'create')
     origin = 'http://127.0.0.1:' + str(args.port)
     password = secrets.token_urlsafe(24)
@@ -198,8 +202,9 @@ def main():
         headers = {}
         if files:
             boundary = 'mascot-' + secrets.token_hex(12); parts = []
-            for k, v in data.items():
-                parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
+            for k, values in data.items():
+                for v in values if isinstance(values, list) else [values]:
+                    parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
             for k, (filename, raw) in files.items():
                 parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"; filename="{filename}"\r\nContent-Type: application/octet-stream\r\n\r\n'.encode() + raw + b'\r\n')
             payload = b''.join(parts) + f'--{boundary}--\r\n'.encode(); headers['Content-Type'] = 'multipart/form-data; boundary=' + boundary
@@ -285,7 +290,7 @@ echo 'released';
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply']:
+        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply', 'interaction_preview', 'template_batch_apply']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -507,11 +512,12 @@ echo 'released';
         assert 'root' not in body and str(site) not in body and state() == template_base
         preview_url = inventory_url + '&character=23&mascot_template_preview=1'
 
-        def template_preview(raw, presets=False, actor=None, invalid_nonce=False):
+        def template_preview(raw, presets=False, actor=None, invalid_nonce=False, targets=None):
             code, page = request(admin, inventory_url + '&character=23')
             assert code == 200
             fields = next(f for f in Forms(page).forms if 'action' not in f and f.get('character') == '23')
             if presets: fields['include_presets'] = '1'
+            if targets is not None: fields['targets[]'] = targets
             if invalid_nonce: fields['_wpnonce'] = 'invalid'
             return request(actor or admin, preview_url, fields, {'template': ('interactions.json', raw)})
 
@@ -576,6 +582,49 @@ echo 'released';
         wp('option', 'update', 'wzf_mascot_resources_v1', json.dumps(template_base['config']), '--format=json')
         assert state() == template_base
         record('real preset template maps existing paths, rejects bound hit areas and preserves all resource bytes')
+
+        # The preview document contains draft data and one small controller only.
+        # Heavy runtime/model requests are checked separately by browser fixtures.
+        preview_before = state()
+        page = request(admin, inventory_url + '&character=legacy_character')[1]
+        preview_nonce = re.search(r'class="button wzf-mascot-preview-draft"[^>]*data-nonce="([^"]+)"', page)[1]
+        draft = {'dialogue': {'click': {'enabled': True, 'cooldown': 30, 'lines': ['Unsaved HTTP line']}},
+                 'presets': [{'id':'http-draft','name':'HTTP draft','motion':'01_extra','expression':'','line':'Unsaved preset'}]}
+        preview_fields = {'action':'wzf_mascot_interaction_preview','_wpnonce':preview_nonce,
+            'character':'legacy_character','version':preview_before['version'],'draft':json.dumps(draft)}
+        assert post(preview_fields, opener=reader)[0] == 403
+        assert post(dict(preview_fields,_wpnonce='invalid'))[0] == 403
+        for changed in [dict(preview_fields,version='0'*64), dict(preview_fields,url='https://invalid.example/'),
+                        dict(preview_fields,draft=json.dumps({'root':'https://invalid.example/'}))]:
+            assert post(changed)[0] == 400
+            assert state() == preview_before
+        code, preview_html = post(preview_fields)
+        assert code == 200 and 'Unsaved HTTP line' in preview_html and 'interaction-preview.js' in preview_html
+        assert '<script src="' + front()['core'] not in preview_html
+        assert state() == preview_before
+        record('real unsaved preview nonce, permission, version and strict fields reject writes; document contains current draft without heavy script loading')
+
+        batch_before=state()
+        code, batch_page=template_preview(raw_template, targets=['legacy_character','23','legacy_character'])
+        assert code == 200 and state() == batch_before
+        batch_form=next(f for f in Forms(batch_page).forms if f.get('action')=='wzf_mascot_template_batch_apply')
+        assert json.loads(batch_form['targets']) == ['23','legacy_character']
+        batch_form['confirm']='1'
+        for changed in [dict(batch_form,targets='["missing"]'),dict(batch_form,signature='0'*64),dict(batch_form,issued='1')]:
+            post(changed);assert state()==batch_before
+        code, blocked_page=template_preview(raw_template,targets=['23','missing'])
+        assert code==200 and not any(f.get('action')=='wzf_mascot_template_batch_apply' for f in Forms(blocked_page).forms)
+        assert state()==batch_before
+        if interaction_counts.exists(): interaction_counts.unlink()
+        post(batch_form)
+        batch_after=state()
+        assert interaction_counts.read_text().splitlines()==['guard','save']
+        for target in ['23','legacy_character']:
+            assert batch_after['config']['characters'][target]['dialogue']['click']['lines']==template['dialogue']['click']['lines']
+        assert batch_after['config']['characters']['fixture']==batch_before['config']['characters']['fixture']
+        assert {p.relative_to(site).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in (site/'wp-content/uploads/wzf-mascot').rglob('*') if p.is_file()}==template_files
+        wp('option','update','wzf_mascot_resources_v1',json.dumps(batch_before['config']),'--format=json')
+        record('real all-target template preview blocks any invalid target; signed batch applies once under one guard and one resource update')
         data = form('wzf_mascot_hits'); data.update({'hitBindings[0][area]':'Head [synthetic]','hitBindings[0][preset]':'hello'})
         post(data); hit_state = state()['config']; assert hit_state['characters']['legacy_character']['hitBindings'] == [{'area':'Head [synthetic]','preset':'hello'}]
         bad = dict(data); bad['version'] = state()['version']; bad['hitBindings[0][area]']='Missing'

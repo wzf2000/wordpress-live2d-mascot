@@ -275,6 +275,9 @@ msgstr ""
 msgid "Arms slightly open"
 msgstr ""
 
+msgid "Automatic chatter requires an enabled rule, reader opt-in and automatic dialogue mode."
+msgstr ""
+
 msgid "Automatic dialogue"
 msgstr ""
 
@@ -297,6 +300,9 @@ msgid "Between 1 and 16 textures are required."
 msgstr ""
 
 msgid "Bind only areas declared by this model to an existing quick interaction. The browser checks actual drawable support. Unbound, missing or invalid areas use the normal greeting."
+msgstr ""
+
+msgid "Blocked"
 msgstr ""
 
 msgid "Blush"
@@ -399,6 +405,9 @@ msgid "Change character"
 msgstr ""
 
 msgid "Change expression"
+msgstr ""
+
+msgid "Changed"
 msgstr ""
 
 msgid "Character"
@@ -533,6 +542,9 @@ msgstr ""
 msgid "Check resource credits and terms, then use the frontend “Show mascot” button and accept the terms in each browser."
 msgstr ""
 
+msgid "Check resource terms"
+msgstr ""
+
 msgid "Check the installed resources before retrying."
 msgstr ""
 
@@ -546,6 +558,12 @@ msgid "Cheerful greeting"
 msgstr ""
 
 msgid "Chin in hand · open palm"
+msgstr ""
+
+msgid "Choose 1–50 target characters."
+msgstr ""
+
+msgid "Choose a draft rule or preset to try."
 msgstr ""
 
 msgid "Choose a recent character candidate"
@@ -600,6 +618,9 @@ msgid "Click"
 msgstr ""
 
 msgid "Close interaction"
+msgstr ""
+
+msgid "Close preview"
 msgstr ""
 
 msgid "Compact mobile size:"
@@ -800,6 +821,9 @@ msgstr ""
 msgid "Encrypted ZIP files are not supported."
 msgstr ""
 
+msgid "End preview"
+msgstr ""
+
 msgid "Engine"
 msgstr ""
 
@@ -831,6 +855,9 @@ msgid "Expression is invalid."
 msgstr ""
 
 msgid "Expression reset"
+msgstr ""
+
+msgid "Expressions"
 msgstr ""
 
 msgid "Favorite %1$s"
@@ -873,6 +900,9 @@ msgid "Frontend display"
 msgstr ""
 
 msgid "Frontend entry checks"
+msgstr ""
+
+msgid "Gaze parameters"
 msgstr ""
 
 msgid "Getting one question clear is already a good start."
@@ -983,6 +1013,9 @@ msgstr ""
 msgid "Hit area bindings saved."
 msgstr ""
 
+msgid "Hit areas"
+msgstr ""
+
 msgid "I am here."
 msgstr ""
 
@@ -1031,6 +1064,9 @@ msgstr ""
 msgid "Import the exact Web 5 R5 Core file, or restore its missing file. Other versions cannot be substituted."
 msgstr ""
 
+msgid "Import the verified Core before previewing."
+msgstr ""
+
 msgid "Import type is invalid."
 msgstr ""
 
@@ -1044,6 +1080,9 @@ msgid "Interact"
 msgstr ""
 
 msgid "Interaction JSON (up to 64 KiB)"
+msgstr ""
+
+msgid "Interaction draft is invalid."
 msgstr ""
 
 msgid "Interaction help"
@@ -1125,6 +1164,9 @@ msgid "Loading character…"
 msgstr ""
 
 msgid "Loading mascot…"
+msgstr ""
+
+msgid "Loading preview…"
 msgstr ""
 
 msgid "Loading…"
@@ -1226,6 +1268,9 @@ msgstr ""
 msgid "Motion stopped; returned to idle"
 msgstr ""
 
+msgid "Motions"
+msgstr ""
+
 msgid "Motions is invalid."
 msgstr ""
 
@@ -1265,6 +1310,9 @@ msgstr ""
 msgid "No account preferences saved. Saving is optional."
 msgstr ""
 
+msgid "No associated motion; showing text only."
+msgstr ""
+
 msgid "No candidate character"
 msgstr ""
 
@@ -1281,6 +1329,9 @@ msgid "No chatter motions are available."
 msgstr ""
 
 msgid "No cleanup review rows were available within the inspection limits."
+msgstr ""
+
+msgid "No draft lines or presets are available."
 msgstr ""
 
 msgid "No favorites yet. Turn off “Favorites only” to see all characters."
@@ -1319,6 +1370,9 @@ msgstr ""
 msgid "Nothing has been saved. Applying replaces the selected sections, including removal of existing lines or presets missing from the template. Occasional chatter keeps this character’s current enable setting; empty imported lines turn it off."
 msgstr ""
 
+msgid "Nothing is loaded until you start. Changes remain unsaved."
+msgstr ""
+
 msgid "Observed paths (admin only)"
 msgstr ""
 
@@ -1341,6 +1395,9 @@ msgid "Official samples"
 msgstr ""
 
 msgid "One more page, or a well-earned rest?"
+msgstr ""
+
+msgid "One or more targets are blocked. Nothing was applied."
 msgstr ""
 
 msgid "One small step at a time!"
@@ -1400,6 +1457,9 @@ msgstr ""
 msgid "Partial: %s observed bytes"
 msgstr ""
 
+msgid "Pause"
+msgstr ""
+
 msgid "Pause and see whether you missed a clue."
 msgstr ""
 
@@ -1427,6 +1487,9 @@ msgstr ""
 msgid "Preparing PNG…"
 msgstr ""
 
+msgid "Preparing preview…"
+msgstr ""
+
 msgid "Preset expression"
 msgstr ""
 
@@ -1448,7 +1511,16 @@ msgstr ""
 msgid "Preview character"
 msgstr ""
 
+msgid "Preview could not load. Check the installed resources and try again."
+msgstr ""
+
+msgid "Preview ended."
+msgstr ""
+
 msgid "Preview template changes"
+msgstr ""
+
+msgid "Preview uses this form’s current values without saving them."
 msgstr ""
 
 msgid "Previewing. Select “Use this character” to save."
@@ -1643,6 +1715,9 @@ msgstr ""
 msgid "Restore the configured site terms file or its configuration backup. Shared terms failures prevent all frontend output."
 msgstr ""
 
+msgid "Resume"
+msgstr ""
+
 msgid "Retained Core directory / manual review"
 msgstr ""
 
@@ -1667,7 +1742,13 @@ msgstr ""
 msgid "Review status"
 msgstr ""
 
+msgid "Reviewed template applied to all selected characters."
+msgstr ""
+
 msgid "Roll back to previous resources and motions"
+msgstr ""
+
+msgid "Rule notes"
 msgstr ""
 
 msgid "Run a bounded, read-only metadata inventory of uploads/wzf-mascot. Unreferenced files are not safe to delete. No cleanup, hashing, texture reads or configuration changes occur."
@@ -1677,6 +1758,9 @@ msgid "Running"
 msgstr ""
 
 msgid "Runs read-only checks of the Core hash, character runtime references, catalogs, layouts and terms. It does not save configuration or render models. Runtime byte totals exclude separately maintained catalog motions."
+msgstr ""
+
+msgid "Runtime capabilities"
 msgstr ""
 
 msgid "Runtime download failed. Check your connection and retry."
@@ -1763,6 +1847,9 @@ msgstr ""
 msgid "Select a character to edit its name, credit, default layout and motions. Plugin upgrades retain uploads resources and browser preferences."
 msgstr ""
 
+msgid "Select every character you want to update. Review all targets before applying."
+msgstr ""
+
 msgid "Select the read-only cleanup review option before continuing."
 msgstr ""
 
@@ -1797,6 +1884,9 @@ msgid "Sign in to read or save account preferences."
 msgstr ""
 
 msgid "Silent"
+msgstr ""
+
+msgid "Simulate trigger"
 msgstr ""
 
 msgid "Single report downloads the last saved window; before sampling, it downloads current diagnostic state."
@@ -1847,6 +1937,9 @@ msgstr ""
 msgid "Stand quietly (idle)"
 msgstr ""
 
+msgid "Start preview"
+msgstr ""
+
 msgid "Start with a lowercase letter; use letters, digits or hyphens. Existing IDs are never overwritten."
 msgstr ""
 
@@ -1890,6 +1983,9 @@ msgid "Tap %1$s to greet"
 msgstr ""
 
 msgid "Tap to greet"
+msgstr ""
+
+msgid "Target characters (up to 50)"
 msgstr ""
 
 msgid "Task age: %s seconds. Age alone does not permit recovery."
@@ -2153,6 +2249,12 @@ msgstr ""
 msgid "This preview expires after 15 minutes. Changes elsewhere require a fresh preview."
 msgstr ""
 
+msgid "This rule has no lines."
+msgstr ""
+
+msgid "This rule is disabled."
+msgstr ""
+
 msgid "This subtree contains protected storage; preserve it as a whole."
 msgstr ""
 
@@ -2198,6 +2300,9 @@ msgstr ""
 msgid "Trash"
 msgstr ""
 
+msgid "Try unsaved changes"
+msgstr ""
+
 msgid "Turn with hands behind"
 msgstr ""
 
@@ -2235,6 +2340,9 @@ msgid "Unknown motion"
 msgstr ""
 
 msgid "Unreferenced / preserve"
+msgstr ""
+
+msgid "Unsaved interaction preview"
 msgstr ""
 
 msgid "Up to 8 named combinations. Choose a motion, an expression, a plain-text line, or combine them. Leave all fields blank to remove a preset. Names: 80 bytes; lines: 300 bytes. Playback always starts from a reader action."
@@ -2307,6 +2415,9 @@ msgid "Welcome back. We can continue at your pace."
 msgstr ""
 
 msgid "Welcome motion (first display)"
+msgstr ""
+
+msgid "Welcome takes priority over the time-of-day rule. Both run only on the first display."
 msgstr ""
 
 msgid "Welcome. I hope you find something here."
