@@ -54,7 +54,7 @@ function wzf_mascot_preview_labels() {
 function wzf_mascot_preview_document($plan) {
     $plan['labels'] = wzf_mascot_preview_labels();
     $base = plugins_url('', dirname(__DIR__) . '/live2d-show.php') . '/';
-    return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="' . esc_url($base . 'admin.css?ver=3.11.0-rc.1') . '"></head><body class="wzf-mascot-admin"><main class="wzf-mascot-preview-root"></main><script id="wzf-mascot-preview-data" type="application/json">' . wp_json_encode($plan, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) . '</script><script src="' . esc_url($base . 'interaction-preview.js?ver=3.11.0-rc.1') . '" defer></script></body></html>';
+    return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="' . esc_url($base . 'admin.css?ver=3.11.0') . '"></head><body class="wzf-mascot-admin"><main class="wzf-mascot-preview-root"></main><script id="wzf-mascot-preview-data" type="application/json">' . wp_json_encode($plan, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) . '</script><script src="' . esc_url($base . 'interaction-preview.js?ver=3.11.0') . '" defer></script></body></html>';
 }
 function wzf_mascot_preview_post() {
     if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);
