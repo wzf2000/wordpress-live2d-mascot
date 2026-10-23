@@ -401,6 +401,7 @@ class ImporterTests(unittest.TestCase):
         function wp_unslash($s){return $s;}
         function add_query_arg($k,$v,$s=null){return is_array($k)?$v.'?'.http_build_query($k):$s.'&'.$k.'='.urlencode($v);}
         function wp_nonce_field(...$x){echo '<input type="hidden" name="nonce" value="stub">';}
+        function wp_create_nonce($action){return 'synthetic-preview-nonce';}
         function submit_button($s){echo '<button>'.$s.'</button>';}
         function selected($a,$b,$echo){return $a===$b?'selected':'';}
         function checked($a,$b,$echo){return $a===$b?'checked':'';}
