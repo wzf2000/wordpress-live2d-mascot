@@ -82,7 +82,6 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
     // Restore all interaction channels together, including stale success/error
     // continuations, without changing reader preferences or replaying welcome.
     for(const source of ['motion','expression','preset','external','greeting','welcome','caption']) {
-      console.log('CHECK restore ' + source);
       const p=await context.newPage();await p.clock.install();
       await p.goto(fixture.origin+'/?presets=1&explicitButtons=1&mobile=1');await ready(p);
       if(source==='welcome') {
