@@ -2,15 +2,15 @@
 
 [文档首页](index.md) · [常见问题](TROUBLESHOOTING.md) · [English setup](DISTRIBUTION.md#administrator-setup)
 
-适用于 3.11.1。需要 PHP 8.2+、ZipArchive、可写的 WordPress uploads 和支持 WebGL 的浏览器。首次安装需管理员自行取得并导入指定 Core 与有权使用的模型。
+适用于 3.12.0。需要 PHP 8.2+、ZipArchive、可写的 WordPress uploads 和支持 WebGL 的浏览器。首次安装需管理员自行取得并导入指定 Core 与有权使用的模型。
 
 ## 1. 下载并安装插件
 
-[**下载 WordPress 安装包：wordpress-live2d-mascot-3.11.1.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.11.1/wordpress-live2d-mascot-3.11.1.zip)
+[**下载 WordPress 安装包：wordpress-live2d-mascot-3.12.0.zip**](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.12.0/wordpress-live2d-mascot-3.12.0.zip)
 
 在后台打开 **插件 → 安装插件 → 上传插件**，上传此 ZIP，安装并启用。在站点或网络后台插件列表的操作区，以及本插件说明区，可通过 **设置** 直达资源配置（仅对具备设置权限的管理员显示），也可通过 **文档／反馈** 打开项目说明与 issue 页面。安装包的顶层目录为 `live2d-show/`。
 
-发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.11.1/SHA256SUMS) 核对下载。
+发行页中的 `*-source.zip` 和 GitHub 自动提供的 **Source code** 用于开发；后台安装请选上面的完整安装附件。可用发行页的 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.12.0/SHA256SUMS) 核对下载。
 
 ## 2. 导入自己取得的 Core
 
