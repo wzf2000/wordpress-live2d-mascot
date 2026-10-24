@@ -180,11 +180,14 @@ child.on('close', (code) => {
 
 // Execute the actual mobile display gate and save routing, independently of desktop state.
 const mobileGate = loader.slice(loader.indexOf('const displayWanted ='), loader.indexOf('const paint ='));
+const preferenceSave = loader.slice(loader.indexOf('const unsavedPreferences ='), loader.indexOf('const saveLocalPreference ='));
 const mobileSave = loader.slice(loader.indexOf('const save ='), loader.indexOf('agree.onclick ='));
 new Function('assert', 'localStorage', `
   const desktop = {matches:false}, reduce = {matches:false}, config = {};
   const document = {hidden:false}, suspensions = new Set();
   let wanted=true, mobileOptIn=false, accepted=true, failed=false, pageHidden=false;
+  const preferenceStatus = {}, layoutDock = () => {}, t = ${translate.toString()};
+  ${preferenceSave}
   ${mobileGate}
   ${mobileSave}
   assert.equal(allowed(),false);

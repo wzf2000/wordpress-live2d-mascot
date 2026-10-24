@@ -534,6 +534,7 @@
 .wzf-haru-character-settings[open] > :not(summary) { margin-bottom: 9px; }
 .wzf-haru-character-settings > button { width: 100%; }
 .wzf-haru-advanced-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
+.wzf-haru-restore-natural { grid-column: 1 / -1; }
 .wzf-haru-advanced-controls > .wzf-haru-layout { border-top: 1px solid var(--wzf-mascot-border); }
 .wzf-haru-layout p { margin: 6px 0 10px; color: var(--wzf-mascot-muted); }
 .wzf-haru-layout select { margin-bottom: 6px; }
@@ -564,4 +565,16 @@
   .wzf-haru-controls .wzf-haru-heading { font-size: 16px; }
   .wzf-haru-presets button { font-size: 12px; }
   .wzf-haru-layout > summary { min-height: 48px; }
+}
+
+.wzf-haru-dock-status:empty, .wzf-haru-dock-status[hidden] { display: none; }
+.wzf-haru-dock-status {
+  color: var(--wzf-mascot-muted);
+  font: 12px/1.5 system-ui;
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 6px 10px;
+  border: 1px solid var(--wzf-mascot-border);
+  border-radius: 6px;
+  background: var(--wzf-mascot-surface);
+  line-height: 1.5;
 }

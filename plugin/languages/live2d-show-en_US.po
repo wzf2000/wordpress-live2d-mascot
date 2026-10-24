@@ -2629,3 +2629,24 @@ msgstr "· Previewing"
 
 msgid "· Sources and terms"
 msgstr "· Sources and terms"
+
+msgid "Preparing runtime…"
+msgstr "Preparing runtime…"
+
+msgid "Reading character…"
+msgstr "Reading character…"
+
+msgid "Preparing display…"
+msgstr "Preparing display…"
+
+msgid "Cancel loading"
+msgstr "Cancel loading"
+
+msgid "Restore natural state"
+msgstr "Restore natural state"
+
+msgid "Returned to idle and default expression"
+msgstr "Returned to idle and default expression"
+
+msgid "This preference applies only to this page; after refreshing, you may need to choose again."
+msgstr "This preference applies only to this page; after refreshing, you may need to choose again."

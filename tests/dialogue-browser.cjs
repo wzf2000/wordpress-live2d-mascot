@@ -79,6 +79,49 @@ const { chromium } = require(process.env.MASCOT_PLAYWRIGHT || 'playwright');
       else assert.equal(report.error,null,'cancelled request must not be logged');
       assert.deepEqual(pageErrors,[]);await p.close();checks++;
     }
+    // Restore all interaction channels together, including stale success/error
+    // continuations, without changing reader preferences or replaying welcome.
+    for(const source of ['motion','expression','preset','external','greeting','welcome','caption']) {
+      const p=await context.newPage();await p.clock.install();
+      await p.goto(fixture.origin+'/?presets=1&explicitButtons=1&mobile=1');await ready(p);
+      if(source==='welcome') {
+        await p.evaluate(()=>{window.__mascotFixture.holdPlay=true;});
+        await p.clock.runFor(1500);
+        await p.waitForFunction(()=>window.__mascotFixture.pendingPlays.length===1);
+      }
+      await p.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(p);
+      const before=await p.evaluate(()=>({mode:localStorage.getItem('wzf-mascot-dialogue-v1'),idle:localStorage.getItem('wzf-mascot-idle-v1'),mobile:localStorage.getItem('wzf-mascot-mobile-v1'),shown:localStorage.getItem('wzfl-mascot')}));
+      if(!['welcome','caption'].includes(source))await p.evaluate(()=>{window.__mascotFixture.holdPlay=true;});
+      if(source==='motion'){await p.getByLabel('Choose motion',{exact:true}).selectOption('wave');await p.getByRole('button',{name:'Play motion',exact:true}).click();}
+      if(source==='expression')await p.getByRole('button',{name:'Change expression',exact:true}).click();
+      if(source==='preset')await p.getByRole('button',{name:'Quick greeting',exact:true}).click();
+      if(source==='greeting')await p.getByRole('button',{name:'Say hello',exact:true}).click();
+      if(source==='external')await p.evaluate(()=>{window.__restoreResult=window.WZFMascot.command({action:'motion',id:'wave',caption:'stale API caption'});});
+      if(source==='caption')assert.equal((await p.evaluate(()=>window.WZFMascot.command({action:'expression',id:'smile',caption:'old completed caption'}))).ok,true);
+      else await p.waitForFunction(()=>window.__mascotFixture.pendingPlays.length===1);
+      await p.getByRole('button',{name:'Restore natural state',exact:true}).click();
+      const restored='Returned to idle and default expression';
+      assert.equal(await p.locator('.wzf-haru-state').textContent(),restored);
+      assert.equal(await bubble(p).textContent(),'');
+      if(source!=='caption')await p.evaluate(()=>window.__mascotFixture.pendingPlays.shift()());
+      await p.clock.runFor(7000);
+      const state=await p.evaluate(()=>window.WZFHaruStatus());
+      assert.equal(state.activeMotion,'idle');assert.equal(state.activeExpression,null);
+      assert.equal(await p.locator('.wzf-haru-state').textContent(),restored,source+' late result');
+      assert.equal(await bubble(p).textContent(),'');
+      if(source==='external')assert.equal((await p.evaluate(()=>window.__restoreResult)).code,'cancelled');
+      assert.deepEqual(await p.evaluate(()=>({mode:localStorage.getItem('wzf-mascot-dialogue-v1'),idle:localStorage.getItem('wzf-mascot-idle-v1'),mobile:localStorage.getItem('wzf-mascot-mobile-v1'),shown:localStorage.getItem('wzfl-mascot')})),before);
+      if(source==='preset'&&output){await p.screenshot({path:path.join(output,'restore-natural-desktop.png'),fullPage:true});await p.setViewportSize({width:390,height:844});await p.screenshot({path:path.join(output,'restore-natural-mobile.png'),fullPage:true});}
+      const count=()=>p.evaluate(()=>window.__mascotFixture.events.filter(e=>e.type==='cancel').length);
+      await p.getByRole('button',{name:'Hide mascot',exact:true}).click();let cancellations=await count();
+      await p.getByRole('button',{name:'Restore natural state',exact:true,includeHidden:true}).evaluate(el=>el.onclick());assert.equal(await count(),cancellations);
+      await p.getByRole('button',{name:'Show mascot',exact:true}).click();
+      await p.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'restore-test',suspended:true}})));cancellations=await count();
+      await p.getByRole('button',{name:'Restore natural state',exact:true,includeHidden:true}).evaluate(el=>el.onclick());assert.equal(await count(),cancellations);
+      await p.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'restore-test',suspended:false}})));
+      await p.clock.runFor(4000);assert.equal(await bubble(p).textContent(),'');
+      await p.close();checks++;
+    }
     // Muted presets reject native keyboard, direct handlers and same-page API,
     // while mixed presets keep their motion/expression and opt-in stays saved.
     for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {

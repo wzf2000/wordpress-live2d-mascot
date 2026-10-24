@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-适用于 3.11.1。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.12.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -10,6 +10,10 @@
 2. 用 **招呼** 或快捷互动播放管理员配置的内容；动作和表情也可分别选择、停止或重置。
 3. 展开 **换个角色** 搜索、收藏和预览；点击 **使用这个角色** 后才保存选择，取消可返回原角色。
 4. 展开 **更多互动与设置** 调整台词、布局和可选功能；需要安静阅读时随时收起。
+
+加载时，按钮旁会显示“正在准备运行库”“正在读取角色”或“正在准备画面”；可点击 **取消加载** 停止本次加载，再按需重试。这些提示只说明当前阶段。
+
+浏览器拒绝保存显示、手机显示或条款选择时，按钮旁会持续提示“本次选择仅在当前页面生效；刷新后可能需要重新选择”。当前页仍可继续使用，加载完成不会清除这条提示。
 
 ## 配置台词
 
@@ -30,6 +34,8 @@
 “聊一句”可主动试用已保存的闲聊池，仅主动模式也可使用；静默模式禁用。管理员未配置闲聊动作池时只显示文本；配置后可配合[闲聊动作](#闲聊动作池)。
 
 主动点击“打招呼”“聊一句”可立即显示新台词，不受自动台词冷却影响；有多条台词时连续点击会换一句。“聊一句”在动作播放或加载时仍可显示文字，配套动作让位于手动操作。“打招呼”会取消旧的欢迎、待加载互动与动作请求，播放有效的招呼动作，并保留当前表情；静默且没有招呼动作时禁用。直接点击模型仍保留区域绑定和 8 秒动作防连点。
+
+要一次结束当前互动，在 **更多互动与设置** 点击 **恢复自然状态**：停止动作并回到待机、恢复默认表情、清除当前气泡，同时取消尚未完成的快捷互动、招呼、欢迎或同页联动请求。已取消的结果不会稍后补播；显示、台词与闲聊偏好保持原选择。隐藏、加载或阅读暂停时无法执行。
 
 动作与表情分别处理加载与取消。停止动作不会取消正在加载的表情，恢复默认表情也不会取消动作；仍有效的一项加载失败时会显示提示。隐藏或暂停会取消未完成的互动，恢复显示后不会补播或重现旧错误。
 
@@ -160,3 +166,11 @@ Occasional chatter is off by default and stays local to this browser. It needs a
 动作池只在角色待机时播放，不抢占手动动作。停止、换角、隐藏、暂停或修改闲聊偏好会取消尚未加载完成的动作；动作失败仍保留气泡。
 
 互动模板 schema 1 的 idle 规则新增可选 `motionFiles` 路径列表，导出不携带模型专属动作 ID。默认只导入台词并保留本机动作池；勾选“同时替换快捷互动和闲聊动作”才按当前目录唯一文件路径映射，预览显示保留／替换及映射结果。旧模板缺少该字段时保留本机池；显式空列表可清空。缺失或歧义路径拒绝应用。资源同 ID 更新也按文件路径保留池，缺失项移除；回退恢复原资源对应的池并保留当前台词。
+
+## Loading and recovery (English)
+
+During loading, the controls show the current stage: preparing runtime, reading character, or preparing display. Select **Cancel loading** to stop the current attempt and retry when needed.
+
+Under **More interactions and settings**, **Restore natural state** returns to idle and the default expression, clears the speech bubble, and cancels pending presets, greetings, welcome and same-page commands. Cancelled work cannot play or update feedback later. Display, dialogue and chatter choices stay as selected. The action is unavailable while hidden, loading or suspended for reading.
+
+If the browser refuses to save display, mobile display or consent choices, a persistent notice explains that they apply to this page and may need selecting again after refresh. Loading and Ready feedback do not dismiss that notice.

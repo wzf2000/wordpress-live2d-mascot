@@ -617,7 +617,72 @@ if (output) fs.mkdirSync(output, { recursive: true });
       await shot(target,'dialogue-mobile'); assert.equal(await target.evaluate(() => document.documentElement.scrollWidth > innerWidth),false);
       await target.close();
     });
-    await context.close(); report.complete = checks.length === 21;
+    await run('guest loading stages filter unknown and stale callbacks; close and Escape retain visible keyboard focus', async () => {
+      const isolated = await browser.newContext({viewport:{width:1440,height:900}});
+      const p = await isolated.newPage();
+      try {
+        await p.goto(fixture.origin + '/?mobile=1');
+        let core; const coreRequested = new Promise(resolve => p.route('**/synthetic/core.js', r => {core=r;resolve();}));
+        await p.locator('.wzfl-mascot-toggle').click();
+        await p.getByRole('button',{name:/^Accept terms/}).click(); await coreRequested;
+        assert.equal(await p.locator('.wzf-haru-loading-status').textContent(),'Preparing runtime…');
+        assert.equal(await p.getByRole('button',{name:'Cancel loading',exact:true}).isVisible(),true);
+        await shot(p,'loading-runtime-desktop');
+        await p.evaluate(()=>{window.__mascotFixture.holdCreate=true;});
+        await core.continue();
+        await p.waitForFunction(()=>window.__mascotFixture.pendingCreates.length===1);
+        assert.equal(await p.locator('.wzf-haru-loading-status').textContent(),'Reading character…');
+        await p.evaluate(()=>window.__mascotFixture.stageCallbacks[0]('texture'));
+        assert.equal(await p.locator('.wzf-haru-loading-status').textContent(),'Preparing display…');
+        await p.evaluate(()=>window.__mascotFixture.stageCallbacks[0]('/private/not-a-stage'));
+        assert.equal(await p.locator('.wzf-haru-loading-status').textContent(),'Preparing display…');
+        await p.getByRole('button',{name:'Cancel loading',exact:true}).click();
+        await p.getByRole('button',{name:'Show mascot',exact:true}).click();
+        await wait(p,{ready:true,loading:false});
+        await p.evaluate(()=>{window.__mascotFixture.stageCallbacks[0]('model');window.__mascotFixture.pendingCreates.shift()();});
+        await p.waitForFunction(()=>window.__mascotFixture.events.some(e=>e.type==='destroy'&&e.id===1));
+        assert.equal(await p.locator('.wzf-haru-loading-status').isVisible(),false);
+        for (const close of ['button','escape']) {
+          await p.getByRole('button',{name:'Interact',exact:true}).click();
+          if(!await p.locator('.wzf-haru-character-settings').evaluate(el=>el.open))await p.locator('.wzf-haru-character-settings > summary').click();
+          await p.getByLabel('Choose character',{exact:true}).selectOption('beta');
+          await p.evaluate(()=>{window.__mascotFixture.holdCreate=true;});
+          await p.getByRole('button',{name:'Preview character',exact:true}).click();
+          await p.waitForFunction(()=>window.__mascotFixture.pendingCreates.length===1);
+          assert.equal(await p.locator('.wzf-haru-loading-status').isVisible(),false,'open panel is the single loading status');
+          if(close==='button') await p.getByRole('button',{name:'Close interaction',exact:true}).click();
+          else {await p.locator('.wzf-haru-state').evaluate(el=>{el.tabIndex=-1;el.focus();});await p.keyboard.press('Escape');}
+          assert.equal(await p.getByRole('button',{name:'Cancel loading',exact:true}).evaluate(el=>document.activeElement===el),true);
+          await p.keyboard.press('Tab');
+          assert.equal(await p.evaluate(()=>document.activeElement!==document.querySelector('.wzf-haru-panel-toggle')),true);
+          await p.evaluate(()=>window.__mascotFixture.pendingCreates.shift()());await wait(p,{ready:true,loading:false});
+          await p.getByRole('button',{name:'Hide mascot',exact:true}).click();
+          await p.getByRole('button',{name:'Show mascot',exact:true}).click();await wait(p,{ready:true,loading:false});
+        }
+        assert.equal(await p.locator('.wzf-haru-diagnostics').count(),0);
+      } finally {await isolated.close();}
+    });
+    await run('desktop, mobile and consent rejected writes remain visible through loading and Ready', async () => {
+      for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:1000,height:900}]) {
+        const isolated=await browser.newContext({viewport});const p=await isolated.newPage();
+        try {
+          await p.goto(fixture.origin+'/?mobile=1');
+          await p.evaluate((termsOnly)=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if((termsOnly?['wzf-haru-terms']:['wzfl-mascot','wzf-mascot-mobile-v1','wzf-haru-terms']).includes(key))throw Error('denied');return original.call(this,key,value);};window.__mascotFixture.holdCreate=true;},viewport.width===1000);
+          await p.locator('.wzfl-mascot-toggle').click();await p.getByRole('button',{name:/^Accept terms/}).click();
+          await p.waitForFunction(()=>window.__mascotFixture.pendingCreates.length===1);
+          const notice=p.locator('.wzf-haru-preference-status');
+          assert.equal(await notice.textContent(),'This preference applies only to this page; after refreshing, you may need to choose again.');
+          assert.equal(await notice.isVisible(),true);await shot(p,'storage-rejected-loading-'+viewport.width);
+          await p.evaluate(()=>window.__mascotFixture.pendingCreates.shift()());await wait(p,{ready:true,loading:false});
+          assert.equal(await notice.isVisible(),true);await shot(p,'storage-rejected-ready-'+viewport.width);
+          await p.getByRole('button',{name:'Hide mascot',exact:true}).click();assert.equal(await notice.isVisible(),true);
+          assert.equal(await p.evaluate(()=>localStorage.getItem('wzf-haru-terms')),null);
+          await p.reload();assert.equal((await status(p)).ready,false);
+          await p.locator('.wzfl-mascot-toggle').click();assert.equal(await p.getByRole('dialog').isVisible(),true);
+        } finally {await isolated.close();}
+      }
+    });
+    await context.close(); report.complete = checks.length === 23;
     assert.equal(report.complete, true);
   } catch (error) {
     report.failure = String(error.message); throw error;
