@@ -2647,3 +2647,37 @@ msgstr "已恢复待机和默认表情"
 
 msgid "This preference applies only to this page; after refreshing, you may need to choose again."
 msgstr "本次选择仅在当前页面生效；刷新后可能需要重新选择。"
+
+msgid "Quick interaction choices"
+msgstr "常用互动"
+
+msgid "Save quick interactions"
+msgstr "保存常用互动"
+
+msgid "Cancel changes"
+msgstr "取消修改"
+
+msgid "Restore default interactions"
+msgstr "恢复默认互动"
+
+msgid "Selected %1$s of 3"
+msgstr "已选 %1$s / 3 个"
+
+msgid "Quick interactions saved in this browser."
+msgstr "常用互动已保存在此浏览器。"
+
+msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
+msgstr "浏览器未允许保存常用互动，本次选择仅在当前页面生效。"
+
+msgid "This character texture is too large for this device. Choose another character or device."
+msgstr "角色贴图超出此设备支持的尺寸，请选择其他角色或设备。"
+
+msgid "The character texture could not be displayed. Retry or choose another character."
+msgstr "角色贴图无法显示，请重试或选择其他角色。"
+
+
+msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
+msgstr "角色贴图缺失，请选择其他角色，或请站点管理员修复。"
+
+msgid "The character texture could not be downloaded. Retry later or choose another character."
+msgstr "角色贴图下载失败，请稍后重试或选择其他角色。"

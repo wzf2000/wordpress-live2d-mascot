@@ -329,6 +329,9 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Cancel changes"
+msgstr ""
+
 msgid "Cancel loading"
 msgstr ""
 
@@ -1628,10 +1631,16 @@ msgstr ""
 msgid "Pursed lips"
 msgstr ""
 
+msgid "Quick interaction choices"
+msgstr ""
+
 msgid "Quick interactions"
 msgstr ""
 
 msgid "Quick interactions are retained. Only dialogue will be replaced."
+msgstr ""
+
+msgid "Quick interactions saved in this browser."
 msgstr ""
 
 msgid "Quiet company"
@@ -1811,6 +1820,9 @@ msgstr ""
 msgid "Restore a configuration backup before retrying."
 msgstr ""
 
+msgid "Restore default interactions"
+msgstr ""
+
 msgid "Restore from trash"
 msgstr ""
 
@@ -1952,6 +1964,9 @@ msgstr ""
 msgid "Save only the current character canvas on a transparent background."
 msgstr ""
 
+msgid "Save quick interactions"
+msgstr ""
+
 msgid "Save thumbnail"
 msgstr ""
 
@@ -1980,6 +1995,9 @@ msgid "Select every character you want to update. Review all targets before appl
 msgstr ""
 
 msgid "Select the read-only cleanup review option before continuing."
+msgstr ""
+
+msgid "Selected %1$s of 3"
 msgstr ""
 
 msgid "Settings"
@@ -2195,6 +2213,9 @@ msgstr ""
 msgid "The browser did not allow saving account preferences locally. Current preferences are retained."
 msgstr ""
 
+msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
+msgstr ""
+
 msgid "The browser did not allow saving. This preview is still usable."
 msgstr ""
 
@@ -2217,6 +2238,15 @@ msgid "The character status has changed. Refresh before trying again."
 msgstr ""
 
 msgid "The character texture cannot be decoded. Retry or choose another character."
+msgstr ""
+
+msgid "The character texture could not be displayed. Retry or choose another character."
+msgstr ""
+
+msgid "The character texture could not be downloaded. Retry later or choose another character."
+msgstr ""
+
+msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
 msgstr ""
 
 msgid "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
@@ -2367,6 +2397,9 @@ msgid "This character has hit-area bindings. Import dialogue only, or remove the
 msgstr ""
 
 msgid "This character requires WebGL 2. Choose another character or browser."
+msgstr ""
+
+msgid "This character texture is too large for this device. Choose another character or device."
 msgstr ""
 
 msgid "This directory contains files outside the model runtime references. Preserve it for manual review."

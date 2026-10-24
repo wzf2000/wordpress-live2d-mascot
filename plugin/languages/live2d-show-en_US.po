@@ -2650,3 +2650,37 @@ msgstr "Returned to idle and default expression"
 
 msgid "This preference applies only to this page; after refreshing, you may need to choose again."
 msgstr "This preference applies only to this page; after refreshing, you may need to choose again."
+
+msgid "Quick interaction choices"
+msgstr "Quick interaction choices"
+
+msgid "Save quick interactions"
+msgstr "Save quick interactions"
+
+msgid "Cancel changes"
+msgstr "Cancel changes"
+
+msgid "Restore default interactions"
+msgstr "Restore default interactions"
+
+msgid "Selected %1$s of 3"
+msgstr "Selected %1$s of 3"
+
+msgid "Quick interactions saved in this browser."
+msgstr "Quick interactions saved in this browser."
+
+msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
+msgstr "The browser did not allow saving quick interactions. Your choices apply only on this page."
+
+msgid "This character texture is too large for this device. Choose another character or device."
+msgstr "This character texture is too large for this device. Choose another character or device."
+
+msgid "The character texture could not be displayed. Retry or choose another character."
+msgstr "The character texture could not be displayed. Retry or choose another character."
+
+
+msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
+msgstr "The character texture is missing. Choose another character or ask the site administrator to repair it."
+
+msgid "The character texture could not be downloaded. Retry later or choose another character."
+msgstr "The character texture could not be downloaded. Retry later or choose another character."

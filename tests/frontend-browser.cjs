@@ -682,7 +682,105 @@ if (output) fs.mkdirSync(output, { recursive: true });
         } finally {await isolated.close();}
       }
     });
-    await context.close(); report.complete = checks.length === 23;
+    await run('quick interaction choices save, cancel, empty selection, reset and refresh at desktop and 390px', async () => {
+      for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+        const isolated=await browser.newContext({viewport});const p=await isolated.newPage();p.setDefaultTimeout(7000);
+        try {
+          await loadPage(p,'?quick=1&mobile=1');await show(p);await interact(p);
+          const quick=p.locator('.wzf-haru-quick-settings'), boxes=quick.locator('input[type=checkbox]');
+          assert.equal(await quick.evaluate(el=>el.open),false);
+          assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['one','two','three']);
+          await quick.locator('summary').click();assert.equal(await boxes.locator(':scope').count(),5);
+          assert.equal(await boxes.nth(3).isDisabled(),true);
+          await boxes.nth(0).uncheck();await boxes.nth(3).check();
+          await quick.getByRole('button',{name:'Cancel changes',exact:true}).click();assert.equal(await boxes.nth(0).isChecked(),true);assert.equal(await boxes.nth(3).isChecked(),false);
+          await boxes.nth(0).uncheck();await boxes.nth(3).check();await quick.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+          assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-quick-presets-v1')).alpha),['two','three','four']);
+          await shot(p,'quick-choices-saved-'+viewport.width);
+          await p.reload();await wait(p,{ready:true,loading:false});await interact(p);
+          assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['two','three','four']);
+          await quick.locator('summary').click();for(let i=0;i<5;i++)if(await boxes.nth(i).isChecked())await boxes.nth(i).uncheck();
+          await quick.getByRole('button',{name:'Save quick interactions',exact:true}).click();assert.equal(await p.locator('#wzf-haru-panel > .wzf-haru-presets').isVisible(),false);
+          assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-quick-presets-v1')).alpha),[]);
+          assert.equal(await p.locator('.wzf-haru-advanced-controls > .wzf-haru-presets button').count(),5);
+          await p.reload();await wait(p,{ready:true,loading:false});await interact(p);assert.equal(await p.locator('#wzf-haru-panel > .wzf-haru-presets').isVisible(),false);
+          await quick.locator('summary').click();await quick.getByRole('button',{name:'Restore default interactions',exact:true}).click();
+          assert.equal(await p.evaluate(()=>Object.hasOwn(JSON.parse(localStorage.getItem('wzf-mascot-quick-presets-v1')),'alpha')),false);
+          assert.equal(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').count(),3);
+        } finally {await isolated.close();}
+      }
+    });
+    await run('quick choices isolate roles, discard switched draft and filter removed IDs and malformed storage',async()=>{
+      const isolated=await browser.newContext({viewport:{width:1440,height:900}});const p=await isolated.newPage();p.setDefaultTimeout(7000);
+      try {
+        await loadPage(p,'?quick=1');await show(p);await interact(p);
+        const quick=p.locator('.wzf-haru-quick-settings');await quick.locator('summary').click();
+        await quick.locator('input[value=one]').uncheck();await quick.locator('input[value=five]').check();await quick.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+        await quick.locator('input[value=two]').uncheck();
+        await p.getByLabel('Choose character',{exact:true}).selectOption('beta');await p.getByRole('button',{name:'Preview character',exact:true}).click();await wait(p,{character:'beta',loading:false});
+        assert.equal(await quick.evaluate(el=>el.open),false);assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['one','two','three']);
+        await quick.locator('summary').click();await quick.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+        await p.getByRole('button',{name:'Cancel preview',exact:true}).click();await wait(p,{character:'alpha',loading:false});
+        await quick.locator('summary').click();assert.equal(await quick.locator('input[value=two]').isChecked(),true);
+        await p.goto(fixture.origin+'/?quick=1&removePreset=five');await wait(p,{ready:true,loading:false});await interact(p);
+        assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['two','three']);
+        for(const raw of ['{broken','null','[]','{"__proto__":["one"],"constructor":["one"],"alpha":"one"}','{"alpha":["one","two","three","four"]}','{"alpha":["constructor"]}']) {
+          await p.evaluate(raw=>localStorage.setItem('wzf-mascot-quick-presets-v1',raw),raw);await p.goto(fixture.origin+'/?quick=1');await wait(p,{ready:true,loading:false});await interact(p);
+          assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['one','two','three']);
+        }
+      } finally {await isolated.close();}
+    });
+    await run('quick saves merge other tabs and retain temporarily unavailable roles',async()=>{
+      const isolated=await browser.newContext({viewport:{width:1440,height:900}});const p=await isolated.newPage(),q=await isolated.newPage();
+      try {
+        await loadPage(p,'?quick=1');await show(p);await interact(p);await loadPage(q,'?quick=1');await wait(q,{ready:true,loading:false});await interact(q);
+        await q.getByLabel('Choose character',{exact:true}).selectOption('beta');await q.getByRole('button',{name:'Preview character',exact:true}).click();await wait(q,{character:'beta',loading:false});
+        const pq=p.locator('.wzf-haru-quick-settings'),qq=q.locator('.wzf-haru-quick-settings');await pq.locator('summary').click();await qq.locator('summary').click();
+        await pq.locator('input[value=one]').uncheck();await pq.locator('input[value=four]').check();await pq.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+        await qq.locator('input[value=two]').uncheck();await qq.locator('input[value=five]').check();await qq.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+        assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-quick-presets-v1'))),{alpha:['two','three','four'],beta:['one','three','five']});
+        await p.goto(fixture.origin+'/?quick=1&omitBeta=1');await wait(p,{ready:true,loading:false});await interact(p);await pq.locator('summary').click();await pq.getByRole('button',{name:'Restore default interactions',exact:true}).click();
+        assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-quick-presets-v1')).beta),['one','three','five']);
+        await p.goto(fixture.origin+'/?quick=1');await wait(p,{ready:true,loading:false});await interact(p);
+        await p.getByLabel('Choose character',{exact:true}).selectOption('beta');await p.getByRole('button',{name:'Preview character',exact:true}).click();await wait(p,{character:'beta',loading:false});
+        assert.deepEqual(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').evaluateAll(es=>es.map(e=>e.dataset.presetId)),['one','three','five']);
+      } finally {await isolated.close();}
+    });
+    await run('quick storage rejection keeps page choices and notice through interaction',async()=>{
+      const isolated=await browser.newContext({viewport:{width:390,height:844}});const p=await isolated.newPage();
+      try {
+        await loadPage(p,'?quick=1&mobile=1');await show(p);await interact(p);const quick=p.locator('.wzf-haru-quick-settings');await quick.locator('summary').click();
+        await p.evaluate(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='wzf-mascot-quick-presets-v1')throw Error('denied');return original.call(this,key,value);};});
+        await quick.locator('input[value=one]').uncheck();await quick.getByRole('button',{name:'Save quick interactions',exact:true}).click();
+        await p.locator('#wzf-haru-panel > .wzf-haru-presets button').first().click();
+        assert.match(await quick.getByRole('status').textContent(),/only on this page/);assert.equal(await p.evaluate(()=>localStorage.getItem('wzf-mascot-quick-presets-v1')),null);
+        await shot(p,'quick-storage-rejected-390');await p.reload();await wait(p,{ready:true,loading:false});await interact(p);
+        assert.equal(await p.locator('#wzf-haru-panel > .wzf-haru-presets button').count(),3);
+      } finally {await isolated.close();}
+    });
+    await run('texture failure retries first load and failed switch target while cancellation discards late events',async()=>{
+      const isolated=await browser.newContext({viewport:{width:1440,height:900}});const p=await isolated.newPage();p.setDefaultTimeout(7000);
+      try {
+        await loadPage(p,'?quick=1');await p.evaluate(()=>{window.__mascotFixture.failTexture='texture-upload';});
+        await p.locator('.wzfl-mascot-toggle').click();await p.getByRole('button',{name:/^Accept terms/}).click();await wait(p,{failed:true,loading:false});
+        assert.match(await p.locator('.wzfl-mascot-toggle').textContent(),/Texture:.*could not be displayed/);
+        await p.locator('.wzfl-mascot-toggle').click();await wait(p,{ready:true,loading:false});await interact(p);
+        await p.evaluate(()=>{window.__mascotFixture.failTexture='texture-upload';window.__mascotFixture.failTextureRole='beta';});
+        await p.getByLabel('Choose character',{exact:true}).selectOption('beta');await p.getByRole('button',{name:'Preview character',exact:true}).click();await wait(p,{character:'alpha',loading:false,ready:true,failed:false});
+        assert.equal(await p.locator('.wzf-haru-load-failure').isVisible(),true);assert.equal(await p.getByRole('button',{name:'Retry loading',exact:true}).isVisible(),true);
+        await shot(p,'texture-switch-fallback-desktop');
+        await p.getByRole('button',{name:'Retry loading',exact:true}).click();await wait(p,{character:'beta',loading:false,ready:true});
+        assert.equal(await p.locator('.wzf-haru-load-failure').isVisible(),false);
+        await p.getByRole('button',{name:'Cancel preview',exact:true}).click();await wait(p,{character:'alpha',loading:false});
+        await p.getByLabel('Choose character',{exact:true}).selectOption('beta');await p.evaluate(()=>{window.__mascotFixture.holdCreate=true;});
+        await p.getByRole('button',{name:'Preview character',exact:true}).click();await p.waitForFunction(()=>window.__mascotFixture.pendingCreates.length===1);
+        await p.locator('.wzfl-mascot-toggle').click();await wait(p,{loading:false});
+        await p.evaluate(()=>{document.querySelector('#wzf-haru-character canvas')?.dispatchEvent(new Event('webglcontextlost',{cancelable:true}));window.__mascotFixture.pendingCreates.shift()();});
+        await p.waitForFunction(()=>window.__mascotFixture.events.some(e=>e.type==='destroy'&&e.id===6));
+        assert.equal((await status(p)).failed,false);
+      } finally {await isolated.close();}
+    });
+    await context.close(); report.complete = checks.length === 28;
     assert.equal(report.complete, true);
   } catch (error) {
     report.failure = String(error.message); throw error;

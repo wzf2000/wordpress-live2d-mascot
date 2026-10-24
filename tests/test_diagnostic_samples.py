@@ -337,6 +337,15 @@ class ResourceTimingTests(unittest.TestCase):
                 value=resource_trace();mutate(value)
                 with self.assertRaises((ValueError,TypeError)): SAMPLES.resource_summary({"resources":value})
 
+    def test_texture_codes_preserve_legacy_resource_error_compatibility(self):
+        for code in ['timeout', 'http', 'network', 'invalid', 'texture-download',
+                     'texture-decode', 'texture-size', 'texture-upload', 'context-lost']:
+            with self.subTest(code=code):
+                SAMPLES.validate_error({'code': code, 'category': 'texture'})
+                trace = resource_trace()
+                trace['events'][0].update(status='failed', errorCode=code, bodyBytes=None)
+                self.assertTrue(SAMPLES.resource_summary({'resources': trace})['available'])
+
     def test_failures_cancellation_and_cap(self):
         trace=resource_trace();trace["events"]=[dict(trace["events"][0],ordinal=i+1) for i in range(128)]
         trace.update(dropped=10,endedBy="cancelled")
