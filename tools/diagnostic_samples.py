@@ -139,7 +139,7 @@ def resource_summary(load):
         status, code = event["status"], event["errorCode"]
         if (status == "ok" and code is not None or
             status == "cancelled" and code != "cancelled" or
-            status == "failed" and code not in ("timeout", "http", "network", "invalid") or
+            status == "failed" and code not in ("timeout", "http", "network", "invalid", "texture-download", "texture-decode", "texture-size", "texture-upload", "context-lost") or
             status not in ("ok", "cancelled", "failed") or operation == "reuse" and status != "ok"):
             fail("Invalid resource result")
         group = groups.setdefault((category, operation), {"category": category, "operation": operation,
@@ -323,7 +323,7 @@ def validate_error(value):
     if value is None: return
     object_keys(value, ["code", "category", "phase", "characterId"])
     for key in value: label(value[key], 200)
-    if value.get("code") not in ("timeout", "http", "network", "invalid", "webgl", "context-lost", "render", "cancelled"):
+    if value.get("code") not in ("timeout", "http", "network", "invalid", "texture-download", "texture-decode", "texture-size", "texture-upload", "webgl", "context-lost", "render", "cancelled"):
         fail("Invalid diagnostic error")
 
 

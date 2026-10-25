@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-适用于 3.12.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.13.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -11,7 +11,7 @@
 3. 展开 **换个角色** 搜索、收藏和预览；点击 **使用这个角色** 后才保存选择，取消可返回原角色。
 4. 展开 **更多互动与设置** 调整台词、布局和可选功能；需要安静阅读时随时收起。
 
-加载时，按钮旁会显示“正在准备运行库”“正在读取角色”或“正在准备画面”；可点击 **取消加载** 停止本次加载，再按需重试。这些提示只说明当前阶段。
+加载时，按钮旁会显示“正在准备运行库”“正在读取角色”或“正在准备画面”；可点击 **取消加载** 停止本次加载，再按需重试。这些提示只说明当前阶段。贴图下载、解码、尺寸超出设备能力或上传失败时会分别提示；可重试、换角或收起。换角失败时会尝试恢复原角色；成功恢复后仍保留失败提示，“重新加载”会重试刚才失败的角色。
 
 浏览器拒绝保存显示、手机显示或条款选择时，按钮旁会持续提示“本次选择仅在当前页面生效；刷新后可能需要重新选择”。当前页仍可继续使用，加载完成不会清除这条提示。
 
@@ -49,7 +49,9 @@
 
 管理员在“快捷互动”中添加最多 8 个命名组合，名称最多 80 字节。动作、表情与台词均可留空，但至少填写一项；台词最多 300 字节。动作和表情从当前角色目录选择。全部留空可删除对应预设。
 
-前台按钮位于角色选择之后。点击后动作、表情与台词同时开始，不等待动作播放结束。新操作会取消旧预设尚未加载完成的通道；部分资源失败会给出提示。
+前台默认展示当前角色的前三个有效预设。在 **更多互动与设置 → 常用互动** 可按角色选择最多 3 个，点击 **保存常用互动** 后记在当前浏览器；取消修改恢复已保存的选择，**恢复默认互动** 则重新使用前三个有效预设。可以全部不选，剩余预设仍在更多区使用。未保存的修改在切角色时丢弃；浏览器拒绝保存时，本页选择保留并显示提示，刷新后需重新选择。
+
+点击后动作、表情与台词同时开始，不等待动作播放结束。新操作会取消旧预设尚未加载完成的通道；部分资源失败会给出提示。
 
 更新模型时，动作和表情按相对文件路径映射，无法映射的整个预设会跳过并在后台提示。回退模型恢复对应资源版本的预设，保留当前台词与展示偏好。
 
@@ -174,3 +176,7 @@ During loading, the controls show the current stage: preparing runtime, reading 
 Under **More interactions and settings**, **Restore natural state** returns to idle and the default expression, clears the speech bubble, and cancels pending presets, greetings, welcome and same-page commands. Cancelled work cannot play or update feedback later. Display, dialogue and chatter choices stay as selected. The action is unavailable while hidden, loading or suspended for reading.
 
 If the browser refuses to save display, mobile display or consent choices, a persistent notice explains that they apply to this page and may need selecting again after refresh. Loading and Ready feedback do not dismiss that notice.
+
+Texture errors distinguish missing files, download failures, decoding, device size limits and display failures. Retry manually, choose another character or hide the mascot. If a failed preview returns to the original character, **Retry loading** retries the failed candidate without saving a new selection.
+
+Under **More → Quick interaction choices**, choose up to three presets for the current character and select **Save quick interactions**. Choices stay in this browser, independently for each character. **Cancel changes** discards the draft; **Restore default interactions** saves the original first three valid presets. An empty selection is allowed, and unselected presets remain available in More. Storage failures keep the choices for this page with a visible notice; account preferences and administrator presets are unchanged.

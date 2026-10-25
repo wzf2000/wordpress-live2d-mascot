@@ -19,6 +19,10 @@
         fixture.holdCreate = false;
         await new Promise((resolve) => fixture.pendingCreates.push(resolve));
       }
+      if (fixture.failTexture && (!fixture.failTextureRole || root.includes('/'+fixture.failTextureRole+'/'))) {
+        const code = fixture.failTexture; fixture.failTexture = null;
+        throw Object.assign(new Error('The character texture could not be displayed. Retry or choose another character.'), {name:'ResourceError',code,category:'texture'});
+      }
       let paused = true, disposed = false, activeMotion = character.idle,
         activeExpression = null, frames = 0, timer = null;
       const channels = { motion: 0, expression: 0 };

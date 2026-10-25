@@ -5,7 +5,7 @@
 <p align="center"><strong>给 WordPress 添一位可切换、可互动，也懂得让出阅读空间的看板娘。</strong></p>
 <p align="center">Character previews · Local favorites · Reading-aware interaction</p>
 <p align="center">
-  <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.12.0">下载 3.12.0</a> ·
+  <a href="https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.13.0">下载 3.13.0</a> ·
   <a href="#开始使用">开始使用</a> ·
   <a href="docs/index.md">使用文档</a> ·
   <a href="docs/TROUBLESHOOTING.md">常见问题</a> ·
@@ -16,7 +16,7 @@
 
 插件支持独立安装及 PageNest 明暗主题，后台、个人资料和前台控件提供中文与英文。**安装包不含 Cubism Core 或模型**；管理员需从官方或其他有权来源自行取得并导入资源。
 
-当前正式版为 **3.12.0**。加载角色时会提示当前阶段，也可随时取消；互动后可在 **更多 → 恢复自然状态** 一键清除气泡、回到待机与默认表情。偏好无法保存时会持续提示，加载中关闭面板或按 Escape 后，键盘焦点会回到可见按钮。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.12.0)。
+当前正式版为 **3.13.0**。贴图加载失败时会说明原因，并提供手动重试；换角失败时会尝试恢复原角色。打开 **更多 → 常用互动**，可为每个角色选择最多三个常用入口，保存到当前浏览器；其余预设仍可在更多区使用。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.13.0)，操作步骤见[互动与偏好](docs/INTERACTIONS.md#配置快捷互动)。
 
 ## 你能用它做什么
 
@@ -35,7 +35,7 @@
 
 ## 开始使用
 
-**[下载安装包：wordpress-live2d-mascot-3.12.0.zip](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.12.0/wordpress-live2d-mascot-3.12.0.zip)**
+**[下载安装包：wordpress-live2d-mascot-3.13.0.zip](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.13.0/wordpress-live2d-mascot-3.13.0.zip)**
 
 1. 在 WordPress 后台 **插件 → 安装插件 → 上传插件**，安装并启用上面的 ZIP。
 2. 打开 **设置 → Live2D Mascot**，从 [Live2D 官方 SDK 下载页](https://www.live2d.com/en/sdk/download/web/)自行取得 **Web 5 R5 Core**，上传 `live2dcubismcore.min.js` 并确认使用权。当前仅接受固定版本的已核验文件。
@@ -44,7 +44,7 @@
 
 首次导入默认不设置欢迎或招呼动作，可在 **角色管理 → 编辑** 中选择。完整步骤、资源限制和升级方法见[安装与资源准备](docs/INSTALL.md)。
 
-后台安装请使用完整插件 ZIP；`-source.zip` 与 GitHub 自动生成的 **Source code** 用于开发。可用发行附件 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.12.0/SHA256SUMS) 核对下载。
+后台安装请使用完整插件 ZIP；`-source.zip` 与 GitHub 自动生成的 **Source code** 用于开发。可用发行附件 [SHA256SUMS](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.13.0/SHA256SUMS) 核对下载。
 
 ## 使用条件
 

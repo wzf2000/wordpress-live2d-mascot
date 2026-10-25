@@ -1,8 +1,8 @@
 # 使用文档
 
-适用于 WordPress Live2D Mascot **3.12.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
+适用于正式版 **3.13.0**。第一次使用从安装指南开始；旧版本请查看对应 Release 源码中的文档。
 
-本版增加角色加载阶段提示、取消加载和 **更多 → 恢复自然状态**：可结束互动、清除气泡并回到待机与默认表情，保留原有偏好。显示、手机显示或条款偏好无法保存时会持续提示；加载中关闭面板或按 Escape 后，焦点会回到可见按钮。后台保留保存前试播、多角色模板复核，以及按需配置的资源隔离与还原；管理员可通过本地诊断查看首帧资源耗时。配置方法见[互动与偏好指南](INTERACTIONS.md#配置台词)，资源维护见[常见问题与维护](TROUBLESHOOTING.md)。完整变化见[发行说明](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.12.0)。
+本版增加贴图错误的明确提示和手动恢复，以及 **更多 → 常用互动**：按角色选择最多三个入口，只保存在当前浏览器。其余预设仍可从更多区使用，支持取消修改和恢复默认。已有的加载取消、恢复自然状态、后台试播与资源管理保持。使用方法见[互动与偏好指南](INTERACTIONS.md#配置快捷互动)，加载问题见[常见问题与维护](TROUBLESHOOTING.md#贴图错误)。
 
 | 你想做什么 | 阅读入口 |
 | --- | --- |
@@ -16,8 +16,8 @@
 
 ## English entry points
 
-The plugin interface supports **en_US / zh_CN**. Version 3.12.0 shows loading stages with a cancel button. In More, Restore natural state clears speech bubbles and returns the character to idle and its default expression while keeping your preferences. Failed preference saves remain visible, and closing the panel or pressing Escape during loading returns keyboard focus to a visible control. Advanced controls stay collapsed by default; draft previews, batch templates, resource recovery and administrator-only diagnostics remain available. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [physical-device sampling](DEVICE_SAMPLING.md). The remaining guides are maintained primarily in Chinese; code identifiers and API examples retain their original names.
+The plugin interface supports **en_US / zh_CN**. Stable release **3.13.0** adds specific texture errors and manual recovery. Under **More → Quick interaction choices**, choose up to three existing presets for each character, save in this browser, cancel edits or restore the defaults. Other presets remain available in More. Loading cancellation, Restore natural state, draft previews, resource management and administrator-only diagnostics remain available. Download the [WordPress installation ZIP](https://github.com/wzf2000/wordpress-live2d-mascot/releases/download/v3.13.0/wordpress-live2d-mascot-3.13.0.zip) to install or upgrade while retaining settings and imported resources. Administrators obtain Core and models separately; installation packages contain neither. Start with [setup and licensing](DISTRIBUTION.md#administrator-setup), then see [interactions](INTERACTIONS.md#loading-and-recovery-english) or [physical-device sampling](DEVICE_SAMPLING.md).
 
 ## 项目入口
 
-[项目首页](../README.md) · [下载 3.12.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.12.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)
+[项目首页](../README.md) · [下载 3.13.0](https://github.com/wzf2000/wordpress-live2d-mascot/releases/tag/v3.13.0) · [反馈问题](https://github.com/wzf2000/wordpress-live2d-mascot/issues)

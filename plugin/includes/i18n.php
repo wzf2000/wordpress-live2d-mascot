@@ -301,5 +301,16 @@ function wzf_mascot_frontend_translations() {
         'welcomes you'=>__('welcomes you', 'live2d-show'),
         '· Previewing'=>__('· Previewing', 'live2d-show'),
         '· Sources and terms'=>__('· Sources and terms', 'live2d-show'),
+        'Quick interaction choices'=>__('Quick interaction choices', 'live2d-show'),
+        'Save quick interactions'=>__('Save quick interactions', 'live2d-show'),
+        'Cancel changes'=>__('Cancel changes', 'live2d-show'),
+        'Restore default interactions'=>__('Restore default interactions', 'live2d-show'),
+        'Selected %1$s of 3'=>__('Selected %1$s of 3', 'live2d-show'),
+        'Quick interactions saved in this browser.'=>__('Quick interactions saved in this browser.', 'live2d-show'),
+        'The browser did not allow saving quick interactions. Your choices apply only on this page.'=>__('The browser did not allow saving quick interactions. Your choices apply only on this page.', 'live2d-show'),
+        'This character texture is too large for this device. Choose another character or device.'=>__('This character texture is too large for this device. Choose another character or device.', 'live2d-show'),
+        'The character texture could not be displayed. Retry or choose another character.'=>__('The character texture could not be displayed. Retry or choose another character.', 'live2d-show'),
+        'The character texture is missing. Choose another character or ask the site administrator to repair it.'=>__('The character texture is missing. Choose another character or ask the site administrator to repair it.', 'live2d-show'),
+        'The character texture could not be downloaded. Retry later or choose another character.'=>__('The character texture could not be downloaded. Retry later or choose another character.', 'live2d-show'),
     ];
 }

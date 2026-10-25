@@ -45,6 +45,26 @@
     const recentKey='wzf-mascot-recent-v1';
     const historyId=(id)=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,200}$/.test(id)&&!['__proto__','constructor','prototype'].includes(id);
     try{const saved=JSON.parse(localStorage.getItem(recentKey)||'[]');if(Array.isArray(saved))recent=[...new Set(saved.filter(historyId))].slice(0,8);}catch{}
+    const quickKey = 'wzf-mascot-quick-presets-v1';
+    const quickPreferences = new Map(), pendingQuick = new Map();
+    const presetId = id => typeof id === 'string' && /^[a-z][a-z0-9-]{0,63}$/.test(id) && !['constructor', 'prototype'].includes(id);
+    const readQuick = () => {
+      const result = new Map();
+      let saved;
+      try { saved = JSON.parse(localStorage.getItem(quickKey) || '{}'); } catch (error) {
+        if (error instanceof SyntaxError) return result;
+        throw error;
+      }
+      if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+        for (const [id, ids] of Object.entries(saved)) {
+          if (historyId(id) && Array.isArray(ids) && ids.length <= 3 && ids.every(presetId))
+            result.set(id, [...new Set(ids)]);
+        }
+      }
+      return result;
+    };
+    try { for (const [id, ids] of readQuick()) quickPreferences.set(id, ids); } catch {}
+    let quickDraft = [], quickOwner = null, quickNotice = '';
     const pendingFavorites = new Map(), pendingLayouts = new Map();
     // Favorites storage must not interrupt the existing visibility/consent reads.
     try {
@@ -79,6 +99,7 @@
       recoveryLoad = null,
       pageHidden = false,
       loadError = '';
+    let failedTarget = null, failedTargetError = '';
     try {
       wanted = localStorage.getItem('wzfl-mascot') === 'shown';
       mobileOptIn = localStorage.getItem('wzf-mascot-mobile-v1') === 'enabled';
@@ -345,7 +366,7 @@
     };
     // Resource ownership is a load attempt, not the engine generation: load()
     // deliberately destroys the previous engine after this attempt has started.
-    const resourceCodes = new Set(['timeout', 'http', 'network', 'invalid', 'cancelled']);
+    const resourceCodes = new Set(['timeout', 'http', 'network', 'invalid', 'cancelled', 'texture-download', 'texture-decode', 'texture-size', 'texture-upload', 'context-lost']);
     const createResourceOwner = (loadRecord) => {
       const epoch = diagnosticGeneration, attempt = loadAttempt, pending = new Set();
       let closed = false, slots = 0, ordinal = 0;
@@ -449,6 +470,7 @@
         'webgl',
         'context-lost',
         'render',
+        'texture-download', 'texture-decode', 'texture-size', 'texture-upload',
         'cancelled',
       ];
       const categories = [
@@ -1002,13 +1024,66 @@
     const advancedControls = make('div', '', 'wzf-haru-advanced-controls');
     moreSettings.append(advancedControls);
     const extraPresets = make('div', '', 'wzf-haru-presets');
+    const quickSettings = make('details', '', 'wzf-haru-layout wzf-haru-quick-settings');
+    const quickChoices = make('div', '', 'wzf-haru-quick-choices');
+    const quickCount = make('p'), quickStatus = make('p');
+    quickStatus.setAttribute('role', 'status');
+    const quickSave = make('button', t("Save quick interactions"));
+    const quickCancel = make('button', t("Cancel changes"));
+    const quickDefault = make('button', t("Restore default interactions"));
+    const quickActions = make('div', '', 'wzf-haru-quick-actions');
+    quickActions.append(quickSave, quickCancel, quickDefault);
+    quickSettings.append(make('summary', t("Quick interaction choices")), quickCount, quickChoices, quickActions, quickStatus);
+    const selectedQuick = () => quickPreferences.has(active)
+      ? quickPreferences.get(active).filter(id => livePresets.has(id))
+      : [...livePresets.keys()].slice(0, 3);
+    const drawQuickChoices = () => {
+      quickChoices.replaceChildren();
+      quickCount.textContent = t("Selected %1$s of 3", quickDraft.length);
+      quickStatus.textContent = quickNotice;
+      for (const [id, row] of livePresets) {
+        const input = make('input'), label = make('label', '', 'wzf-haru-favorites-filter');
+        input.type = 'checkbox'; input.value = id; input.checked = quickDraft.includes(id);
+        input.disabled = !input.checked && quickDraft.length >= 3;
+        input.onchange = () => {
+          quickDraft = input.checked ? [...quickDraft, id].slice(0, 3) : quickDraft.filter(value => value !== id);
+          quickCount.textContent = t("Selected %1$s of 3", quickDraft.length);
+          for (const box of quickChoices.querySelectorAll('input')) box.disabled = !box.checked && quickDraft.length >= 3;
+        };
+        label.append(input, document.createTextNode(row.name)); quickChoices.append(label);
+      }
+    };
+    const persistQuick = defaults => {
+      if (quickOwner !== active || !allowed() || !engine || loading) return;
+      if (defaults) quickPreferences.delete(active);
+      else quickPreferences.set(active, quickDraft.filter(id => livePresets.has(id)).slice(0, 3));
+      pendingQuick.set(active, defaults ? null : quickPreferences.get(active));
+      try {
+        const merged = readQuick();
+        for (const [id, ids] of pendingQuick) {
+          if (ids === null) merged.delete(id);
+          else merged.set(id, ids);
+        }
+        localStorage.setItem(quickKey, JSON.stringify(Object.fromEntries(merged)));
+        quickPreferences.clear();
+        for (const [id, ids] of merged) quickPreferences.set(id, ids);
+        pendingQuick.clear();
+        quickNotice = t("Quick interactions saved in this browser.");
+      } catch {
+        quickNotice = t("The browser did not allow saving quick interactions. Your choices apply only on this page.");
+      }
+      populatePresets(); paint();
+    };
+    quickSave.onclick = () => persistQuick(false);
+    quickDefault.onclick = () => persistQuick(true);
+    quickCancel.onclick = () => { quickDraft = selectedQuick(); drawQuickChoices(); };
     const restoreNatural = make('button', t("Restore natural state"), 'wzf-haru-reset wzf-haru-restore-natural');
     const greeting = make('button', t("Say hello"), 'wzf-haru-greeting');
     const greetingMotions = () => (characters[active].greetings || []).filter(id => engine?.catalog.motions.some(item => item.id === id));
     greeting.onclick = () => greet(null, true);
     const chatButton = make('button', t("Chat once"), 'wzf-haru-chat');
     chatButton.onclick = () => idleSpeak(false);
-    advancedControls.append(extraPresets, restoreNatural, motion, play, stopMotion, expression, face, resetFace,
+    advancedControls.append(extraPresets, quickSettings, restoreNatural, motion, play, stopMotion, expression, face, resetFace,
       dialogueSettings, pointerSettings, helpButton, credit);
     const previewActions = make('div', '', 'wzf-haru-preview-actions');
     previewActions.append(commitButton, cancelPreview);
@@ -1016,6 +1091,9 @@
     document.body.append(panel);
     const retryLoading = make('button', t("Retry loading"), 'wzf-haru-reset');
     panel.insertBefore(retryLoading, greeting);
+    const textureFailureNotice = make('p', '', 'wzf-haru-interaction-note wzf-haru-load-failure');
+    textureFailureNotice.setAttribute('role', 'status');
+    panel.insertBefore(textureFailureNotice, retryLoading);
     const panelToggle = make('button', t("Interact"), 'wzf-haru-panel-toggle');
     panelToggle.hidden = true;
     panelToggle.setAttribute('aria-controls', panel.id);
@@ -1529,8 +1607,12 @@
       syncThumbnail();
       panelToggle.hidden = !(run && (engine || (loading && panelOpen))) && !recovery;
       panelToggle.textContent = panelOpen ? t("Close interaction") : recovery ? t("Choose another character") : t("Interact");
-      retryLoading.hidden = !recovery;
+      retryLoading.hidden = !recovery && !failedTarget;
       retryLoading.disabled = loading;
+      for (const control of [quickSave, quickCancel, quickDefault]) control.disabled = !run || !engine || loading;
+      for (const input of quickChoices.querySelectorAll('input')) input.disabled = !run || !engine || loading || (!input.checked && quickDraft.length >= 3);
+      textureFailureNotice.hidden = !failedTarget || loading || failed;
+      textureFailureNotice.textContent = failedTargetError;
       moreSettings.hidden = !engine || failed;
       presetControls.hidden = !engine || failed || !presetControls.children.length;
       panelToggle.setAttribute('aria-expanded', String(panelOpen));
@@ -1933,20 +2015,26 @@
       livePresets.clear(); nextHit=0;
       presetControls.replaceChildren(); extraPresets.replaceChildren();
       const rows = characters[active].presets;
-      if (!Array.isArray(rows)) { presetControls.hidden = true; return; }
+      if (!Array.isArray(rows)) { quickOwner = active; quickDraft = []; quickSettings.open = false; quickSettings.hidden = true; presetControls.hidden = true; return; }
       for (const row of rows.slice(0, 8)) {
-        if (!row || typeof row !== 'object' || typeof row.name !== 'string' || !row.name.trim() || new TextEncoder().encode(row.name).length > 80) continue;
+        if (!row || !presetId(row.id) || typeof row !== 'object' || typeof row.name !== 'string' || !row.name.trim() || new TextEncoder().encode(row.name).length > 80) continue;
         if (!['motion','expression','line'].every((key) => typeof row[key] === 'string') ||
             (!row.motion && !row.expression && !row.line.trim()) ||
             (row.motion && !engine.catalog.motions.some((item) => item.id === row.motion)) ||
             (row.expression && !engine.catalog.expressions.some((item) => item.id === row.expression)) ||
             new TextEncoder().encode(row.line).length > 300) continue;
         livePresets.set(row.id,row);
+      }
+      const selected = new Set(selectedQuick());
+      for (const [id, row] of livePresets) {
         const button = make('button', row.name);
         button.dataset.presetId = row.id;
         button.onclick = () => performPreset(row);
-        (presetControls.children.length < 3 ? presetControls : extraPresets).append(button);
+        (selected.has(id) ? presetControls : extraPresets).append(button);
       }
+      if (quickOwner !== active) { quickSettings.open = false; quickNotice = ''; }
+      quickOwner = active; quickDraft = selectedQuick(); drawQuickChoices();
+      quickSettings.hidden = !livePresets.size;
       presetControls.hidden = !presetControls.children.length;
     };
     const populate = () => {
@@ -1999,13 +2087,15 @@
         document.body.append(host);
         canvas.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
+          if (e.currentTarget !== canvas || loading || !engine) return;
           diagnosticError({ code: 'context-lost', category: 'webgl' });
           cancelLoad();
           failed = true;
           loadError = state.textContent = t("The graphics context was lost. Try again.");
           paint();
         });
-        canvas.addEventListener('mascoterror', () => {
+        canvas.addEventListener('mascoterror', (e) => {
+          if (e.currentTarget !== canvas || loading || !engine) return;
           diagnosticError({ code: 'render', category: 'webgl' });
           cancelLoad();
           failed = true;
@@ -2059,6 +2149,7 @@
         await loadRuntime(signal);
         await load(committed, signal);
         if (attempt !== loadAttempt) return;
+        failedTarget = null;
         preview = false;
         state.textContent = t("Ready");
       } catch (error) {
@@ -2086,12 +2177,15 @@
         if (recovering) await loadRuntime(signal);
         await load(id, signal);
         if (attempt !== loadAttempt) return;
+        failedTarget = null;
         preview = isPreview && id !== committed;
         state.textContent = preview ? t("Previewing. Select “Use this character” to save.") : t("Returned to the original character");
       } catch (error) {
         if (attempt !== loadAttempt || signal.aborted || error?.name === 'AbortError') return;
         diagnosticError(error);
         const reason = errorMessage(error);
+        failedTarget = id;
+        failedTargetError = reason;
         if (recovering) {
           failed = true;
           destroy();
@@ -2106,6 +2200,7 @@
           await load(committed, signal);
           if (attempt !== loadAttempt) return;
           preview = false;
+          syncCharacterOptions(id);
           state.textContent = t("%1$s; returned to the original character. You can retry.", reason);
         } catch (fallbackError) {
           if (attempt !== loadAttempt || signal.aborted || fallbackError?.name === 'AbortError')
@@ -2174,7 +2269,10 @@
       save();
       apply();
     };
-    retryLoading.onclick = () => { button.focus({ preventScroll: true }); button.click(); };
+    retryLoading.onclick = () => {
+      if (failedTarget && Object.hasOwn(characters, failedTarget)) void switchTo(failedTarget, true);
+      else { button.focus({ preventScroll: true }); button.click(); }
+    };
     const perform = async (type, id) => {
       if (!allowed() || !engine || loading) return;
       cancelPreset();

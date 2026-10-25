@@ -578,3 +578,8 @@
   background: var(--wzf-mascot-surface);
   line-height: 1.5;
 }
+
+.wzf-haru-quick-choices { display: grid; gap: 4px; }
+.wzf-haru-quick-choices label { overflow-wrap: anywhere; }
+.wzf-haru-quick-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.wzf-haru-quick-actions button { flex: 1 1 100px; }

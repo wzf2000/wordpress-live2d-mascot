@@ -13,6 +13,8 @@ import {
   resource,
   jsonResource,
   decodeImage,
+  textureResource,
+  uploadTexture,
   bounded,
   cancelled,
   checkSignal,
@@ -188,20 +190,11 @@ class Mascot extends CubismUserModel {
     await Promise.all(
       json.FileReferences.Textures.map(async (file: string, index: number) => {
         const span = this.trace('texture', 'download');
-        const blob = (await resource(this.root + file, signal, 'blob', span)) as Blob;
+        const blob = await textureResource(this.root + file, signal, span);
         const img = await decodeImage(blob, signal, this.trace('texture', 'decode', span?.ordinal));
         checkSignal(signal);
-        const gl = this.gl,
-          t = gl.createTexture();
-        if (!t) throw Error("Texture creation failed");
+        const t = uploadTexture(this.gl, img, signal);
         this.textures.push(t);
-        gl.bindTexture(gl.TEXTURE_2D, t);
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         renderer.bindTexture(index, t);
       }),
     );
@@ -481,6 +474,10 @@ class Mascot extends CubismUserModel {
     // idempotent and cannot release the shader manager of a newer create.
     const abort = () => instance.destroy();
     signal.addEventListener('abort', abort, { once: true });
+    const contextLost = () => instance.abort.abort(
+      new ResourceError('context-lost', "The graphics context was lost. Try again.", 'webgl'),
+    );
+    canvas.addEventListener('webglcontextlost', contextLost);
     const timer = setTimeout(
       () =>
         instance.abort.abort(
@@ -509,6 +506,7 @@ class Mascot extends CubismUserModel {
     } finally {
       clearTimeout(timer);
       signal.removeEventListener('abort', abort);
+      canvas.removeEventListener('webglcontextlost', contextLost);
     }
   },
 };
