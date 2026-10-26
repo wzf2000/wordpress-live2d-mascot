@@ -1,6 +1,6 @@
 # 角色互动与偏好指南
 
-适用于 3.13.0。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
+适用于 3.14.0-rc.1。后台入口为 **设置 → Live2D Mascot → 选择角色**；前台显示角色后打开 **互动**。Core 与模型由管理员自行导入，资源说明见 [发行边界](DISTRIBUTION.md)。
 
 [文档首页](index.md) · [安装指南](INSTALL.md) · [排障与维护](TROUBLESHOOTING.md)
 
@@ -76,9 +76,9 @@ Interaction templates are available in 3.10.0. Export dialogue, cooldowns, enabl
 
 ## 移动、停靠和复位
 
-使用角色朝页面内侧、画布之外的 **↔ 移动柄** 拖动，松开后停靠到较近的左右边。只在移动柄上处理拖动，不接管页面滚动。
+使用角色朝页面内侧、画布之外的 **↔ 移动柄** 拖动，默认松开后停靠到较近的左右边。管理员可在设置页“拖动后的停靠方式”修改站点默认；读者可在 **更多 → 位置与大小 → 松手后的停靠方式** 选择跟随站点、吸附到边缘或自由放置。自由放置会保留松手的位置，并限制在可视区域内。更改方式不会立即移动角色，下次拖动或方向键移动时生效。“靠左／靠右”始终主动移到对应边缘并保留高度。只在移动柄上处理拖动，不接管页面滚动。
 
-移动柄获得键盘焦点后，左右键切换停靠边，上下键移动；按住 Shift 使用较大步长。Escape 恢复默认位置与大小。位置与大小按角色保存在当前浏览器，窗口或软键盘变化只重算可见范围，不重写偏好。拖动被取消时恢复起始位置。移动柄为 44 × 44 触控区，与画布留有间距；极窄／矮视口按比例临时缩小画布并让柄位于其上方，不覆盖角色脚部，也不改写已保存布局。
+移动柄获得键盘焦点后，吸附模式中左右键切换停靠边、上下键移动；自由模式中方向键每次移动 16 像素，按住 Shift 移动 40 像素。Escape 恢复默认位置与大小，并清除此角色的停靠方式覆盖，重新跟随站点默认。位置与大小按角色保存在当前浏览器，窗口或软键盘变化只重算可见范围，不重写偏好。拖动被取消时恢复起始位置。移动柄为 44 × 44 触控区，与画布留有间距；极窄／矮视口按比例临时缩小画布并让柄位于其上方，不覆盖角色脚部，也不改写已保存布局。
 
 ## 视线与模型点击区域
 
@@ -180,3 +180,9 @@ If the browser refuses to save display, mobile display or consent choices, a per
 Texture errors distinguish missing files, download failures, decoding, device size limits and display failures. Retry manually, choose another character or hide the mascot. If a failed preview returns to the original character, **Retry loading** retries the failed candidate without saving a new selection.
 
 Under **More → Quick interaction choices**, choose up to three presets for the current character and select **Save quick interactions**. Choices stay in this browser, independently for each character. **Cancel changes** discards the draft; **Restore default interactions** saves the original first three valid presets. An empty selection is allowed, and unselected presets remain available in More. Storage failures keep the choices for this page with a visible notice; account preferences and administrator presets are unchanged.
+
+### Position after dragging (English)
+
+Administrators choose the site default under **Position after dragging**. In **More → Position and size → After dragging**, readers can follow that default or choose **Snap to edge** or **Free positioning** per character. Changes take effect on the next drag or arrow-key move without immediately moving the current position. Free positioning retains the release point within the visible viewport; **Left edge / Right edge** explicitly move to an edge while retaining height.
+
+Arrow keys move by 16 pixels (40 with Shift) in free mode. In snap mode, Left/Right switch edges and Up/Down move vertically. **Reset defaults** and Escape restore default layout and site inheritance for this character. The choice is stored in this browser and included only when the reader explicitly saves or applies account preferences. Mobile readers can choose it when mobile display is permitted; desktop size and edge controls remain desktop-only.

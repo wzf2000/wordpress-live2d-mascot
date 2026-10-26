@@ -11,7 +11,7 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
  const fixture=await startFixture(),browser=await chromium.launch({headless:true,executablePath:process.env.MASCOT_CHROMIUM});
  const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage(),out=process.argv[2];if(out)fs.mkdirSync(out,{recursive:true});
  await context.addInitScript(()=>{localStorage.setItem('wzfl-mascot','shown');localStorage.setItem('wzf-haru-terms','synthetic-v1');});
- const prefs=(character)=>({character,favorites:['beta','temporarily-disabled'],layouts:[{id:'beta',position:'left',size:200,anchor:{x:0,y:0.5}}]});
+ const prefs=(character)=>({character,favorites:['beta','temporarily-disabled'],layouts:[{id:'beta',position:'left',size:200,snapToEdge:false,anchor:{x:0.4,y:0.5}}]});
  let remote={revision:3,preferences:prefs('beta')},requests=[],hold=false,signedIn=true;
  await page.route('**/account',async route=>{
   const body=new URLSearchParams(route.request().postData());requests.push(Object.fromEntries(body));
@@ -37,10 +37,11 @@ const {startFixture}=require('./browser/fixture.cjs');const {chromium}=require(p
   await button('Keep browser preferences').click();assert.equal(requests.length,1);assert.deepEqual(await storage(),before);checks++;
   await use().click();await page.waitForFunction(()=>window.WZFHaruStatus().committed==='beta'&&!window.WZFHaruStatus().preview);
   assert.equal(await page.evaluate(()=>localStorage.getItem('wzf-mascot-character')),'beta');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-layouts')).beta.snapToEdge),false);
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('wzf-mascot-favorites'))),remote.preferences.favorites);
   assert.equal(await page.evaluate(()=>localStorage.getItem('wzf-haru-terms')),'synthetic-v1');assert.equal(await page.evaluate(()=>localStorage.getItem('wzf-mascot-mobile-v1')),null);checks++;
   remote={revision:4,preferences:prefs('alpha')};await save().click();await page.getByText(/^The account changed elsewhere/).waitFor();assert.equal(remote.revision,4);
-  await save().click();await page.getByText(/^Account preferences saved\. Any later/).waitFor();assert.equal(remote.revision,5);assert.equal(remote.preferences.character,'beta');checks++;
+  await save().click();await page.getByText(/^Account preferences saved\. Any later/).waitFor();assert.equal(remote.revision,5);assert.equal(remote.preferences.character,'beta');assert.equal(remote.preferences.layouts.find(row=>row.id==='beta').snapToEdge,false);checks++;
   const stable=await storage();remote={revision:6,preferences:prefs('alpha')};await readDone();
   await page.route('**/alpha/fixture.model3.json',route=>route.fulfill({status:503,body:'Synthetic model failure'}));
   await use().click();await page.getByText('The account character could not load. Browser preferences were not changed.',{exact:true}).waitFor();assert.deepEqual(await storage(),stable);

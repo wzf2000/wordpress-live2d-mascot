@@ -19,7 +19,7 @@ function wzf_mascot_preference_schema($value) {
     $favorites = []; foreach ($value['favorites'] as $id) { $id = wzf_mascot_preference_id($id); if (in_array($id, $favorites, true)) throw new RuntimeException('invalid-preferences'); $favorites[] = $id; }
     $layouts = []; $seen = [];
     foreach ($value['layouts'] as $row) {
-        wzf_mascot_preference_fields($row, ['id','position','size','anchor'], ['id','position','size']);
+        wzf_mascot_preference_fields($row, ['id','position','size','anchor','snapToEdge'], ['id','position','size']);
         $id = wzf_mascot_preference_id($row['id']);
         if (in_array($id, $seen, true) || !in_array($row['position'], ['left','right'], true) || !is_int($row['size']) || $row['size'] < 140 || $row['size'] > 260 || $row['size'] % 10 !== 0) throw new RuntimeException('invalid-preferences');
         $seen[] = $id; $next = ['id'=>$id,'position'=>$row['position'],'size'=>$row['size']];
@@ -27,6 +27,10 @@ function wzf_mascot_preference_schema($value) {
             wzf_mascot_preference_fields($row['anchor'], ['x','y'], ['x','y']);
             foreach (['x','y'] as $axis) { $number = $row['anchor'][$axis]; if ((!is_int($number) && !is_float($number)) || !is_finite((float)$number) || $number < 0 || $number > 1) throw new RuntimeException('invalid-preferences'); }
             $next['anchor'] = ['x'=>$row['anchor']['x'],'y'=>$row['anchor']['y']];
+        }
+        if (array_key_exists('snapToEdge', $row)) {
+            if (!is_bool($row['snapToEdge'])) throw new RuntimeException('invalid-preferences');
+            $next['snapToEdge'] = $row['snapToEdge'];
         }
         $layouts[] = $next;
     }

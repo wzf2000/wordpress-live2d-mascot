@@ -7,6 +7,23 @@ class InteractionTests(unittest.TestCase):
         self.helper = test_importer.ImporterTests(); self.helper.setUp()
     def tearDown(self): self.helper.tearDown()
     def php(self, body): return self.helper.php(body)
+    def test_optional_snap_account_schema(self):
+        for value in ['true','false']:
+            r=self.php("$v=['character'=>'missing','favorites'=>[],'layouts'=>[['id'=>'missing','position'=>'left','size'=>200,'snapToEdge'=>"+value+"]]];echo json_encode(wzf_mascot_preference_schema($v));")
+            self.assertEqual(r['layouts'][0]['snapToEdge'],value=='true')
+        for value in ["'false'",'0','null','[]']:
+            r=self.php("$v=['character'=>'missing','favorites'=>[],'layouts'=>[['id'=>'missing','position'=>'left','size'=>200,'snapToEdge'=>"+value+"]]];wzf_mascot_preference_schema($v);echo json_encode(['ok'=>true]);")
+            self.assertFalse(r['ok'])
+        r=self.php("echo json_encode(wzf_mascot_preference_schema(['character'=>'missing','favorites'=>[],'layouts'=>[['id'=>'missing','position'=>'left','size'=>200]]]));")
+        self.assertNotIn('snapToEdge',r['layouts'][0])
+
+    def test_layout_default_preserves_config_and_checks_version(self):
+        r=self.php(self.helper.settings_setup()+"wzf_mascot_save_layout($version,false);echo json_encode(['before'=>$before,'after'=>$options[WZF_MASCOT_OPTION]]);")
+        self.assertEqual(r['after'],dict(r['before'],snapToEdge=False))
+        for mutation in ["$version=str_repeat('0',64);",'$allowed=false;']:
+            r=self.php(self.helper.settings_setup()+mutation+"wzf_mascot_save_layout($version,false);echo json_encode(['ok'=>true]);")
+            self.assertFalse(r['ok'])
+
     def test_bad_optional_motion_pool_keeps_valid_text(self):
         r=self.php("echo json_encode(wzf_mascot_dialogue(['idle'=>['enabled'=>true,'cooldown'=>120,'lines'=>['Hi'],'motions'=>'invalid']]));")
         self.assertEqual(r['idle'],{'enabled':True,'cooldown':120,'lines':['Hi']})

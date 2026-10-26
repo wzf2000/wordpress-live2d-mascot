@@ -206,6 +206,9 @@ msgstr ""
 msgid "After"
 msgstr ""
 
+msgid "After dragging"
+msgstr ""
+
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr ""
 
@@ -390,6 +393,9 @@ msgid "Cannot save character settings."
 msgstr ""
 
 msgid "Cannot save configuration."
+msgstr ""
+
+msgid "Cannot save layout settings."
 msgstr ""
 
 msgid "Cannot save mobile settings."
@@ -611,7 +617,13 @@ msgstr ""
 msgid "Choose something interesting. I will keep you company."
 msgstr ""
 
+msgid "Choose the site default after readers release the character. Readers can override it for each character in Position and size."
+msgstr ""
+
 msgid "Choose up to 8 chatter motions from this character."
+msgstr ""
+
+msgid "Choose where the character stays after you release it. Changes apply on the next drag or arrow-key move, keeping the current position."
 msgstr ""
 
 msgid "Clear"
@@ -920,6 +932,9 @@ msgstr ""
 msgid "Found something you like? Stay a little longer."
 msgstr ""
 
+msgid "Free positioning"
+msgstr ""
+
 msgid "Frontend display"
 msgstr ""
 
@@ -1179,6 +1194,15 @@ msgid "Keeping browser preferences. The account was not changed."
 msgstr ""
 
 msgid "Layout applies only to this page; the browser did not allow saving."
+msgstr ""
+
+msgid "Layout settings request is invalid."
+msgstr ""
+
+msgid "Layout settings saved."
+msgstr ""
+
+msgid "Left edge"
 msgstr ""
 
 msgid "Legacy or unknown task state"
@@ -1550,6 +1574,9 @@ msgstr ""
 msgid "Pose"
 msgstr ""
 
+msgid "Position after dragging"
+msgstr ""
+
 msgid "Position and size"
 msgstr ""
 
@@ -1886,6 +1913,9 @@ msgstr ""
 msgid "Reviewed template applied to all selected characters."
 msgstr ""
 
+msgid "Right edge"
+msgstr ""
+
 msgid "Roll back to previous resources and motions"
 msgstr ""
 
@@ -1956,6 +1986,9 @@ msgid "Save dialogue settings"
 msgstr ""
 
 msgid "Save interaction presets"
+msgstr ""
+
+msgid "Save layout settings"
 msgstr ""
 
 msgid "Save mobile settings"
@@ -2061,6 +2094,12 @@ msgid "Smile"
 msgstr ""
 
 msgid "Smile with eyes closed"
+msgstr ""
+
+msgid "Snap to edge"
+msgstr ""
+
+msgid "Snap to the left or right edge after dragging"
 msgstr ""
 
 msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
@@ -2547,6 +2586,12 @@ msgid "Use Interact to preview characters and play quick interactions. The move 
 msgstr ""
 
 msgid "Use account preferences"
+msgstr ""
+
+msgid "Use site default (free positioning)"
+msgstr ""
+
+msgid "Use site default (snap to edge)"
 msgstr ""
 
 msgid "Use this character"

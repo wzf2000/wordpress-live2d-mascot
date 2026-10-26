@@ -177,7 +177,7 @@
     active = committed;
     let position = 'right',
       size = 180,
-      anchor = null, dragState = null;
+      anchor = null, dragState = null, snapOverride;
     let dragHandle = null;
     let welcomeConsumed = false,
       welcomeCount = 0,
@@ -1106,11 +1106,22 @@
     const settings = make('details', '', 'wzf-haru-layout'),
       summary = make('summary', t("Position and size"));
     settings.append(summary);
+    const snapChoice = make('select');
+    snapChoice.setAttribute('aria-label', t("After dragging"));
+    for (const [value, text] of [
+      ['default', config.snapToEdge !== false ? t("Use site default (snap to edge)") : t("Use site default (free positioning)")],
+      ['true', t("Snap to edge")], ['false', t("Free positioning")],
+    ]) {
+      const option = make('option', text); option.value = value; snapChoice.append(option);
+    }
+    const snapNotice = make('p', t("Choose where the character stays after you release it. Changes apply on the next drag or arrow-key move, keeping the current position."));
+    const snapToEdge = () => typeof snapOverride === 'boolean' ? snapOverride : config.snapToEdge !== false;
+    settings.append(snapChoice, snapNotice);
     const side = make('select');
     side.setAttribute('aria-label', t("Character position"));
     for (const [value, text] of [
-      ['right', t("Bottom right")],
-      ['left', t("Bottom left")],
+      ['right', t("Right edge")],
+      ['left', t("Left edge")],
     ]) {
       const o = make('option', text);
       o.value = value;
@@ -1173,7 +1184,8 @@
       if(!exactFields(value,['character','favorites','layouts'])||!preferenceId(value.character)||!Array.isArray(value.favorites)||value.favorites.length>100||!value.favorites.every(preferenceId)||new Set(value.favorites).size!==value.favorites.length||!Array.isArray(value.layouts)||value.layouts.length>100)return false;
       const seen=new Set();
       for(const row of value.layouts){
-        if(!exactFields(row,['id','position','size','anchor'],['id','position','size'])||!preferenceId(row.id)||seen.has(row.id)||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)return false;
+        if(!exactFields(row,['id','position','size','anchor','snapToEdge'],['id','position','size'])||!preferenceId(row.id)||seen.has(row.id)||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)return false;
+        if(Object.hasOwn(row,'snapToEdge')&&typeof row.snapToEdge!=='boolean')return false;
         seen.add(row.id);
         if(Object.hasOwn(row,'anchor')&&(!exactFields(row.anchor,['x','y'])||!['x','y'].every(axis=>Number.isFinite(row.anchor[axis])&&row.anchor[axis]>=0&&row.anchor[axis]<=1)))return false;
       }
@@ -1187,6 +1199,7 @@
       for(const [id,row] of Object.entries(layouts)){
         if(!preferenceId(id)||!row||!['left','right'].includes(row.position)||!Number.isInteger(row.size)||row.size<140||row.size>260||row.size%10)continue;
         const next={id,position:row.position,size:row.size};
+        if(typeof row.snapToEdge==='boolean')next.snapToEdge=row.snapToEdge;
         if(row.anchor&&['x','y'].every(axis=>Number.isFinite(row.anchor[axis])&&row.anchor[axis]>=0&&row.anchor[axis]<=1))next.anchor={x:row.anchor.x,y:row.anchor.y};
         rows.push(next);if(rows.length===100)break;
       }
@@ -1247,7 +1260,7 @@
       let baseline;
       try{baseline=preferenceBaseline();}catch{accountStatus.textContent=t("The browser did not allow saving account preferences locally. Current preferences are retained.");return;}
       const epoch=accountEpoch,value=accountState.preferences,nextLayouts=Object.create(null),available=Object.hasOwn(characters,value.character);
-      for(const row of value.layouts){nextLayouts[row.id]={position:row.position,size:row.size,...(row.anchor?{anchor:{...row.anchor}}:{})};}
+      for(const row of value.layouts){nextLayouts[row.id]={position:row.position,size:row.size,...(typeof row.snapToEdge==='boolean'?{snapToEdge:row.snapToEdge}:{}),...(row.anchor?{anchor:{...row.anchor}}:{})};}
       const changes=[['wzf-mascot-character',value.character],[favoritesKey,JSON.stringify(value.favorites)],['wzf-mascot-layouts',JSON.stringify(nextLayouts)]];
       const previous=[];
       const rollbackPreview=async()=>{
@@ -1278,6 +1291,8 @@
     accountUpdate();
     const readLayout = () => {
       const saved = layouts[active] || {};
+      snapOverride = typeof saved.snapToEdge === 'boolean' ? saved.snapToEdge : undefined;
+      snapChoice.value = typeof snapOverride === 'boolean' ? String(snapOverride) : 'default';
       position = ['left', 'right'].includes(saved.position) ? saved.position : 'right';
       size = Number.isFinite(saved.size)
         ? Math.max(140, Math.min(260, Math.round(saved.size / 10) * 10))
@@ -1401,7 +1416,8 @@
         }
         placeDialogue();
       }
-      settings.hidden = !desktop.matches;
+      settings.hidden = !desktop.matches && config.mobileEnabled !== true;
+      for (const control of [side, slider, output]) control.hidden = !desktop.matches;
       mobileSize.hidden = desktop.matches;
       mobileSize.textContent = t("Compact mobile size: %1$s pixels (desktop settings retained)", renderedSize);
       output.textContent = t("%1$s pixels", size);
@@ -1440,7 +1456,7 @@
       panel.style.maxHeight = Math.max(44,innerHeight-bottom-panelTopBoundary(view))+'px';
     };
     const rememberLayout = () => {
-      const row={position,size,...(anchor?{anchor:{...anchor}}:{})};
+      const row={position,size,...(typeof snapOverride==='boolean'?{snapToEdge:snapOverride}:{}),...(anchor?{anchor:{...anchor}}:{})};
       layouts[active]=row;pendingLayouts.set(active,row);
       try {
         const raw=localStorage.getItem('wzf-mascot-layouts');
@@ -1456,6 +1472,10 @@
       } catch {state.textContent=t("Layout applies only to this page; the browser did not allow saving.");}
       layout();
     };
+    snapChoice.onchange = () => {
+      snapOverride = snapChoice.value === 'default' ? undefined : snapChoice.value === 'true';
+      rememberLayout();
+    };
     side.onchange = () => {
       position = side.value;
       if (anchor) anchor.x = position === 'left' ? 0 : 1;
@@ -1466,6 +1486,8 @@
       rememberLayout();
     };
     reset.onclick = () => {
+      snapOverride = undefined;
+      snapChoice.value = 'default';
       position = 'right';
       anchor = null;
       size = characters[active].size;
@@ -1487,7 +1509,7 @@
       if (dragHandle.hasPointerCapture?.(pointer)) dragHandle.releasePointerCapture(pointer);
       if (commit && anchor) {
         position = anchor.x < 0.5 ? 'left' : 'right';
-        anchor.x = position === 'left' ? 0 : 1;
+        if (snapToEdge()) anchor.x = position === 'left' ? 0 : 1;
         side.value = position; rememberLayout();
       } else { anchor=previous.anchor; position=previous.position; layout(); }
     };
@@ -1520,7 +1542,7 @@
       clearDialogue(); cancelWelcome(); cancelPreset(); engine?.resetGaze?.();
       const box=host.getBoundingClientRect(), bounds=movementBounds();
       const step=event.shiftKey ? 40 : 16;
-      moveAnchor(event.key==='ArrowLeft'?bounds.left:event.key==='ArrowRight'?bounds.maxX:box.x,box.y+(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0));
+      moveAnchor(event.key==='ArrowLeft'?(snapToEdge()?bounds.left:box.x-step):event.key==='ArrowRight'?(snapToEdge()?bounds.maxX:box.x+step):(snapToEdge()?(box.x-bounds.left<(bounds.maxX-bounds.left)/2?bounds.left:bounds.maxX):box.x),box.y+(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0));
       position=anchor.x<0.5?'left':'right'; side.value=position; rememberLayout();
       cancelIdle(); syncIdle();
     };
@@ -1669,7 +1691,7 @@
       commitButton.hidden = cancelPreview.hidden = !preview;
       commitButton.disabled = cancelPreview.disabled = loading || !engine;
       accountUpdate();
-      side.disabled = slider.disabled = reset.disabled = loading;
+      snapChoice.disabled = side.disabled = slider.disabled = reset.disabled = loading;
       label.textContent = preview ? t('%1$s · Previewing', characters[active].name) : characters[active].name;
       credit.textContent =
         t('%1$s · %2$s · Sources and terms', characters[active].name, characters[active].credit || t('Administrator-imported resources'));

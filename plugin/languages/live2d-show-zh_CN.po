@@ -203,6 +203,9 @@ msgstr "管理员导入资源"
 msgid "After"
 msgstr "变更后"
 
+msgid "After dragging"
+msgstr "松手后的停靠方式"
+
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr "主动开启后读取当前 WebGL / GPU 信息并在本地记录加载与短时帧率。报告不包含页面地址、查询参数、Cookie 或用户资料；不会发送到服务器。"
 
@@ -326,6 +329,12 @@ msgstr "其他标签页修改了浏览器偏好。请重新读取账号偏好后
 msgid "Cancel"
 msgstr "取消"
 
+msgid "Cancel changes"
+msgstr "取消修改"
+
+msgid "Cancel loading"
+msgstr "取消加载"
+
 msgid "Cancel preview"
 msgstr "取消预览"
 
@@ -382,6 +391,9 @@ msgstr "角色设置保存失败。"
 
 msgid "Cannot save configuration."
 msgstr "配置保存失败。"
+
+msgid "Cannot save layout settings."
+msgstr "无法保存布局设置。"
 
 msgid "Cannot save mobile settings."
 msgstr "移动端设置保存失败。"
@@ -602,8 +614,14 @@ msgstr "选择动作"
 msgid "Choose something interesting. I will keep you company."
 msgstr "选一篇有趣的内容吧，我陪你读。"
 
+msgid "Choose the site default after readers release the character. Readers can override it for each character in Position and size."
+msgstr "设置读者松手后的默认停靠方式。读者可在“位置与大小”中为每个角色单独选择。"
+
 msgid "Choose up to 8 chatter motions from this character."
 msgstr "请从当前角色选择最多 8 个闲聊动作。"
+
+msgid "Choose where the character stays after you release it. Changes apply on the next drag or arrow-key move, keeping the current position."
+msgstr "选择松手后角色停留的位置。更改此项不会立即移动角色，下次拖动或方向键移动时生效。"
 
 msgid "Clear"
 msgstr "清空"
@@ -911,6 +929,9 @@ msgstr "遇到喜欢的内容，记得给自己留个书签哦。"
 msgid "Found something you like? Stay a little longer."
 msgstr "发现喜欢的内容，就多停留一会儿吧。"
 
+msgid "Free positioning"
+msgstr "自由放置"
+
 msgid "Frontend display"
 msgstr "前台显示"
 
@@ -1171,6 +1192,15 @@ msgstr "已保留本机偏好，账号未变更。"
 
 msgid "Layout applies only to this page; the browser did not allow saving."
 msgstr "布局仅在本页生效；浏览器不允许保存。"
+
+msgid "Layout settings request is invalid."
+msgstr "布局设置请求无效。"
+
+msgid "Layout settings saved."
+msgstr "布局设置已保存。"
+
+msgid "Left edge"
+msgstr "靠左"
 
 msgid "Legacy or unknown task state"
 msgstr "旧版或未知任务状态"
@@ -1541,6 +1571,9 @@ msgstr "指针互动"
 msgid "Pose"
 msgstr "姿态"
 
+msgid "Position after dragging"
+msgstr "拖动后的停靠方式"
+
 msgid "Position and size"
 msgstr "位置与大小"
 
@@ -1553,8 +1586,14 @@ msgstr "已准备，请核对原目录与恢复区"
 msgid "Preparing PNG…"
 msgstr "正在生成 PNG…"
 
+msgid "Preparing display…"
+msgstr "正在准备画面…"
+
 msgid "Preparing preview…"
 msgstr "正在准备预览…"
+
+msgid "Preparing runtime…"
+msgstr "正在准备运行库…"
 
 msgid "Preset expression"
 msgstr "预设表情"
@@ -1616,11 +1655,17 @@ msgstr "呼噜呼噜，慢慢看，我在这里陪你。"
 msgid "Pursed lips"
 msgstr "抿嘴"
 
+msgid "Quick interaction choices"
+msgstr "常用互动"
+
 msgid "Quick interactions"
 msgstr "快捷互动"
 
 msgid "Quick interactions are retained. Only dialogue will be replaced."
 msgstr "保留现有快捷互动，仅替换台词。"
+
+msgid "Quick interactions saved in this browser."
+msgstr "常用互动已保存在此浏览器。"
 
 msgid "Quiet company"
 msgstr "安静陪伴"
@@ -1648,6 +1693,9 @@ msgstr "读者自行开启"
 
 msgid "Reading account preferences…"
 msgstr "正在读取账号偏好…"
+
+msgid "Reading character…"
+msgstr "正在读取角色…"
 
 msgid "Reading companion"
 msgstr "阅读伙伴"
@@ -1796,11 +1844,17 @@ msgstr "还原"
 msgid "Restore a configuration backup before retrying."
 msgstr "请恢复配置备份后重试。"
 
+msgid "Restore default interactions"
+msgstr "恢复默认互动"
+
 msgid "Restore from trash"
 msgstr "从回收站恢复"
 
 msgid "Restore interrupted; review to finish"
 msgstr "还原中断，请重新复核以完成记录"
+
+msgid "Restore natural state"
+msgstr "恢复自然状态"
 
 msgid "Restore the character to a valid status before updating resources."
 msgstr "请先恢复角色有效状态再更新资源。"
@@ -1825,6 +1879,9 @@ msgstr "重新加载"
 
 msgid "Return after absence"
 msgstr "离开后返回"
+
+msgid "Returned to idle and default expression"
+msgstr "已恢复待机和默认表情"
 
 msgid "Returned to the original character"
 msgstr "已返回原角色"
@@ -1852,6 +1909,9 @@ msgstr "请先核对上方磁盘占用。移入恢复区和还原不会释放本
 
 msgid "Reviewed template applied to all selected characters."
 msgstr "已将审阅后的模板应用到全部选定角色。"
+
+msgid "Right edge"
+msgstr "靠右"
 
 msgid "Roll back to previous resources and motions"
 msgstr "回退到上一版资源与动作"
@@ -1925,11 +1985,17 @@ msgstr "保存台词设置"
 msgid "Save interaction presets"
 msgstr "保存互动预设"
 
+msgid "Save layout settings"
+msgstr "保存布局设置"
+
 msgid "Save mobile settings"
 msgstr "保存移动端设置"
 
 msgid "Save only the current character canvas on a transparent background."
 msgstr "仅保存当前角色画布，背景透明。"
+
+msgid "Save quick interactions"
+msgstr "保存常用互动"
 
 msgid "Save thumbnail"
 msgstr "保存缩略图"
@@ -1960,6 +2026,9 @@ msgstr "勾选要更新的所有角色，应用前检查每个目标的变化。
 
 msgid "Select the read-only cleanup review option before continuing."
 msgstr "请勾选只读清理复核后继续。"
+
+msgid "Selected %1$s of 3"
+msgstr "已选 %1$s / 3 个"
 
 msgid "Settings"
 msgstr "设置"
@@ -2023,6 +2092,12 @@ msgstr "微笑"
 
 msgid "Smile with eyes closed"
 msgstr "闭眼笑"
+
+msgid "Snap to edge"
+msgstr "吸附到边缘"
+
+msgid "Snap to the left or right edge after dragging"
+msgstr "松手后吸附到左侧或右侧边缘"
 
 msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
 msgstr "部分区域绑定已失效并跳过，请检查并保存当前绑定。"
@@ -2174,6 +2249,9 @@ msgstr "浏览器阻止了看板娘运行，请刷新页面后重试"
 msgid "The browser did not allow saving account preferences locally. Current preferences are retained."
 msgstr "浏览器不允许将账号偏好保存到本机，已保留当前偏好。"
 
+msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
+msgstr "浏览器未允许保存常用互动，本次选择仅在当前页面生效。"
+
 msgid "The browser did not allow saving. This preview is still usable."
 msgstr "浏览器未允许保存，当前预览仍可使用"
 
@@ -2197,6 +2275,15 @@ msgstr "角色状态已经改变，请刷新页面后重试。"
 
 msgid "The character texture cannot be decoded. Retry or choose another character."
 msgstr "角色贴图无法解码，请重试或选择其他角色"
+
+msgid "The character texture could not be displayed. Retry or choose another character."
+msgstr "角色贴图无法显示，请重试或选择其他角色。"
+
+msgid "The character texture could not be downloaded. Retry later or choose another character."
+msgstr "角色贴图下载失败，请稍后重试或选择其他角色。"
+
+msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
+msgstr "角色贴图缺失，请选择其他角色，或请站点管理员修复。"
 
 msgid "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
 msgstr "清理复核最多展示 500 行；子树统计仍包含扫描上限内读取的全部元数据。"
@@ -2348,6 +2435,9 @@ msgstr "此角色已有点击区域绑定。请仅导入台词，或先在原设
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "此角色需要 WebGL 2，请选择其他角色或更换浏览器"
 
+msgid "This character texture is too large for this device. Choose another character or device."
+msgstr "角色贴图超出此设备支持的尺寸，请选择其他角色或设备。"
+
 msgid "This directory contains files outside the model runtime references. Preserve it for manual review."
 msgstr "此目录含模型运行时引用之外的文件，请保留供人工核查。"
 
@@ -2362,6 +2452,9 @@ msgstr "此模型未声明命中区域，仍可使用普通招呼。"
 
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr "本页保留原偏好，但浏览器保存可能不完整。请检查本机存储权限后重试。"
+
+msgid "This preference applies only to this page; after refreshing, you may need to choose again."
+msgstr "本次选择仅在当前页面生效；刷新后可能需要重新选择。"
 
 msgid "This preference applies only to this page; the browser did not allow saving."
 msgstr "此偏好仅在本页生效；浏览器未允许保存。"
@@ -2491,6 +2584,12 @@ msgstr "打开互动面板可预览角色并使用快捷互动。移动柄支持
 
 msgid "Use account preferences"
 msgstr "使用账号偏好"
+
+msgid "Use site default (free positioning)"
+msgstr "跟随站点默认（自由放置）"
+
+msgid "Use site default (snap to edge)"
+msgstr "跟随站点默认（吸附到边缘）"
 
 msgid "Use this character"
 msgstr "使用这个角色"
@@ -2626,58 +2725,3 @@ msgstr "· 预览中"
 
 msgid "· Sources and terms"
 msgstr "· 来源与条款"
-
-msgid "Preparing runtime…"
-msgstr "正在准备运行库…"
-
-msgid "Reading character…"
-msgstr "正在读取角色…"
-
-msgid "Preparing display…"
-msgstr "正在准备画面…"
-
-msgid "Cancel loading"
-msgstr "取消加载"
-
-msgid "Restore natural state"
-msgstr "恢复自然状态"
-
-msgid "Returned to idle and default expression"
-msgstr "已恢复待机和默认表情"
-
-msgid "This preference applies only to this page; after refreshing, you may need to choose again."
-msgstr "本次选择仅在当前页面生效；刷新后可能需要重新选择。"
-
-msgid "Quick interaction choices"
-msgstr "常用互动"
-
-msgid "Save quick interactions"
-msgstr "保存常用互动"
-
-msgid "Cancel changes"
-msgstr "取消修改"
-
-msgid "Restore default interactions"
-msgstr "恢复默认互动"
-
-msgid "Selected %1$s of 3"
-msgstr "已选 %1$s / 3 个"
-
-msgid "Quick interactions saved in this browser."
-msgstr "常用互动已保存在此浏览器。"
-
-msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
-msgstr "浏览器未允许保存常用互动，本次选择仅在当前页面生效。"
-
-msgid "This character texture is too large for this device. Choose another character or device."
-msgstr "角色贴图超出此设备支持的尺寸，请选择其他角色或设备。"
-
-msgid "The character texture could not be displayed. Retry or choose another character."
-msgstr "角色贴图无法显示，请重试或选择其他角色。"
-
-
-msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
-msgstr "角色贴图缺失，请选择其他角色，或请站点管理员修复。"
-
-msgid "The character texture could not be downloaded. Retry later or choose another character."
-msgstr "角色贴图下载失败，请稍后重试或选择其他角色。"

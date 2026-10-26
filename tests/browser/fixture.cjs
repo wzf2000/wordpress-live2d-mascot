@@ -20,6 +20,7 @@ async function startFixture(options = {}) {
       const config = { version: 'synthetic-browser', termsVersion: 'synthetic-v1',
         terms: '/terms', core: '/synthetic/core.js', engine: '/synthetic/engine.js', shaders: '/synthetic/shaders/',
         diagnosticsAllowed: url.searchParams.get('role') === 'administrator',
+        snapToEdge: url.searchParams.get('snap') !== '0',
         mobileEnabled: url.searchParams.get('mobile') === '1', mobilePauseOnInput: true, accountEndpoint:'/account',
         characters: { alpha: character('alpha'), beta: character('beta') } };
       if (url.searchParams.get('dialogue') === '1') for (const [id, c] of Object.entries(config.characters)) {

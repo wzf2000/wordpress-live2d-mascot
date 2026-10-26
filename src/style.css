@@ -583,3 +583,5 @@
 .wzf-haru-quick-choices label { overflow-wrap: anywhere; }
 .wzf-haru-quick-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .wzf-haru-quick-actions button { flex: 1 1 100px; }
+
+.wzf-haru-layout output[hidden] { display: none; }
