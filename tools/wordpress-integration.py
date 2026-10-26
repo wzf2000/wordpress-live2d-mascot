@@ -926,8 +926,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 34:
-            raise RuntimeError(f'Expected 34 completed integration groups, got {len(checks)}')
+        if len(checks) != 35:
+            raise RuntimeError(f'Expected 35 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}
