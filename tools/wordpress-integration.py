@@ -363,7 +363,7 @@ echo 'released';
             status, html = request(opener, '/wp-login.php', {'log': user, 'pwd': password, 'wp-submit': 'Log In', 'redirect_to': origin + '/wp-admin/', 'testcookie': '1'})
             assert status == 200 and 'login_error' not in html
         before = state()
-        for action in ['settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply', 'interaction_preview', 'template_batch_apply']:
+        for action in ['layout', 'settings', 'manage', 'thumbnail', 'mobile', 'import', 'task_recover', 'interaction', 'presets', 'hits', 'capture', 'template_export', 'template_apply', 'interaction_preview', 'template_batch_apply']:
             payload = {'action': 'wzf_mascot_' + action, '_wpnonce': 'invalid'}
             assert post(payload, opener=reader)[0] == 403
             assert post(payload)[0] == 403
@@ -390,7 +390,7 @@ echo 'released';
         assert front(reader)['diagnosticsAllowed'] is False
         assert front(admin)['diagnosticsAllowed'] is True
         record('real HTTP guest/subscriber/admin diagnostics flag follows manage_options')
-        assert front()['mobileEnabled'] is False; record('legacy IDs, maintained extra action, mobile default and server output')
+        assert front()['snapToEdge'] is True; assert front()['mobileEnabled'] is False; record('legacy IDs, maintained extra action, mobile default and server output')
         def listed(html):
             match = re.search(r'<table class="widefat striped">.*?<tbody>(.*?)</tbody>', html, re.S)
             return set(re.findall(r'<code>(.*?)</code>', match[1]) + re.findall(r'<th scope="row">([^<]*)</th>', match[1])) if match else set()
@@ -717,7 +717,19 @@ echo 'released';
         code, body, headers = request(reader, account_path, account_action, with_headers=True)
         bootstrap = json.loads(body)['data']; assert code == 200 and bootstrap['state'] == {'revision':0,'preferences':None}
         assert 'private' in headers.get('Cache-Control','') and 'no-store' in headers.get('Cache-Control','')
-        account_preferences = {'character':'temporarily-disabled','favorites':['legacy_character','23','temporarily-disabled'],'layouts':[{'id':'legacy_character','position':'left','size':200,'anchor':{'x':0,'y':0.5}}]}
+        layout_before = state()['config']
+        layout_form = form('wzf_mascot_layout')
+        layout_form.pop('snap_to_edge', None)
+        post(layout_form)
+        assert state()['config'] == dict(layout_before, snapToEdge=False)
+        assert front()['snapToEdge'] is False
+        post(dict(layout_form, snap_to_edge='1'))
+        assert front()['snapToEdge'] is False  # stale version cannot overwrite
+        fresh_layout = form('wzf_mascot_layout')
+        post(dict(fresh_layout, snap_to_edge='1'))
+        assert front()['snapToEdge'] is True
+        record('real layout defaults save with version guard and preserve other resource configuration')
+        account_preferences = {'character':'temporarily-disabled','favorites':['legacy_character','23','temporarily-disabled'],'layouts':[{'id':'legacy_character','position':'left','size':200,'anchor':{'x':0,'y':0.5},'snapToEdge':False}]}
         payload = {'action':'wzf_mascot_preferences','operation':'save','nonce':'invalid','revision':'0','preferences':json.dumps(account_preferences)}
         assert request(reader, account_path, payload)[0] == 403
         payload['nonce'] = bootstrap['nonce']; foreign = dict(payload,uid=uid)
@@ -730,6 +742,8 @@ echo 'released';
         code, body = request(reader, account_path, payload); assert code == 409 and json.loads(body)['data']['code'] == 'conflict'
         invalid = dict(payload,revision='1',preferences=json.dumps(dict(account_preferences,mobile=True)))
         assert request(reader, account_path, invalid)[0] == 400
+        bad_layout = dict(account_preferences, layouts=[dict(account_preferences['layouts'][0], snapToEdge='false')])
+        assert request(reader, account_path, dict(payload, revision='1', preferences=json.dumps(bad_layout)))[0] == 400
         assert state() == before_account
         wp('plugin', 'install', str(bundle), '--force', '--activate')
         assert json.loads(request(reader, account_path, account_action)[1])['data']['state'] == saved_account
@@ -912,8 +926,8 @@ echo 'released';
             assert state() == before
         wp('option', 'update', 'WPLANG', ''); wp('user', 'meta', 'delete', uid, 'locale')
         record('real WordPress en_US/zh_CN admin/profile/frontend gettext retains resource data and placeholders')
-        if len(checks) != 34:
-            raise RuntimeError(f'Expected 34 completed integration groups, got {len(checks)}')
+        if len(checks) != 35:
+            raise RuntimeError(f'Expected 35 completed integration groups, got {len(checks)}')
         completed = True
     except BaseException as error:
         failure = {'type': type(error).__name__, 'request': last_request}

@@ -206,6 +206,9 @@ msgstr "Administrator-imported resources"
 msgid "After"
 msgstr "After"
 
+msgid "After dragging"
+msgstr "After dragging"
+
 msgid "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 msgstr "After you enable diagnostics, this page reads current WebGL / GPU information and records local loading and short FPS samples. Reports exclude page URLs, queries, cookies and user profiles and are never sent to a server."
 
@@ -329,6 +332,12 @@ msgstr "Browser preferences changed in another tab. Read account preferences aga
 msgid "Cancel"
 msgstr "Cancel"
 
+msgid "Cancel changes"
+msgstr "Cancel changes"
+
+msgid "Cancel loading"
+msgstr "Cancel loading"
+
 msgid "Cancel preview"
 msgstr "Cancel preview"
 
@@ -385,6 +394,9 @@ msgstr "Cannot save character settings."
 
 msgid "Cannot save configuration."
 msgstr "Cannot save configuration."
+
+msgid "Cannot save layout settings."
+msgstr "Cannot save layout settings."
 
 msgid "Cannot save mobile settings."
 msgstr "Cannot save mobile settings."
@@ -605,8 +617,14 @@ msgstr "Choose motion"
 msgid "Choose something interesting. I will keep you company."
 msgstr "Choose something interesting. I will keep you company."
 
+msgid "Choose the site default after readers release the character. Readers can override it for each character in Position and size."
+msgstr "Choose the site default after readers release the character. Readers can override it for each character in Position and size."
+
 msgid "Choose up to 8 chatter motions from this character."
 msgstr "Choose up to 8 chatter motions from this character."
+
+msgid "Choose where the character stays after you release it. Changes apply on the next drag or arrow-key move, keeping the current position."
+msgstr "Choose where the character stays after you release it. Changes apply on the next drag or arrow-key move, keeping the current position."
 
 msgid "Clear"
 msgstr "Clear"
@@ -914,6 +932,9 @@ msgstr "Found something you like? Leave yourself a bookmark."
 msgid "Found something you like? Stay a little longer."
 msgstr "Found something you like? Stay a little longer."
 
+msgid "Free positioning"
+msgstr "Free positioning"
+
 msgid "Frontend display"
 msgstr "Frontend display"
 
@@ -1174,6 +1195,15 @@ msgstr "Keeping browser preferences. The account was not changed."
 
 msgid "Layout applies only to this page; the browser did not allow saving."
 msgstr "Layout applies only to this page; the browser did not allow saving."
+
+msgid "Layout settings request is invalid."
+msgstr "Layout settings request is invalid."
+
+msgid "Layout settings saved."
+msgstr "Layout settings saved."
+
+msgid "Left edge"
+msgstr "Left edge"
 
 msgid "Legacy or unknown task state"
 msgstr "Legacy or unknown task state"
@@ -1544,6 +1574,9 @@ msgstr "Pointer interactions"
 msgid "Pose"
 msgstr "Pose"
 
+msgid "Position after dragging"
+msgstr "Position after dragging"
+
 msgid "Position and size"
 msgstr "Position and size"
 
@@ -1556,8 +1589,14 @@ msgstr "Prepared; inspect original and recovery storage"
 msgid "Preparing PNG…"
 msgstr "Preparing PNG…"
 
+msgid "Preparing display…"
+msgstr "Preparing display…"
+
 msgid "Preparing preview…"
 msgstr "Preparing preview…"
+
+msgid "Preparing runtime…"
+msgstr "Preparing runtime…"
 
 msgid "Preset expression"
 msgstr "Preset expression"
@@ -1619,11 +1658,17 @@ msgstr "Purr... Take your time. I will keep you company."
 msgid "Pursed lips"
 msgstr "Pursed lips"
 
+msgid "Quick interaction choices"
+msgstr "Quick interaction choices"
+
 msgid "Quick interactions"
 msgstr "Quick interactions"
 
 msgid "Quick interactions are retained. Only dialogue will be replaced."
 msgstr "Quick interactions are retained. Only dialogue will be replaced."
+
+msgid "Quick interactions saved in this browser."
+msgstr "Quick interactions saved in this browser."
 
 msgid "Quiet company"
 msgstr "Quiet company"
@@ -1651,6 +1696,9 @@ msgstr "Readers opt in"
 
 msgid "Reading account preferences…"
 msgstr "Reading account preferences…"
+
+msgid "Reading character…"
+msgstr "Reading character…"
 
 msgid "Reading companion"
 msgstr "Reading companion"
@@ -1799,11 +1847,17 @@ msgstr "Restore"
 msgid "Restore a configuration backup before retrying."
 msgstr "Restore a configuration backup before retrying."
 
+msgid "Restore default interactions"
+msgstr "Restore default interactions"
+
 msgid "Restore from trash"
 msgstr "Restore from trash"
 
 msgid "Restore interrupted; review to finish"
 msgstr "Restore interrupted; review to finish"
+
+msgid "Restore natural state"
+msgstr "Restore natural state"
 
 msgid "Restore the character to a valid status before updating resources."
 msgstr "Restore the character to a valid status before updating resources."
@@ -1828,6 +1882,9 @@ msgstr "Retry loading"
 
 msgid "Return after absence"
 msgstr "Return after absence"
+
+msgid "Returned to idle and default expression"
+msgstr "Returned to idle and default expression"
 
 msgid "Returned to the original character"
 msgstr "Returned to the original character"
@@ -1855,6 +1912,9 @@ msgstr "Review storage usage above first. Moving to recovery storage and restori
 
 msgid "Reviewed template applied to all selected characters."
 msgstr "Reviewed template applied to all selected characters."
+
+msgid "Right edge"
+msgstr "Right edge"
 
 msgid "Roll back to previous resources and motions"
 msgstr "Roll back to previous resources and motions"
@@ -1928,11 +1988,17 @@ msgstr "Save dialogue settings"
 msgid "Save interaction presets"
 msgstr "Save interaction presets"
 
+msgid "Save layout settings"
+msgstr "Save layout settings"
+
 msgid "Save mobile settings"
 msgstr "Save mobile settings"
 
 msgid "Save only the current character canvas on a transparent background."
 msgstr "Save only the current character canvas on a transparent background."
+
+msgid "Save quick interactions"
+msgstr "Save quick interactions"
 
 msgid "Save thumbnail"
 msgstr "Save thumbnail"
@@ -1963,6 +2029,9 @@ msgstr "Select every character you want to update. Review all targets before app
 
 msgid "Select the read-only cleanup review option before continuing."
 msgstr "Select the read-only cleanup review option before continuing."
+
+msgid "Selected %1$s of 3"
+msgstr "Selected %1$s of 3"
 
 msgid "Settings"
 msgstr "Settings"
@@ -2026,6 +2095,12 @@ msgstr "Smile"
 
 msgid "Smile with eyes closed"
 msgstr "Smile with eyes closed"
+
+msgid "Snap to edge"
+msgstr "Snap to edge"
+
+msgid "Snap to the left or right edge after dragging"
+msgstr "Snap to the left or right edge after dragging"
 
 msgid "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
 msgstr "Some area bindings are no longer valid and were skipped. Review and save the current bindings."
@@ -2177,6 +2252,9 @@ msgstr "The browser blocked mascot execution. Refresh and retry."
 msgid "The browser did not allow saving account preferences locally. Current preferences are retained."
 msgstr "The browser did not allow saving account preferences locally. Current preferences are retained."
 
+msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
+msgstr "The browser did not allow saving quick interactions. Your choices apply only on this page."
+
 msgid "The browser did not allow saving. This preview is still usable."
 msgstr "The browser did not allow saving. This preview is still usable."
 
@@ -2200,6 +2278,15 @@ msgstr "The character status has changed. Refresh before trying again."
 
 msgid "The character texture cannot be decoded. Retry or choose another character."
 msgstr "The character texture cannot be decoded. Retry or choose another character."
+
+msgid "The character texture could not be displayed. Retry or choose another character."
+msgstr "The character texture could not be displayed. Retry or choose another character."
+
+msgid "The character texture could not be downloaded. Retry later or choose another character."
+msgstr "The character texture could not be downloaded. Retry later or choose another character."
+
+msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
+msgstr "The character texture is missing. Choose another character or ask the site administrator to repair it."
 
 msgid "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
 msgstr "The cleanup review display is truncated at 500 rows; subtree totals still use all metadata observed within the scan limit."
@@ -2351,6 +2438,9 @@ msgstr "This character has hit-area bindings. Import dialogue only, or remove th
 msgid "This character requires WebGL 2. Choose another character or browser."
 msgstr "This character requires WebGL 2. Choose another character or browser."
 
+msgid "This character texture is too large for this device. Choose another character or device."
+msgstr "This character texture is too large for this device. Choose another character or device."
+
 msgid "This directory contains files outside the model runtime references. Preserve it for manual review."
 msgstr "This directory contains files outside the model runtime references. Preserve it for manual review."
 
@@ -2365,6 +2455,9 @@ msgstr "This model declares no hit areas. Normal greeting remains available."
 
 msgid "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
 msgstr "This page keeps its previous preferences, but browser storage may be incomplete. Check browser storage permission before trying again."
+
+msgid "This preference applies only to this page; after refreshing, you may need to choose again."
+msgstr "This preference applies only to this page; after refreshing, you may need to choose again."
 
 msgid "This preference applies only to this page; the browser did not allow saving."
 msgstr "This preference applies only to this page; the browser did not allow saving."
@@ -2494,6 +2587,12 @@ msgstr "Use Interact to preview characters and play quick interactions. The move
 
 msgid "Use account preferences"
 msgstr "Use account preferences"
+
+msgid "Use site default (free positioning)"
+msgstr "Use site default (free positioning)"
+
+msgid "Use site default (snap to edge)"
+msgstr "Use site default (snap to edge)"
 
 msgid "Use this character"
 msgstr "Use this character"
@@ -2629,58 +2728,3 @@ msgstr "· Previewing"
 
 msgid "· Sources and terms"
 msgstr "· Sources and terms"
-
-msgid "Preparing runtime…"
-msgstr "Preparing runtime…"
-
-msgid "Reading character…"
-msgstr "Reading character…"
-
-msgid "Preparing display…"
-msgstr "Preparing display…"
-
-msgid "Cancel loading"
-msgstr "Cancel loading"
-
-msgid "Restore natural state"
-msgstr "Restore natural state"
-
-msgid "Returned to idle and default expression"
-msgstr "Returned to idle and default expression"
-
-msgid "This preference applies only to this page; after refreshing, you may need to choose again."
-msgstr "This preference applies only to this page; after refreshing, you may need to choose again."
-
-msgid "Quick interaction choices"
-msgstr "Quick interaction choices"
-
-msgid "Save quick interactions"
-msgstr "Save quick interactions"
-
-msgid "Cancel changes"
-msgstr "Cancel changes"
-
-msgid "Restore default interactions"
-msgstr "Restore default interactions"
-
-msgid "Selected %1$s of 3"
-msgstr "Selected %1$s of 3"
-
-msgid "Quick interactions saved in this browser."
-msgstr "Quick interactions saved in this browser."
-
-msgid "The browser did not allow saving quick interactions. Your choices apply only on this page."
-msgstr "The browser did not allow saving quick interactions. Your choices apply only on this page."
-
-msgid "This character texture is too large for this device. Choose another character or device."
-msgstr "This character texture is too large for this device. Choose another character or device."
-
-msgid "The character texture could not be displayed. Retry or choose another character."
-msgstr "The character texture could not be displayed. Retry or choose another character."
-
-
-msgid "The character texture is missing. Choose another character or ask the site administrator to repair it."
-msgstr "The character texture is missing. Choose another character or ask the site administrator to repair it."
-
-msgid "The character texture could not be downloaded. Retry later or choose another character."
-msgstr "The character texture could not be downloaded. Retry later or choose another character."

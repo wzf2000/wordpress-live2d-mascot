@@ -49,6 +49,32 @@ const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
   await page.mouse.up();assert.equal(await handle.isVisible(),false);assert.equal((await stored()).alpha.anchor,undefined);
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('wzf-mascot-suspension',{detail:{source:'movement',suspended:false}})));
   await page.setViewportSize({width:1440,height:900});if(out)await page.screenshot({path:path.join(out,'movement-desktop.png')});
+  // Per-character overrides inherit the site default without moving on selection.
+  await page.goto(fixture.origin+'/?mobile=1&snap=0');await ready();
+  await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);
+  await page.getByText('Position and size',{exact:true}).evaluate(el=>el.parentElement.open=true);
+  const snap=page.getByLabel('After dragging',{exact:true});
+  assert.equal(await snap.inputValue(),'default');
+  assert((await snap.textContent()).includes('Use site default (free positioning)'));
+  await snap.selectOption('false');
+  await page.getByRole('button',{name:'Close interaction',exact:true}).click();
+  await handle.focus();const startX=(await host.boundingBox()).x;
+  await page.keyboard.press('ArrowLeft');assert(Math.abs((await host.boundingBox()).x-startX+16)<1);
+  assert.equal((await stored()).alpha.snapToEdge,false);
+  await page.keyboard.press('Shift+ArrowLeft');assert(Math.abs((await host.boundingBox()).x-startX+56)<1);
+  box=await handle.boundingBox();await page.mouse.move(box.x+20,box.y+18);await page.mouse.down();await page.mouse.move(700,420,{steps:4});await page.mouse.up();
+  saved=await stored();assert(saved.alpha.anchor.x>0&&saved.alpha.anchor.x<1);
+  await page.reload();await ready();assert.deepEqual(await stored(),saved);
+  await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);await page.getByText('Position and size',{exact:true}).evaluate(el=>el.parentElement.open=true);
+  const kept=await host.boundingBox();await snap.selectOption('true');assert.equal((await host.boundingBox()).x,kept.x);
+  await page.getByRole('button',{name:'Close interaction',exact:true}).click();await handle.focus();await page.keyboard.press('ArrowUp');assert([0,1].includes((await stored()).alpha.anchor.x));await page.keyboard.press('ArrowLeft');assert.equal((await stored()).alpha.anchor.x,0);
+  await page.keyboard.press('Escape');assert.equal((await stored()).alpha.snapToEdge,undefined);
+  await page.keyboard.press('ArrowLeft');assert((await stored()).alpha.anchor.x>0);assert.equal((await stored()).alpha.snapToEdge,undefined);
+  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);await page.getByText('Position and size',{exact:true}).evaluate(el=>el.parentElement.open=true);
+  assert(await snap.isVisible());assert.equal(await page.getByLabel('Character position',{exact:true}).isVisible(),false);
+  await page.locator("#wzf-haru-panel").evaluate(el=>el.scrollTop=el.scrollHeight);
+  if(out)await page.screenshot({path:path.join(out,'optional-snap-mobile.png')});
+  await page.setViewportSize({width:1440,height:900});await page.locator("#wzf-haru-panel").evaluate(el=>el.scrollTop=el.scrollHeight);if(out)await page.screenshot({path:path.join(out,'optional-snap-desktop.png')});
   // Long panels respect the actual top stack without raising controls above navigation.
   const openLongPanel=async(role='')=>{
     await page.goto(fixture.origin+'/?mobile=1&explicitButtons=1&role='+role);await ready();
@@ -184,6 +210,6 @@ const {chromium}=require(process.env.MASCOT_PLAYWRIGHT||'playwright');
   await page.goto(fixture.origin+'/?mobile=1&idle=1');await ready();await page.getByRole('button',{name:'Interact',exact:true}).click();await expandNavigation(page);await page.getByText('Dialogue preferences',{exact:true}).click();
   await page.evaluate(()=>{Storage.prototype.setItem=function(){throw Error('denied')};});await page.getByLabel('Occasional chatter',{exact:true}).check();
   assert.equal(await page.locator('.wzf-haru-state').textContent(),notice);
-  assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks:26,syntheticOnly:true,realRenderingTested:false}));
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({complete:true,checks:39,syntheticOnly:true,realRenderingTested:false}));
  }finally{await context.close();await browser.close();await fixture.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

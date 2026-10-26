@@ -81,6 +81,37 @@ require_once __DIR__ . '/admin-inventory.php';
 require_once __DIR__ . '/admin-recovery.php';
 require_once __DIR__ . '/admin-listing.php';
 require_once __DIR__ . '/admin-readiness.php';
+function wzf_mascot_save_layout($version, $snap) {
+    if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
+    if (!is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version) || !is_bool($snap)) throw new RuntimeException(__('Layout settings request is invalid.', 'live2d-show'));
+    $task = wzf_mascot_task_begin('settings');
+    try {
+        $config = $task['config'];
+        if (!hash_equals(wzf_mascot_config_version($config), $version)) throw new RuntimeException(__('Another request changed the resource configuration. Refresh before retrying.', 'live2d-show'));
+        if (!is_array($config) || !is_array($config['characters'] ?? null)) throw new RuntimeException(__('Resource configuration is invalid.', 'live2d-show'));
+        if (($config['snapToEdge'] ?? true) === $snap) return;
+        $config['snapToEdge'] = $snap;
+        if (!wzf_mascot_resources_update($config)) throw new RuntimeException(__('Cannot save layout settings.', 'live2d-show'));
+    } finally { wzf_mascot_task_end($task); }
+}
+function wzf_mascot_layout_post() {
+    if (!current_user_can('manage_options')) wp_die(__('Administrator permission is required.', 'live2d-show'), '', ['response'=>403]);
+    check_admin_referer('wzf_mascot_layout');
+    try {
+        if (isset($_POST['snap_to_edge']) && $_POST['snap_to_edge'] !== '1') throw new RuntimeException(__('Layout settings request is invalid.', 'live2d-show'));
+        wzf_mascot_save_layout(isset($_POST['version']) && is_string($_POST['version']) ? wp_unslash($_POST['version']) : '', isset($_POST['snap_to_edge']));
+        $notice = __('Layout settings saved.', 'live2d-show');
+    } catch (Throwable $e) { $notice = wzf_mascot_error_message($e); }
+    wp_safe_redirect(add_query_arg('mascot_notice', rawurlencode($notice), admin_url('options-general.php?page=wzf-mascot')));
+    exit;
+}
+function wzf_mascot_layout_panel($config) {
+    echo '<section class="wzf-mascot-card"><h2>' . esc_html__('Position after dragging', 'live2d-show') . '</h2><p class="description">' . esc_html__('Choose the site default after readers release the character. Readers can override it for each character in Position and size.', 'live2d-show') . '</p><form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+    wp_nonce_field('wzf_mascot_layout');
+    echo '<input type="hidden" name="action" value="wzf_mascot_layout"><input type="hidden" name="version" value="' . esc_attr(wzf_mascot_config_version($config)) . '"><p><label><input type="checkbox" name="snap_to_edge" value="1" ' . checked(($config['snapToEdge'] ?? true) !== false, true, false) . '> ' . esc_html__('Snap to the left or right edge after dragging', 'live2d-show') . '</label></p>';
+    submit_button(__('Save layout settings', 'live2d-show')); echo '</form></section>';
+}
+add_action('admin_post_wzf_mascot_layout', 'wzf_mascot_layout_post');
 function wzf_mascot_save_character($id, $version, $fields) {
     if (!current_user_can('manage_options')) throw new RuntimeException(__('Administrator permission is required.', 'live2d-show'));
     if (!is_string($id) || !is_string($version) || !preg_match('/\A[0-9a-f]{64}\z/D', $version) || !is_array($fields) || array_diff(array_keys($fields), ['name','credit','size','offset','idle','welcome','greetings'])) throw new RuntimeException(__('Character settings request is invalid.', 'live2d-show'));
@@ -228,6 +259,7 @@ function wzf_mascot_admin_page() {
         submit_button($label); echo '</form></section>';
     }
     echo '</div>';
+    wzf_mascot_layout_panel($config);
     wzf_mascot_mobile_panel($config);
     wzf_mascot_admin_diagnostics($config, $display_rows);
     wzf_mascot_inventory_panel($raw);
